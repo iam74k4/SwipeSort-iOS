@@ -585,6 +585,7 @@ struct ReviewGridItem: View {
 
 // MARK: - Review Stat Badge
 
+@available(iOS 26.0, *)
 struct ReviewStatBadge: View {
     let icon: String
     let count: Int

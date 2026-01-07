@@ -382,6 +382,13 @@ struct SortingFeature: View {
         
         if let assetID = sortStore.undo() {
             if let asset = photoLibrary.allAssets.first(where: { $0.id == assetID }) {
+                // If the undone action was a favorite, remove from iOS Favorites
+                if asset.asset.isFavorite {
+                    Task {
+                        try? await photoLibrary.setFavorite(asset.asset, isFavorite: false)
+                    }
+                }
+                
                 state.unsortedAssets.insert(asset, at: 0)
                 state.currentIndex = 0
                 state.updateCurrentAsset()
@@ -561,6 +568,7 @@ struct SortingFeature: View {
 
 // MARK: - Supporting Views
 
+@available(iOS 26.0, *)
 struct StatPill: View {
     let count: Int
     let color: Color
@@ -584,6 +592,7 @@ struct StatPill: View {
     }
 }
 
+@available(iOS 26.0, *)
 struct ProgressPill: View {
     let current: Int
     let total: Int
@@ -607,6 +616,7 @@ struct ProgressPill: View {
     }
 }
 
+@available(iOS 26.0, *)
 struct VideoChip: View {
     let duration: String
     
