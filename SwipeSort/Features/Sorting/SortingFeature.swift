@@ -640,14 +640,10 @@ struct StampView: View {
     
     var body: some View {
         Text(text)
-            .font(.system(size: 32, weight: .black, design: .rounded))
+            .font(.system(size: 36, weight: .black, design: .rounded))
             .foregroundStyle(color)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(color, lineWidth: 4)
-            }
+            .shadow(color: color.opacity(0.5), radius: 8, x: 0, y: 0)
+            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
             .rotationEffect(.degrees(rotation))
     }
 }
