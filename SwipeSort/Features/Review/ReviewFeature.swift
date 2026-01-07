@@ -304,8 +304,10 @@ struct ReviewFeature: View {
             
             Spacer()
             
-            HStack(spacing: 8) {
-                ReviewStatBadge(label: "Keep", count: sortStore.keepCount, color: .keepColor)
+            HStack(spacing: 6) {
+                ReviewStatBadge(icon: "checkmark", count: sortStore.keepCount, color: .keepColor)
+                ReviewStatBadge(icon: "trash", count: sortStore.deleteCount, color: .deleteColor)
+                ReviewStatBadge(icon: "heart.fill", count: sortStore.favoriteCount, color: .favoriteColor)
             }
         }
     }
@@ -593,25 +595,23 @@ struct ReviewGridItem: View {
 // MARK: - Review Stat Badge
 
 struct ReviewStatBadge: View {
-    let label: String
+    let icon: String
     let count: Int
     let color: Color
     
     var body: some View {
         HStack(spacing: 4) {
-            Text(label)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(color)
-            
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
             Text("\(count)")
                 .font(.system(size: 13, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(.white)
         }
+        .foregroundStyle(color)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background {
-            Capsule().fill(.white.opacity(0.1))
+            Capsule().fill(color.opacity(0.15))
         }
     }
 }

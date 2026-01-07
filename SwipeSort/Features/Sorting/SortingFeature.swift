@@ -547,8 +547,8 @@ struct SortingFeature: View {
             // Stats
             HStack(spacing: 24) {
                 CompletedStat(count: sortStore.keepCount, label: "Keep", color: .keepColor, icon: "checkmark.circle.fill")
-                CompletedStat(count: sortStore.deleteCount, label: "削除", color: .deleteColor, icon: "trash.circle.fill")
-                CompletedStat(count: sortStore.favoriteCount, label: "♥", color: .favoriteColor, icon: "heart.circle.fill")
+                CompletedStat(count: sortStore.deleteCount, label: "削除候補", color: .deleteColor, icon: "trash.circle.fill")
+                CompletedStat(count: sortStore.favoriteCount, label: "お気に入り", color: .favoriteColor, icon: "heart.circle.fill")
             }
             .padding(.top, 8)
             

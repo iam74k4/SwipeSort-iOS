@@ -155,7 +155,7 @@ struct SwipeOverlay: View {
 
 #Preview("Keep") {
     ZStack {
-        Color.black
+        Color.appBackground
         SwipeOverlay(direction: .right, progress: 0.8)
     }
     .ignoresSafeArea()
@@ -163,7 +163,7 @@ struct SwipeOverlay: View {
 
 #Preview("Delete") {
     ZStack {
-        Color.black
+        Color.appBackground
         SwipeOverlay(direction: .left, progress: 0.8)
     }
     .ignoresSafeArea()
@@ -171,7 +171,7 @@ struct SwipeOverlay: View {
 
 #Preview("Favorite") {
     ZStack {
-        Color.black
+        Color.appBackground
         SwipeOverlay(direction: .up, progress: 0.8)
     }
     .ignoresSafeArea()
