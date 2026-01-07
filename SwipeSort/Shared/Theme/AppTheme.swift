@@ -55,12 +55,35 @@ extension LinearGradient {
 // MARK: - View Modifiers
 
 extension View {
-    /// Apply glass effect background
-    func glassBackground(cornerRadius: CGFloat = 16) -> some View {
-        self.background {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(.ultraThinMaterial)
-        }
+    /// Apply Liquid Glass effect background (iOS 26+)
+    func liquidGlass(cornerRadius: CGFloat = 20) -> some View {
+        self
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            }
+            .glassEffect()
+    }
+    
+    /// Apply glass card style for settings and content cards
+    func glassCard(cornerRadius: CGFloat = 20) -> some View {
+        self
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .white.opacity(0.05), radius: 0, x: 0, y: 1)
+            }
+            .glassEffect()
+    }
+    
+    /// Apply glass pill style for buttons and badges
+    func glassPill() -> some View {
+        self
+            .background {
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            }
+            .glassEffect()
     }
     
     /// Floating shadow for elevated elements

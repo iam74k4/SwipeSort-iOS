@@ -262,11 +262,8 @@ struct SortingFeature: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .background {
-                Capsule()
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-            }
+            .glassPill()
+            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
     }
     
@@ -581,8 +578,9 @@ struct StatPill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background {
-            Capsule().fill(color.opacity(0.15))
+            Capsule().fill(.ultraThinMaterial)
         }
+        .glassEffect()
     }
 }
 
@@ -605,9 +603,7 @@ struct ProgressPill: View {
         .monospacedDigit()
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background {
-            Capsule().fill(.white.opacity(0.1))
-        }
+        .glassPill()
     }
 }
 
@@ -625,11 +621,8 @@ struct VideoChip: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background {
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-        }
+        .glassPill()
+        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
     }
 }
 

@@ -114,10 +114,7 @@ struct SettingsFeature: View {
             }
         }
         .padding(20)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard()
     }
     
     // MARK: - Gesture Guide Card
@@ -155,10 +152,7 @@ struct SettingsFeature: View {
             }
         }
         .padding(20)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard()
     }
     
     // MARK: - Settings Card
@@ -198,10 +192,7 @@ struct SettingsFeature: View {
             .tint(.purple)
         }
         .padding(20)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard()
     }
     
     // MARK: - Data Card
@@ -248,10 +239,7 @@ struct SettingsFeature: View {
             }
         }
         .padding(20)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard()
     }
     
     // MARK: - About Card
@@ -295,10 +283,7 @@ struct SettingsFeature: View {
             }
         }
         .padding(20)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard()
     }
 }
 

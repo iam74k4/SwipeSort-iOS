@@ -168,10 +168,7 @@ struct ReviewFeature: View {
             }
         }
         .padding(4)
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.white.opacity(0.05))
-        }
+        .glassCard(cornerRadius: 14)
     }
     
     // MARK: - Menu Button
@@ -327,6 +324,7 @@ struct ReviewFeature: View {
         .background {
             Rectangle()
                 .fill(.ultraThinMaterial)
+                .glassEffect()
                 .ignoresSafeArea()
         }
     }
@@ -345,9 +343,7 @@ struct ReviewFeature: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
-                .background {
-                    Capsule().fill(.white.opacity(0.15))
-                }
+                .glassPill()
             }
             
             Spacer()
@@ -404,9 +400,7 @@ struct ReviewFeature: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
-                .background {
-                    Capsule().fill(.white.opacity(0.15))
-                }
+                .glassPill()
             }
         } else {
             // No bulk action for favorites when nothing is selected
@@ -430,10 +424,7 @@ struct ReviewFeature: View {
                     .foregroundStyle(.white)
             }
             .padding(48)
-            .background {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            }
+            .glassCard()
         }
     }
     
@@ -611,7 +602,8 @@ struct ReviewStatBadge: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background {
-            Capsule().fill(color.opacity(0.15))
+            Capsule().fill(.ultraThinMaterial)
         }
+        .glassEffect()
     }
 }

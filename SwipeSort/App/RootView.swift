@@ -172,10 +172,7 @@ struct RootView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(.white.opacity(0.15))
-                        }
+                        .glassCard(cornerRadius: 14)
                 }
                 .padding(.horizontal, 40)
                 
