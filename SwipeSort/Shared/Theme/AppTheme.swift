@@ -61,9 +61,9 @@ extension View {
         self
             .background {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(.regularMaterial)
             }
-            .glassEffect()
+            .glassEffect(.regular)
     }
     
     /// Apply glass card style for settings and content cards
@@ -72,10 +72,10 @@ extension View {
         self
             .background {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .white.opacity(0.05), radius: 0, x: 0, y: 1)
+                    .fill(.regularMaterial)
             }
-            .glassEffect()
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .glassEffect(.regular)
     }
     
     /// Apply glass pill style for buttons and badges
@@ -84,9 +84,10 @@ extension View {
         self
             .background {
                 Capsule()
-                    .fill(.ultraThinMaterial)
+                    .fill(.thinMaterial)
             }
-            .glassEffect()
+            .clipShape(Capsule())
+            .glassEffect(.regular)
     }
     
     /// Floating shadow for elevated elements
