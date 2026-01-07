@@ -86,7 +86,7 @@ struct SettingsFeature: View {
                 
                 StatisticItem(
                     count: sortStore.deleteCount,
-                    label: "削除",
+                    label: "削除候補",
                     color: .deleteColor,
                     icon: "trash.circle.fill"
                 )
