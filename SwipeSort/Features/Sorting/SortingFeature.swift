@@ -587,9 +587,8 @@ struct StatPill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background {
-            Capsule().fill(.ultraThinMaterial)
+            Capsule().fill(Color.white.opacity(0.12))
         }
-        .glassEffect()
     }
 }
 

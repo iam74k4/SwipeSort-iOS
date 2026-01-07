@@ -324,8 +324,7 @@ struct ReviewFeature: View {
         .padding(.vertical, 16)
         .background {
             Rectangle()
-                .fill(.ultraThinMaterial)
-                .glassEffect()
+                .fill(Color.black.opacity(0.8))
                 .ignoresSafeArea()
         }
     }
@@ -605,8 +604,7 @@ struct ReviewStatBadge: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background {
-            Capsule().fill(.ultraThinMaterial)
+            Capsule().fill(Color.white.opacity(0.12))
         }
-        .glassEffect()
     }
 }
