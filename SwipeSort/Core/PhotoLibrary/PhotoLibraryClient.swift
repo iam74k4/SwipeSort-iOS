@@ -7,6 +7,7 @@
 
 import Foundation
 @preconcurrency import Photos
+import PhotosUI
 import UIKit
 import SwiftUI
 import os
@@ -73,14 +74,24 @@ final class PhotoLibraryClient {
     
     // MARK: - Image Loading (nonisolated to avoid MainActor issues in callbacks)
     
-    nonisolated func loadImage(for asset: PHAsset, targetSize: CGSize? = nil) async -> UIImage? {
+    /// Load image with optional RAW optimization
+    /// For RAW images, uses embedded preview for faster initial display
+    nonisolated func loadImage(for asset: PHAsset, targetSize: CGSize? = nil, preferFastPreview: Bool = false) async -> UIImage? {
         let size = targetSize ?? CGSize(width: 1200, height: 1200)
         
         let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
-        options.resizeMode = .fast
         options.isNetworkAccessAllowed = true
         options.isSynchronous = false
+        
+        if preferFastPreview {
+            // For RAW images: prioritize embedded JPEG preview
+            options.version = .current
+            options.deliveryMode = .fastFormat
+            options.resizeMode = .fast
+        } else {
+            options.deliveryMode = .opportunistic
+            options.resizeMode = .fast
+        }
         
         // Use a class to safely capture mutable state
         final class ImageLoadState: @unchecked Sendable {
@@ -182,6 +193,79 @@ final class PhotoLibraryClient {
                 }
             }
         }
+    }
+    
+    // MARK: - Live Photo Loading
+    
+    nonisolated func loadLivePhoto(for asset: PHAsset, targetSize: CGSize) async -> PHLivePhoto? {
+        let options = PHLivePhotoRequestOptions()
+        options.deliveryMode = .opportunistic
+        options.isNetworkAccessAllowed = true
+        
+        final class LivePhotoLoadState: @unchecked Sendable {
+            var hasResumed = false
+            var lastLivePhoto: PHLivePhoto?
+            let lock = NSLock()
+        }
+        let state = LivePhotoLoadState()
+        
+        return await withCheckedContinuation { continuation in
+            let requestID = imageManager.requestLivePhoto(
+                for: asset,
+                targetSize: targetSize,
+                contentMode: .aspectFit,
+                options: options
+            ) { livePhoto, info in
+                state.lock.lock()
+                defer { state.lock.unlock() }
+                
+                guard !state.hasResumed else { return }
+                
+                if let livePhoto = livePhoto {
+                    state.lastLivePhoto = livePhoto
+                }
+                
+                let isError = info?[PHImageErrorKey] != nil
+                let isCancelled = info?[PHImageCancelledKey] as? Bool ?? false
+                let isDegraded = info?[PHImageResultIsDegradedKey] as? Bool ?? false
+                
+                if isError || isCancelled || !isDegraded {
+                    state.hasResumed = true
+                    continuation.resume(returning: state.lastLivePhoto)
+                }
+            }
+            
+            // Safety timeout
+            DispatchQueue.global().asyncAfter(deadline: .now() + 30) { [weak self] in
+                state.lock.lock()
+                defer { state.lock.unlock() }
+                if !state.hasResumed {
+                    state.hasResumed = true
+                    self?.imageManager.cancelImageRequest(requestID)
+                    continuation.resume(returning: state.lastLivePhoto)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Burst Photos
+    
+    /// Fetch all photos in a burst sequence
+    nonisolated func fetchBurstAssets(for burstIdentifier: String) -> [PhotoAsset] {
+        let options = PHFetchOptions()
+        options.predicate = NSPredicate(format: "burstIdentifier == %@", burstIdentifier)
+        options.includeAllBurstAssets = true
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        
+        let result = PHAsset.fetchAssets(with: options)
+        var assets: [PhotoAsset] = []
+        assets.reserveCapacity(result.count)
+        
+        result.enumerateObjects { asset, _, _ in
+            assets.append(PhotoAsset(asset: asset))
+        }
+        
+        return assets
     }
     
     // MARK: - Deletion

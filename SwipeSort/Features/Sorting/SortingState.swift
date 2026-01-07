@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 @Observable
 final class SortingState {
@@ -25,6 +26,18 @@ final class SortingState {
     var currentImage: UIImage?
     var nextImage: UIImage?
     var isLoadingImage: Bool = false
+    
+    // MARK: - Live Photo
+    
+    var currentLivePhoto: PHLivePhoto?
+    var isPlayingLivePhoto: Bool = false
+    var isLongPressing: Bool = false
+    
+    // MARK: - Burst Photos
+    
+    var showingBurstSelector: Bool = false
+    var burstAssets: [PhotoAsset] = []
+    var currentBurstCount: Int?
     
     // MARK: - Swipe State
     
@@ -50,12 +63,17 @@ final class SortingState {
     func updateCurrentAsset() {
         if unsortedAssets.isEmpty {
             currentAsset = nil
+            currentBurstCount = nil
         } else if currentIndex < unsortedAssets.count {
             currentAsset = unsortedAssets[currentIndex]
         } else {
             currentIndex = 0
             currentAsset = unsortedAssets.first
         }
+        
+        // Reset Live Photo state when changing asset
+        currentLivePhoto = nil
+        isPlayingLivePhoto = false
     }
     
     func reset() {
@@ -63,5 +81,12 @@ final class SortingState {
         swipeDirection = .none
         isAnimatingOut = false
         imageOpacity = 1.0
+        isPlayingLivePhoto = false
+        isLongPressing = false
+    }
+    
+    func resetBurstSelector() {
+        showingBurstSelector = false
+        burstAssets = []
     }
 }

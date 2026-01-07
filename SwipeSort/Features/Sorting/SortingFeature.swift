@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Photos
+import PhotosUI
 
 @available(iOS 26.0, *)
 struct SortingFeature: View {
@@ -21,7 +22,9 @@ struct SortingFeature: View {
                 // Background
                 backgroundGradient
                 
-                if state.isComplete {
+                if state.showingBurstSelector {
+                    burstSelectorOverlay
+                } else if state.isComplete {
                     completedView
                 } else if let asset = state.currentAsset {
                     photoViewerContent(for: asset, in: geometry)
@@ -35,6 +38,63 @@ struct SortingFeature: View {
         .task {
             await loadAssets()
         }
+    }
+    
+    // MARK: - Burst Selector Overlay
+    
+    private var burstSelectorOverlay: some View {
+        BurstSelectorView(
+            burstAssets: state.burstAssets,
+            photoLibrary: photoLibrary,
+            onSelect: { selected, others in
+                // Keep selected, mark others as delete
+                sortStore.addOrUpdate(assetID: selected.id, category: .keep)
+                for other in others {
+                    sortStore.addOrUpdate(assetID: other.id, category: .delete)
+                }
+                
+                // Remove all burst photos from unsorted
+                let burstIDs = Set(state.burstAssets.map { $0.id })
+                state.unsortedAssets.removeAll { burstIDs.contains($0.id) }
+                state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+                state.updateCurrentAsset()
+                state.resetBurstSelector()
+                
+                if state.unsortedAssets.isEmpty {
+                    state.isComplete = true
+                } else {
+                    Task { await loadCurrentImage() }
+                }
+                
+                HapticFeedback.notification(.success)
+            },
+            onCancel: {
+                // Skip burst selection, continue with normal sorting
+                state.resetBurstSelector()
+            },
+            onKeepAll: {
+                // Mark all burst photos as keep
+                for asset in state.burstAssets {
+                    sortStore.addOrUpdate(assetID: asset.id, category: .keep)
+                }
+                
+                // Remove all burst photos from unsorted
+                let burstIDs = Set(state.burstAssets.map { $0.id })
+                state.unsortedAssets.removeAll { burstIDs.contains($0.id) }
+                state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+                state.updateCurrentAsset()
+                state.resetBurstSelector()
+                
+                if state.unsortedAssets.isEmpty {
+                    state.isComplete = true
+                } else {
+                    Task { await loadCurrentImage() }
+                }
+                
+                HapticFeedback.impact(.medium)
+            }
+        )
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
     
     // MARK: - Background
@@ -142,9 +202,14 @@ struct SortingFeature: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color.white.opacity(0.05))
             
-            // Photo content
-            photoContent
+            // Photo content (Live Photo or regular)
+            photoContentView
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            
+            // Media type badges (top-left)
+            if let asset = state.currentAsset {
+                mediaBadges(for: asset)
+            }
             
             // Action stamp overlay
             actionStamp(cardWidth: cardWidth, cardHeight: cardHeight)
@@ -153,6 +218,56 @@ struct SortingFeature: View {
         .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
         .opacity(state.imageOpacity)
         .animation(.easeOut(duration: 0.2), value: state.imageOpacity)
+        .onLongPressGesture(minimumDuration: 0.3, pressing: { pressing in
+            if let asset = state.currentAsset, asset.isLivePhoto {
+                state.isLongPressing = pressing
+                if pressing && state.currentLivePhoto != nil {
+                    state.isPlayingLivePhoto = true
+                    HapticFeedback.impact(.light)
+                } else {
+                    state.isPlayingLivePhoto = false
+                }
+            }
+        }, perform: {})
+    }
+    
+    // MARK: - Media Badges
+    
+    @ViewBuilder
+    private func mediaBadges(for asset: PhotoAsset) -> some View {
+        VStack {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    if asset.isLivePhoto {
+                        MediaBadge(type: .live)
+                    }
+                    if asset.isRAW {
+                        MediaBadge(type: .raw)
+                    }
+                    if asset.isBurstPhoto, let count = state.currentBurstCount, count > 1 {
+                        Button {
+                            openBurstSelector(for: asset)
+                        } label: {
+                            MediaBadge(type: .burst(count: count))
+                        }
+                    }
+                }
+                .padding(12)
+                Spacer()
+            }
+            Spacer()
+        }
+    }
+    
+    private func openBurstSelector(for asset: PhotoAsset) {
+        guard let burstId = asset.burstIdentifier else { return }
+        
+        state.burstAssets = photoLibrary.fetchBurstAssets(for: burstId)
+        if state.burstAssets.count > 1 {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                state.showingBurstSelector = true
+            }
+        }
     }
     
     // MARK: - Action Stamp
@@ -185,7 +300,7 @@ struct SortingFeature: View {
     // MARK: - Photo Content
     
     @ViewBuilder
-    private var photoContent: some View {
+    private var photoContentView: some View {
         if state.isLoadingImage {
             ZStack {
                 Color.white.opacity(0.03)
@@ -193,6 +308,9 @@ struct SortingFeature: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
             }
+        } else if state.isPlayingLivePhoto, let livePhoto = state.currentLivePhoto {
+            // Live Photo playback
+            LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
         } else if let image = state.currentImage {
             Image(uiImage: image)
                 .resizable()
@@ -434,12 +552,15 @@ struct SortingFeature: View {
     private func loadCurrentImage() async {
         guard let asset = state.currentAsset else {
             state.currentImage = nil
+            state.currentLivePhoto = nil
+            state.currentBurstCount = nil
             return
         }
         
         state.isLoadingImage = true
         state.imageOpacity = 0
         
+        // Load main image
         let image = await photoLibrary.loadImage(for: asset.asset, targetSize: CGSize(width: 1200, height: 1200))
         
         state.currentImage = image
@@ -447,6 +568,22 @@ struct SortingFeature: View {
         
         withAnimation(.easeIn(duration: 0.25)) {
             state.imageOpacity = 1.0
+        }
+        
+        // Load Live Photo if applicable
+        if asset.isLivePhoto {
+            let livePhoto = await photoLibrary.loadLivePhoto(for: asset.asset, targetSize: CGSize(width: 1200, height: 1200))
+            state.currentLivePhoto = livePhoto
+        } else {
+            state.currentLivePhoto = nil
+        }
+        
+        // Get burst count if applicable
+        if let burstId = asset.burstIdentifier {
+            let burstAssets = photoLibrary.fetchBurstAssets(for: burstId)
+            state.currentBurstCount = burstAssets.count
+        } else {
+            state.currentBurstCount = nil
         }
         
         photoLibrary.updateCacheWindow(currentIndex: state.currentIndex, assets: state.unsortedAssets)
