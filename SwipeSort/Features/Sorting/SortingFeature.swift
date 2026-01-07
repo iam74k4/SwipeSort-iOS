@@ -236,12 +236,6 @@ struct SortingFeature: View {
                 VideoChip(duration: asset.formattedDuration)
             }
             
-            // Swipe hints
-            if !state.isAnimatingOut {
-                swipeHints
-                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
-            }
-            
             // Undo button
             if sortStore.canUndo {
                 undoButton
@@ -251,17 +245,6 @@ struct SortingFeature: View {
         .padding(.horizontal, 20)
         .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
         .animation(.spring(response: 0.35), value: sortStore.canUndo)
-    }
-    
-    // MARK: - Swipe Hints
-    
-    private var swipeHints: some View {
-        HStack(spacing: 32) {
-            SwipeHint(icon: "trash", label: "削除", color: .deleteColor, direction: .left)
-            SwipeHint(icon: "heart.fill", label: "♥", color: .favoriteColor, direction: .up)
-            SwipeHint(icon: "checkmark", label: "Keep", color: .keepColor, direction: .right)
-        }
-        .opacity(state.swipeDirection == .none ? 0.5 : 0.2)
     }
     
     // MARK: - Undo Button
@@ -646,31 +629,6 @@ struct VideoChip: View {
             Capsule()
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-        }
-    }
-}
-
-struct SwipeHint: View {
-    let icon: String
-    let label: String
-    let color: Color
-    let direction: SwipeDirection
-    
-    var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(color)
-            }
-            
-            Text(label)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
         }
     }
 }
