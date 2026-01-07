@@ -39,7 +39,7 @@ struct SettingsFeature: View {
             }
             .background(Color.appBackground)
             .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .confirmationDialog(

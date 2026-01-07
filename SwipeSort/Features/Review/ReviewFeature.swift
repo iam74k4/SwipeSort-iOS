@@ -43,7 +43,7 @@ struct ReviewFeature: View {
                 }
             }
             .navigationTitle("確認")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .toolbar {
