@@ -184,7 +184,8 @@ struct RootView: View {
     }
 }
 
-@available(iOS 26.0, *)
 #Preview {
-    RootView()
+    if #available(iOS 26.0, *) {
+        RootView()
+    }
 }
