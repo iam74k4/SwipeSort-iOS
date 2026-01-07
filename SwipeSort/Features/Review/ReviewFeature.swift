@@ -277,7 +277,10 @@ struct ReviewFeature: View {
                 .padding(4)
             }
             
-            if state.hasSelection || !state.currentItems.isEmpty {
+            // Show bottom bar only when there's something to interact with
+            if state.selectedSegment == .delete && !state.currentItems.isEmpty {
+                bottomActionBar
+            } else if state.selectedSegment == .favorite && state.hasSelection {
                 bottomActionBar
             }
         }

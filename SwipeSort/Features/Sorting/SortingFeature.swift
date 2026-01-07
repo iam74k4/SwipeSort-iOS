@@ -40,7 +40,7 @@ struct SortingFeature: View {
     
     private var backgroundGradient: some View {
         ZStack {
-            Color.black
+            Color.appBackground
             
             // Subtle ambient gradient based on swipe direction
             switch state.swipeDirection {

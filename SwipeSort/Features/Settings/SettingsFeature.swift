@@ -34,7 +34,8 @@ struct SettingsFeature: View {
                     // About
                     aboutCard
                 }
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
             .background(Color.appBackground)
             .navigationTitle("設定")
