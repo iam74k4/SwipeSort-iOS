@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 26.0, *)
 struct SettingsFeature: View {
     @Bindable var sortStore: SortResultStore
     
@@ -289,6 +290,7 @@ struct SettingsFeature: View {
 
 // MARK: - Supporting Views
 
+@available(iOS 26.0, *)
 struct StatisticItem: View {
     let count: Int
     let label: String
@@ -320,6 +322,7 @@ struct StatisticItem: View {
     }
 }
 
+@available(iOS 26.0, *)
 struct GestureRow: View {
     let icon: String
     let direction: String
@@ -352,6 +355,7 @@ struct GestureRow: View {
     }
 }
 
+@available(iOS 26.0, *)
 struct SettingsRow: View {
     let icon: String
     let iconColor: Color
@@ -388,6 +392,7 @@ struct SettingsRow: View {
 
 // MARK: - About View
 
+@available(iOS 26.0, *)
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     
@@ -493,6 +498,7 @@ struct AboutView: View {
     }
 }
 
+@available(iOS 26.0, *)
 struct InstructionRow: View {
     let icon: String
     let color: Color

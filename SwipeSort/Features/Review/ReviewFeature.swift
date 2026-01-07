@@ -8,6 +8,7 @@
 import SwiftUI
 import Photos
 
+@available(iOS 26.0, *)
 struct ReviewFeature: View {
     @Bindable var photoLibrary: PhotoLibraryClient
     @Bindable var sortStore: SortResultStore
@@ -514,6 +515,7 @@ struct ReviewFeature: View {
 
 // MARK: - Review Grid Item
 
+@available(iOS 26.0, *)
 struct ReviewGridItem: View {
     let item: PhotoAsset
     let isSelected: Bool

@@ -8,6 +8,7 @@
 import SwiftUI
 import Photos
 
+@available(iOS 26.0, *)
 struct SortingFeature: View {
     @Bindable var photoLibrary: PhotoLibraryClient
     @Bindable var sortStore: SortResultStore
