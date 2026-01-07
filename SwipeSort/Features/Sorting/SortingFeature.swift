@@ -486,6 +486,7 @@ struct SortingFeature: View {
         
         state.unsortedAssets.removeAll { $0.id == asset.id }
         state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+        state.sortedCount += 1  // Update sorted count
         state.updateCurrentAsset()
         
         if state.unsortedAssets.isEmpty {
@@ -510,6 +511,7 @@ struct SortingFeature: View {
                 
                 state.unsortedAssets.insert(asset, at: 0)
                 state.currentIndex = 0
+                state.sortedCount = max(0, state.sortedCount - 1)  // Decrement sorted count
                 state.updateCurrentAsset()
                 state.isComplete = false
             }
@@ -560,8 +562,12 @@ struct SortingFeature: View {
         state.isLoadingImage = true
         state.imageOpacity = 0
         
-        // Load main image
-        let image = await photoLibrary.loadImage(for: asset.asset, targetSize: CGSize(width: 1200, height: 1200))
+        // Load main image (use fast preview for RAW images)
+        let image = await photoLibrary.loadImage(
+            for: asset.asset,
+            targetSize: CGSize(width: 1200, height: 1200),
+            preferFastPreview: asset.isRAW
+        )
         
         state.currentImage = image
         state.isLoadingImage = false

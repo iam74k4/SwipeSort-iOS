@@ -25,29 +25,34 @@ struct BurstSelectorView: View {
     private let mainImageSize = CGSize(width: 800, height: 800)
     
     var body: some View {
-        ZStack {
-            // Background
-            Color.appBackground.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                headerView
-                    .padding(.top, 16)
+        GeometryReader { geometry in
+            ZStack {
+                // Background
+                Color.appBackground.ignoresSafeArea()
                 
-                // Main preview
-                mainPreview
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                
-                // Thumbnail strip
-                thumbnailStrip
-                    .padding(.top, 20)
-                
-                // Action buttons
-                actionButtons
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 24)
+                VStack(spacing: 0) {
+                    // Header
+                    headerView
+                        .padding(.top, geometry.safeAreaInsets.top + 16)
+                    
+                    // Main preview
+                    mainPreview
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                    
+                    // Thumbnail strip
+                    thumbnailStrip
+                        .padding(.top, 20)
+                    
+                    Spacer()
+                    
+                    // Action buttons
+                    actionButtons
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + 24)
+                }
             }
+            .ignoresSafeArea()
         }
         .task {
             await loadThumbnails()
