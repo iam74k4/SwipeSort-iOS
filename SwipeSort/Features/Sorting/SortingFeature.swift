@@ -178,7 +178,7 @@ struct SortingFeature: View {
                 // Current photo card
                 photoCard(width: cardWidth, height: cardHeight)
                     .offset(state.offset)
-                    .scaleEffect(cardScale)
+                    .scaleEffect(cardScale, anchor: .center)
                     .rotationEffect(.degrees(cardRotation))
                     .onTapGesture(count: 2) {
                         performFavorite()
@@ -193,7 +193,10 @@ struct SortingFeature: View {
     }
     
     private var cardScale: CGFloat {
-        state.isAnimatingOut ? 1.0 : 1.0 - abs(state.offset.width) / 3000
+        // Only scale during drag, not during animations
+        guard !state.isAnimatingOut else { return 1.0 }
+        guard state.offset != .zero else { return 1.0 }
+        return 1.0 - abs(state.offset.width) / 3000
     }
     
     private var cardRotation: Double {
