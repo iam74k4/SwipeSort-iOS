@@ -36,6 +36,13 @@ final class PhotoLibraryClient {
     private static nonisolated let cacheAheadCount = 5
     private static nonisolated let defaultTargetSize = CGSize(width: 1200, height: 1200)
     
+    /// Timeout for full-size image loading (longer for iCloud downloads)
+    private static nonisolated let imageLoadTimeout: TimeInterval = 30
+    /// Timeout for thumbnail loading (faster, local-only preferred)
+    private static nonisolated let thumbnailLoadTimeout: TimeInterval = 10
+    /// Timeout for Live Photo loading (may require iCloud download)
+    private static nonisolated let livePhotoLoadTimeout: TimeInterval = 30
+    
     // MARK: - Initialization
     
     init() {}
@@ -128,13 +135,14 @@ final class PhotoLibraryClient {
                 }
             }
             
-            // Safety timeout
-            DispatchQueue.global().asyncAfter(deadline: .now() + 30) { [weak self] in
+            // Safety timeout - prevents hanging on slow/failed network requests
+            DispatchQueue.global().asyncAfter(deadline: .now() + Self.imageLoadTimeout) { [weak self] in
                 state.lock.lock()
                 defer { state.lock.unlock() }
                 if !state.hasResumed {
                     state.hasResumed = true
                     self?.imageManager.cancelImageRequest(requestID)
+                    self?.logger.warning("Image load timeout after \(Self.imageLoadTimeout)s for asset \(asset.localIdentifier)")
                     continuation.resume(returning: state.lastImage)
                 }
             }
@@ -182,13 +190,14 @@ final class PhotoLibraryClient {
                 }
             }
             
-            // Safety timeout
-            DispatchQueue.global().asyncAfter(deadline: .now() + 10) { [weak self] in
+            // Safety timeout - thumbnails should load quickly, timeout faster than full images
+            DispatchQueue.global().asyncAfter(deadline: .now() + Self.thumbnailLoadTimeout) { [weak self] in
                 state.lock.lock()
                 defer { state.lock.unlock() }
                 if !state.hasResumed {
                     state.hasResumed = true
                     self?.imageManager.cancelImageRequest(requestID)
+                    self?.logger.warning("Thumbnail load timeout after \(Self.thumbnailLoadTimeout)s for asset \(asset.localIdentifier)")
                     continuation.resume(returning: nil)
                 }
             }
@@ -235,13 +244,14 @@ final class PhotoLibraryClient {
                 }
             }
             
-            // Safety timeout
-            DispatchQueue.global().asyncAfter(deadline: .now() + 30) { [weak self] in
+            // Safety timeout - Live Photos may require iCloud download
+            DispatchQueue.global().asyncAfter(deadline: .now() + Self.livePhotoLoadTimeout) { [weak self] in
                 state.lock.lock()
                 defer { state.lock.unlock() }
                 if !state.hasResumed {
                     state.hasResumed = true
                     self?.imageManager.cancelImageRequest(requestID)
+                    self?.logger.warning("Live Photo load timeout after \(Self.livePhotoLoadTimeout)s for asset \(asset.localIdentifier)")
                     continuation.resume(returning: state.lastLivePhoto)
                 }
             }

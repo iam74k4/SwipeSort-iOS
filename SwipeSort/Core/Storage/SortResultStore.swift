@@ -38,14 +38,21 @@ final class SortResultStore {
     // MARK: - Error State
     
     private(set) var initializationError: Error?
+    private(set) var isUsingFallbackStorage: Bool = false
+    private(set) var isCriticalError: Bool = false
     
     var isInitialized: Bool {
-        initializationError == nil
+        initializationError == nil || isUsingFallbackStorage
+    }
+    
+    var hasStorageError: Bool {
+        initializationError != nil
     }
     
     // MARK: - Initialization
     
     init() {
+        // Try to create persistent storage first
         do {
             let schema = Schema([SortRecord.self, UndoRecord.self])
             let modelConfiguration = ModelConfiguration(
@@ -59,9 +66,10 @@ final class SortResultStore {
             
             refreshCounts()
             refreshUndoState()
+            logger.info("Persistent storage initialized successfully")
         } catch {
-            // Create in-memory fallback container
-            logger.error("Failed to create persistent storage: \(error.localizedDescription). Using in-memory storage.")
+            // Primary storage failed, try in-memory fallback
+            logger.error("Failed to create persistent storage: \(error.localizedDescription). Attempting in-memory fallback.")
             initializationError = error
             
             do {
@@ -74,9 +82,23 @@ final class SortResultStore {
                     for: schema,
                     configurations: [fallbackConfig]
                 )
-            } catch {
-                // This should never happen with in-memory storage
-                fatalError("Could not create even in-memory ModelContainer: \(error)")
+                isUsingFallbackStorage = true
+                logger.warning("Using in-memory fallback storage. Data will not persist across app launches.")
+                
+                refreshCounts()
+                refreshUndoState()
+            } catch let fallbackError {
+                // Even in-memory storage failed - this is a critical error
+                // Create a minimal container and mark as critical error
+                logger.critical("Critical: Failed to create even in-memory storage: \(fallbackError.localizedDescription)")
+                isCriticalError = true
+                
+                // Last resort: try with absolute minimal configuration
+                let schema = Schema([SortRecord.self, UndoRecord.self])
+                let minimalConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                // Use try! here as last resort - if this fails, app state is unrecoverable
+                modelContainer = try! ModelContainer(for: schema, configurations: [minimalConfig])
+                isUsingFallbackStorage = true
             }
         }
     }
