@@ -28,6 +28,9 @@
 		AA000025 /* LivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* LivePhotoView.swift */; };
 		AA000027 /* BurstSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000028 /* BurstSelectorView.swift */; };
 		AA000029 /* HeartAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* HeartAnimation.swift */; };
+		AA00002B /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* TipJarView.swift */; };
+		AA00002D /* TipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* TipStore.swift */; };
+		AA00002F /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AA000032 /* Configuration.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,8 +55,11 @@
 		AA000026 /* LivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoView.swift; sourceTree = "<group>"; };
 		AA000028 /* BurstSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurstSelectorView.swift; sourceTree = "<group>"; };
 		AA00002A /* HeartAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartAnimation.swift; sourceTree = "<group>"; };
+		AA00002C /* TipJarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJarView.swift; sourceTree = "<group>"; };
+		AA00002E /* TipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipStore.swift; sourceTree = "<group>"; };
 		AA000030 /* SwipeSort.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwipeSort.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA000032 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +90,7 @@
 				AA000056 /* Shared */,
 				AA000013 /* Assets.xcassets */,
 				AA000031 /* Info.plist */,
+				AA000032 /* Configuration.storekit */,
 			);
 			path = SwipeSort;
 			sourceTree = "<group>";
@@ -112,8 +119,17 @@
 				AA000057 /* Models */,
 				AA000058 /* PhotoLibrary */,
 				AA000059 /* Storage */,
+				AA000060A /* Store */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		AA000060A /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				AA00002E /* TipStore.swift */,
+			);
+			path = Store;
 			sourceTree = "<group>";
 		};
 		AA000055 /* Features */ = {
@@ -184,6 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				AA00001F /* SettingsFeature.swift */,
+				AA00002C /* TipJarView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -277,6 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000003 /* Assets.xcassets in Resources */,
+				AA00002F /* Configuration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +325,8 @@
 				AA000025 /* LivePhotoView.swift in Sources */,
 				AA000027 /* BurstSelectorView.swift in Sources */,
 				AA000029 /* HeartAnimation.swift in Sources */,
+				AA00002B /* TipJarView.swift in Sources */,
+				AA00002D /* TipStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
