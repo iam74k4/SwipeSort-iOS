@@ -281,10 +281,10 @@ struct SortingFeature: View {
                 switch state.swipeDirection {
                 case .right:
                     StampView(text: "KEEP", color: .keepColor, rotation: -15)
-                        .position(x: cardWidth * 0.2, y: cardHeight * 0.1)
+                        .position(x: cardWidth * 0.25, y: cardHeight * 0.18)
                 case .left:
                     StampView(text: "DELETE", color: .deleteColor, rotation: 15)
-                        .position(x: cardWidth * 0.8, y: cardHeight * 0.1)
+                        .position(x: cardWidth * 0.75, y: cardHeight * 0.18)
                 case .none:
                     EmptyView()
                 }
@@ -338,9 +338,21 @@ struct SortingFeature: View {
             // Progress
             ProgressPill(current: sortStore.totalSortedCount + 1, total: state.totalCount)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, geometry.safeAreaInsets.top + 4)
-        .padding(.bottom, 8)
+        .padding(.horizontal, 16)
+        .padding(.top, geometry.safeAreaInsets.top + 8)
+        .padding(.bottom, 12)
+        .background {
+            LinearGradient(
+                colors: [
+                    Color.appBackground,
+                    Color.appBackground.opacity(0.9),
+                    Color.appBackground.opacity(0)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .top)
+        }
     }
     
     // MARK: - Bottom Section
@@ -358,8 +370,22 @@ struct SortingFeature: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.bottom, geometry.safeAreaInsets.bottom + 12)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, geometry.safeAreaInsets.bottom + 16)
+        .frame(maxWidth: .infinity)
+        .background {
+            LinearGradient(
+                colors: [
+                    Color.appBackground.opacity(0),
+                    Color.appBackground.opacity(0.8),
+                    Color.appBackground
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+        }
         .animation(.spring(response: 0.35), value: sortStore.canUndo)
     }
     

@@ -34,6 +34,11 @@ struct HeartAnimationView: View {
                 .opacity(opacity)
                 .shadow(color: .favoriteColor.opacity(0.5), radius: 20, x: 0, y: 0)
         }
+        .onAppear {
+            if isAnimating {
+                performAnimation()
+            }
+        }
         .onChange(of: isAnimating) { _, newValue in
             if newValue {
                 performAnimation()
