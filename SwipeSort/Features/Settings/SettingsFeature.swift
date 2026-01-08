@@ -32,6 +32,9 @@ struct SettingsFeature: View {
                     // Data Management
                     dataCard
                     
+                    // Support
+                    supportCard
+                    
                     // About
                     aboutCard
                 }
@@ -236,6 +239,93 @@ struct SettingsFeature: View {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.white.opacity(0.3))
+                }
+            }
+        }
+        .padding(20)
+        .glassCard()
+    }
+    
+    // MARK: - Support Card
+    
+    private var supportCard: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("サポート")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .textCase(.uppercase)
+                    .tracking(1)
+                Spacer()
+            }
+            
+            VStack(spacing: 0) {
+                // Contact / Feedback
+                Link(destination: URL(string: "mailto:support@example.com?subject=SwipeSort%20Feedback")!) {
+                    SettingsRow(
+                        icon: "envelope",
+                        iconColor: .cyan,
+                        title: "お問い合わせ・フィードバック",
+                        showChevron: true,
+                        isExternal: true
+                    )
+                }
+                
+                Divider()
+                    .background(.white.opacity(0.1))
+                    .padding(.leading, 48)
+                
+                // Rate on App Store
+                Link(destination: URL(string: "https://apps.apple.com/app/id000000000?action=write-review")!) {
+                    SettingsRow(
+                        icon: "star",
+                        iconColor: .yellow,
+                        title: "レビューを書く",
+                        showChevron: true,
+                        isExternal: true
+                    )
+                }
+                
+                Divider()
+                    .background(.white.opacity(0.1))
+                    .padding(.leading, 48)
+                
+                // Donate / Tip
+                Button {
+                    // TODO: Implement StoreKit tip jar
+                } label: {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.pink, .orange],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(.white)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("開発者をサポート")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.white)
+                            Text("チップで応援する")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.white.opacity(0.5))
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.3))
+                    }
+                    .padding(.vertical, 8)
                 }
             }
         }
