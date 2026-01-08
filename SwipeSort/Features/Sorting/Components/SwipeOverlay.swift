@@ -74,24 +74,6 @@ struct SwipeOverlay: View {
                 Spacer()
             }
             
-        case .up:
-            VStack {
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .favoriteColor.opacity(glowOpacity), location: 0),
-                                .init(color: .favoriteColor.opacity(glowOpacity * 0.5), location: 0.3),
-                                .init(color: .clear, location: 1)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(height: geometry.size.height * 0.35)
-                Spacer()
-            }
-            
         case .none:
             EmptyView()
         }
@@ -114,13 +96,6 @@ struct SwipeOverlay: View {
                 icon: "trash.fill",
                 color: .deleteColor,
                 position: CGPoint(x: 50, y: geometry.size.height / 2)
-            )
-            
-        case .up:
-            iconBubble(
-                icon: "heart.fill",
-                color: .favoriteColor,
-                position: CGPoint(x: geometry.size.width / 2, y: 70)
             )
             
         case .none:
@@ -165,14 +140,6 @@ struct SwipeOverlay: View {
     ZStack {
         Color.appBackground
         SwipeOverlay(direction: .left, progress: 0.8)
-    }
-    .ignoresSafeArea()
-}
-
-#Preview("Favorite") {
-    ZStack {
-        Color.appBackground
-        SwipeOverlay(direction: .up, progress: 0.8)
     }
     .ignoresSafeArea()
 }

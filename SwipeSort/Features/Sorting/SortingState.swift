@@ -46,6 +46,10 @@ final class SortingState {
     var isAnimatingOut: Bool = false
     var imageOpacity: Double = 1.0
     
+    // MARK: - Double Tap (Favorite)
+    
+    var showHeartAnimation: Bool = false
+    
     // MARK: - Computed
     
     var swipeProgress: Double {

@@ -27,6 +27,7 @@
 		AA000023 /* MediaBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000024 /* MediaBadge.swift */; };
 		AA000025 /* LivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* LivePhotoView.swift */; };
 		AA000027 /* BurstSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000028 /* BurstSelectorView.swift */; };
+		AA000029 /* HeartAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* HeartAnimation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		AA000024 /* MediaBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBadge.swift; sourceTree = "<group>"; };
 		AA000026 /* LivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoView.swift; sourceTree = "<group>"; };
 		AA000028 /* BurstSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurstSelectorView.swift; sourceTree = "<group>"; };
+		AA00002A /* HeartAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartAnimation.swift; sourceTree = "<group>"; };
 		AA000030 /* SwipeSort.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwipeSort.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -209,6 +211,7 @@
 				AA000024 /* MediaBadge.swift */,
 				AA000026 /* LivePhotoView.swift */,
 				AA000028 /* BurstSelectorView.swift */,
+				AA00002A /* HeartAnimation.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -303,6 +306,7 @@
 				AA000023 /* MediaBadge.swift in Sources */,
 				AA000025 /* LivePhotoView.swift in Sources */,
 				AA000027 /* BurstSelectorView.swift in Sources */,
+				AA000029 /* HeartAnimation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

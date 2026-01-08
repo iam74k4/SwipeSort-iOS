@@ -121,14 +121,6 @@ struct SortingFeature: View {
                     endRadius: 400
                 )
                 .animation(.easeOut(duration: 0.2), value: state.swipeDirection)
-            case .up:
-                RadialGradient(
-                    colors: [.favoriteColor.opacity(0.15), .clear],
-                    center: .top,
-                    startRadius: 0,
-                    endRadius: 400
-                )
-                .animation(.easeOut(duration: 0.2), value: state.swipeDirection)
             case .none:
                 Color.clear
             }
@@ -147,6 +139,11 @@ struct SortingFeature: View {
             SwipeOverlay(direction: state.swipeDirection, progress: state.swipeProgress)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
+            
+            // Heart animation for double tap
+            if state.showHeartAnimation {
+                HeartAnimationView(isAnimating: $state.showHeartAnimation)
+            }
             
             // UI Chrome
             VStack(spacing: 0) {
@@ -180,6 +177,9 @@ struct SortingFeature: View {
                 .offset(state.offset)
                 .scaleEffect(cardScale)
                 .rotationEffect(.degrees(cardRotation))
+                .onTapGesture(count: 2) {
+                    performFavorite()
+                }
                 .gesture(dragGesture)
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.75), value: state.offset)
@@ -285,9 +285,6 @@ struct SortingFeature: View {
                 case .left:
                     StampView(text: "DELETE", color: .deleteColor, rotation: 15)
                         .position(x: cardWidth * 0.8, y: cardHeight * 0.1)
-                case .up:
-                    StampView(text: "♥", color: .favoriteColor, rotation: 0)
-                        .position(x: cardWidth * 0.5, y: cardHeight * 0.1)
                 case .none:
                     EmptyView()
                 }
@@ -397,22 +394,17 @@ struct SortingFeature: View {
                     state.swipeDirection = .right
                 } else if value.translation.width < -SwipeThreshold.detectionStart {
                     state.swipeDirection = .left
-                } else if value.translation.height < -SwipeThreshold.detectionStart {
-                    state.swipeDirection = .up
                 } else {
                     state.swipeDirection = .none
                 }
             }
             .onEnded { value in
                 let horizontal = value.translation.width
-                let vertical = value.translation.height
                 
                 if horizontal > SwipeThreshold.horizontal {
                     completeSwipe(direction: .right)
                 } else if horizontal < -SwipeThreshold.horizontal {
                     completeSwipe(direction: .left)
-                } else if vertical < -SwipeThreshold.vertical {
-                    completeSwipe(direction: .up)
                 } else {
                     resetPosition()
                 }
@@ -434,8 +426,6 @@ struct SortingFeature: View {
                 state.offset = CGSize(width: 500, height: 50)
             case .left:
                 state.offset = CGSize(width: -500, height: 50)
-            case .up:
-                state.offset = CGSize(width: 0, height: -600)
             case .none:
                 break
             }
@@ -474,13 +464,7 @@ struct SortingFeature: View {
             HapticFeedback.impact(.medium)
         case .delete:
             HapticFeedback.impact(.heavy)
-        case .favorite:
-            HapticFeedback.notification(.success)
-            // Add to iOS Favorites album
-            Task {
-                try? await photoLibrary.setFavorite(asset.asset, isFavorite: true)
-            }
-        case .unsorted:
+        case .favorite, .unsorted:
             break
         }
         
@@ -491,6 +475,58 @@ struct SortingFeature: View {
         
         if state.unsortedAssets.isEmpty {
             state.isComplete = true
+        }
+    }
+    
+    private func performFavorite() {
+        guard let asset = state.currentAsset, !state.isAnimatingOut else { return }
+        
+        // Show heart animation
+        state.showHeartAnimation = true
+        HapticFeedback.notification(.success)
+        
+        // Add to favorites
+        sortStore.addOrUpdate(assetID: asset.id, category: .favorite)
+        
+        // Add to iOS Favorites album
+        Task {
+            try? await photoLibrary.setFavorite(asset.asset, isFavorite: true)
+        }
+        
+        // Animate out after heart animation
+        Task {
+            try? await Task.sleep(for: .milliseconds(600))
+            
+            await preloadNextImage()
+            
+            state.isAnimatingOut = true
+            
+            withAnimation(.easeOut(duration: 0.25)) {
+                state.imageOpacity = 0
+            }
+            
+            try? await Task.sleep(for: .milliseconds(250))
+            
+            // Move to next
+            state.unsortedAssets.removeAll { $0.id == asset.id }
+            state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+            state.sortedCount += 1
+            state.updateCurrentAsset()
+            
+            if state.unsortedAssets.isEmpty {
+                state.isComplete = true
+            }
+            
+            if let next = state.nextImage {
+                state.currentImage = next
+                state.nextImage = nil
+            }
+            
+            state.isAnimatingOut = false
+            
+            withAnimation(.easeIn(duration: 0.2)) {
+                state.imageOpacity = 1.0
+            }
         }
     }
     

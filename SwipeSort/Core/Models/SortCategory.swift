@@ -46,14 +46,12 @@ enum SortCategory: String, Codable, CaseIterable, Sendable {
 enum SwipeDirection: String, Codable, Sendable {
     case left   // Delete
     case right  // Keep
-    case up     // Favorite
     case none
     
     var category: SortCategory {
         switch self {
         case .left: return .delete
         case .right: return .keep
-        case .up: return .favorite
         case .none: return .unsorted
         }
     }

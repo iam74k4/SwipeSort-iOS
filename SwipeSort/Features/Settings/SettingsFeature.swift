@@ -145,8 +145,8 @@ struct SettingsFeature: View {
                     color: .deleteColor
                 )
                 GestureRow(
-                    icon: "arrow.up",
-                    direction: "上スワイプ",
+                    icon: "hand.tap.fill",
+                    direction: "ダブルタップ",
                     action: "お気に入り",
                     color: .favoriteColor
                 )
@@ -460,9 +460,9 @@ struct AboutView: View {
                                     description: "削除候補"
                                 )
                                 InstructionRow(
-                                    icon: "arrow.up.circle.fill",
+                                    icon: "heart.circle.fill",
                                     color: .favoriteColor,
-                                    text: "上スワイプ",
+                                    text: "ダブルタップ",
                                     description: "お気に入り"
                                 )
                             }
