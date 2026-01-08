@@ -134,6 +134,7 @@ struct SortingFeature: View {
         VStack(spacing: 0) {
             // Top bar
             topBar(asset: asset, geometry: geometry)
+                .background(Color.appBackground)
             
             // Photo card area
             ZStack {
@@ -149,9 +150,11 @@ struct SortingFeature: View {
                 }
             }
             .frame(maxHeight: .infinity)
+            .clipped()
             
             // Bottom section
             bottomSection(asset: asset, geometry: geometry)
+                .background(Color.appBackground)
         }
     }
     
@@ -159,8 +162,8 @@ struct SortingFeature: View {
     
     private func photoCardStack(in geometry: GeometryProxy) -> some View {
         GeometryReader { cardGeometry in
-            let cardWidth = cardGeometry.size.width - 24
-            let cardHeight = cardGeometry.size.height - 16
+            let cardWidth = cardGeometry.size.width - 32
+            let cardHeight = cardGeometry.size.height - 24
             
             ZStack {
                 // Next card preview (behind)
@@ -184,6 +187,8 @@ struct SortingFeature: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 4)
         .animation(.spring(response: 0.35, dampingFraction: 0.75), value: state.offset)
     }
     
@@ -338,8 +343,7 @@ struct SortingFeature: View {
             ProgressPill(current: sortStore.totalSortedCount + 1, total: state.totalCount)
         }
         .padding(.horizontal, 16)
-        .padding(.top, geometry.safeAreaInsets.top + 8)
-        .padding(.bottom, 8)
+        .padding(.vertical, 12)
     }
     
     // MARK: - Bottom Section
@@ -358,8 +362,7 @@ struct SortingFeature: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, geometry.safeAreaInsets.bottom + 12)
+        .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .animation(.spring(response: 0.35), value: sortStore.canUndo)
     }
