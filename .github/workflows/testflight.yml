@@ -116,4 +116,7 @@ jobs:
             --file "$EXPORT_PATH/$SCHEME.ipa" \
             --apiKey "$APPSTORE_KEY_ID" \
             --apiIssuer "$APPSTORE_ISSUER_ID" \
-            --verbose
+            --verbose || {
+              echo "Upload failed, checking error..."
+              exit 1
+            }
