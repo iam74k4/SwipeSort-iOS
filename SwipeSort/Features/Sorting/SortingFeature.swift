@@ -162,14 +162,14 @@ struct SortingFeature: View {
         ZStack {
             // Next card preview (behind)
             if state.unsortedAssets.count > 1 {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color.white.opacity(0.03))
                     .frame(
-                        width: geometry.size.width - 48,
-                        height: geometry.size.height * 0.65
+                        width: geometry.size.width - 24,
+                        height: geometry.size.height * 0.78
                     )
-                    .offset(y: 8)
-                    .scaleEffect(0.95)
+                    .offset(y: 6)
+                    .scaleEffect(0.97)
             }
             
             // Current photo card
@@ -194,17 +194,17 @@ struct SortingFeature: View {
     }
     
     private func photoCard(in geometry: GeometryProxy) -> some View {
-        let cardWidth = geometry.size.width - 32
-        let cardHeight = geometry.size.height * 0.65
+        let cardWidth = geometry.size.width - 16
+        let cardHeight = geometry.size.height * 0.78
         
         return ZStack {
             // Card background
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white.opacity(0.05))
             
             // Photo content (Live Photo or regular)
             photoContentView
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             
             // Media type badges (top-left)
             if let asset = state.currentAsset {
@@ -338,15 +338,15 @@ struct SortingFeature: View {
             // Progress
             ProgressPill(current: state.sortedCount + 1, total: state.totalCount)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, geometry.safeAreaInsets.top + 8)
-        .padding(.bottom, 12)
+        .padding(.horizontal, 12)
+        .padding(.top, geometry.safeAreaInsets.top + 4)
+        .padding(.bottom, 8)
     }
     
     // MARK: - Bottom Section
     
     private func bottomSection(asset: PhotoAsset, geometry: GeometryProxy) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             // Video indicator
             if asset.isVideo {
                 VideoChip(duration: asset.formattedDuration)
@@ -358,8 +358,8 @@ struct SortingFeature: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
+        .padding(.horizontal, 12)
+        .padding(.bottom, geometry.safeAreaInsets.bottom + 12)
         .animation(.spring(response: 0.35), value: sortStore.canUndo)
     }
     
