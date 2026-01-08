@@ -358,16 +358,14 @@ struct SortingFeature: View {
                 VideoChip(duration: asset.formattedDuration)
             }
             
-            // Undo button
-            if sortStore.canUndo {
-                undoButton
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+            // Undo button (always reserve space to prevent layout shift)
+            undoButton
+                .opacity(sortStore.canUndo ? 1 : 0)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
-        .animation(.spring(response: 0.35), value: sortStore.canUndo)
+        .animation(.easeInOut(duration: 0.2), value: sortStore.canUndo)
     }
     
     // MARK: - Undo Button
