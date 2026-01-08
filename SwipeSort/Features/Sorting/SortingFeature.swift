@@ -336,7 +336,7 @@ struct SortingFeature: View {
             Spacer()
             
             // Progress
-            ProgressPill(current: state.sortedCount + 1, total: state.totalCount)
+            ProgressPill(current: sortStore.totalSortedCount + 1, total: state.totalCount)
         }
         .padding(.horizontal, 12)
         .padding(.top, geometry.safeAreaInsets.top + 4)
@@ -470,7 +470,6 @@ struct SortingFeature: View {
         
         state.unsortedAssets.removeAll { $0.id == asset.id }
         state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
-        state.sortedCount += 1  // Update sorted count
         state.updateCurrentAsset()
         
         if state.unsortedAssets.isEmpty {
@@ -510,7 +509,6 @@ struct SortingFeature: View {
             // Move to next
             state.unsortedAssets.removeAll { $0.id == asset.id }
             state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
-            state.sortedCount += 1
             state.updateCurrentAsset()
             
             if state.unsortedAssets.isEmpty {
@@ -547,7 +545,6 @@ struct SortingFeature: View {
                 
                 state.unsortedAssets.insert(asset, at: 0)
                 state.currentIndex = 0
-                state.sortedCount = max(0, state.sortedCount - 1)  // Decrement sorted count
                 state.updateCurrentAsset()
                 state.isComplete = false
             }
@@ -579,7 +576,6 @@ struct SortingFeature: View {
         
         state.unsortedAssets = allAssets.filter { !sortedIDs.contains($0.id) }
         state.totalCount = allAssets.count
-        state.sortedCount = sortedIDs.count
         state.updateCurrentAsset()
         
         state.isComplete = state.unsortedAssets.isEmpty

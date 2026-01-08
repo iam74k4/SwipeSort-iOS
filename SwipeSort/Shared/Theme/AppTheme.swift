@@ -122,6 +122,5 @@ enum HapticFeedback {
 
 enum SwipeThreshold {
     static let horizontal: CGFloat = 120
-    static let vertical: CGFloat = 120
     static let detectionStart: CGFloat = 50
 }

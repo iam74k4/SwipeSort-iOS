@@ -248,7 +248,7 @@ struct ReviewFeature: View {
         case .delete:
             return ("trash.slash", "削除候補はありません", "左にスワイプした写真がここに表示されます")
         case .favorite:
-            return ("heart.slash", "お気に入りはありません", "上にスワイプした写真がここに表示されます")
+            return ("heart.slash", "お気に入りはありません", "ダブルタップした写真がここに表示されます")
         }
     }
     

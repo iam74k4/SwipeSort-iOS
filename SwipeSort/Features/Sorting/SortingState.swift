@@ -17,7 +17,6 @@ final class SortingState {
     var currentAsset: PhotoAsset?
     
     var totalCount: Int = 0
-    var sortedCount: Int = 0
     
     var isComplete: Bool = false
     
@@ -54,8 +53,7 @@ final class SortingState {
     
     var swipeProgress: Double {
         let horizontal = abs(offset.width) / SwipeThreshold.horizontal
-        let vertical = abs(offset.height) / SwipeThreshold.vertical
-        return min(max(horizontal, vertical), 1.0)
+        return min(horizontal, 1.0)
     }
     
     var remainingCount: Int {
