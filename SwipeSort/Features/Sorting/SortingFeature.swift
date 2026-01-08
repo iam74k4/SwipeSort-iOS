@@ -131,56 +131,58 @@ struct SortingFeature: View {
     // MARK: - Photo Viewer Content
     
     private func photoViewerContent(for asset: PhotoAsset, in geometry: GeometryProxy) -> some View {
-        ZStack {
-            // Photo card stack
-            photoCardStack(in: geometry)
+        VStack(spacing: 0) {
+            // Top bar
+            topBar(asset: asset, geometry: geometry)
             
-            // Swipe indicator
-            SwipeOverlay(direction: state.swipeDirection, progress: state.swipeProgress)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-            
-            // Heart animation for double tap
-            if state.showHeartAnimation {
-                HeartAnimationView(isAnimating: $state.showHeartAnimation)
-            }
-            
-            // UI Chrome
-            VStack(spacing: 0) {
-                topBar(asset: asset, geometry: geometry)
+            // Photo card area
+            ZStack {
+                photoCardStack(in: geometry)
                 
-                Spacer()
+                // Swipe indicator
+                SwipeOverlay(direction: state.swipeDirection, progress: state.swipeProgress)
+                    .allowsHitTesting(false)
                 
-                bottomSection(asset: asset, geometry: geometry)
+                // Heart animation for double tap
+                if state.showHeartAnimation {
+                    HeartAnimationView(isAnimating: $state.showHeartAnimation)
+                }
             }
+            .frame(maxHeight: .infinity)
+            
+            // Bottom section
+            bottomSection(asset: asset, geometry: geometry)
         }
     }
     
     // MARK: - Photo Card Stack
     
     private func photoCardStack(in geometry: GeometryProxy) -> some View {
-        ZStack {
-            // Next card preview (behind)
-            if state.unsortedAssets.count > 1 {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(0.03))
-                    .frame(
-                        width: geometry.size.width - 24,
-                        height: geometry.size.height * 0.78
-                    )
-                    .offset(y: 6)
-                    .scaleEffect(0.97)
-            }
+        GeometryReader { cardGeometry in
+            let cardWidth = cardGeometry.size.width - 24
+            let cardHeight = cardGeometry.size.height - 16
             
-            // Current photo card
-            photoCard(in: geometry)
-                .offset(state.offset)
-                .scaleEffect(cardScale)
-                .rotationEffect(.degrees(cardRotation))
-                .onTapGesture(count: 2) {
-                    performFavorite()
+            ZStack {
+                // Next card preview (behind)
+                if state.unsortedAssets.count > 1 {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color.white.opacity(0.03))
+                        .frame(width: cardWidth, height: cardHeight)
+                        .offset(y: 6)
+                        .scaleEffect(0.97)
                 }
-                .gesture(dragGesture)
+                
+                // Current photo card
+                photoCard(width: cardWidth, height: cardHeight)
+                    .offset(state.offset)
+                    .scaleEffect(cardScale)
+                    .rotationEffect(.degrees(cardRotation))
+                    .onTapGesture(count: 2) {
+                        performFavorite()
+                    }
+                    .gesture(dragGesture)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.75), value: state.offset)
     }
@@ -193,11 +195,8 @@ struct SortingFeature: View {
         Double(state.offset.width) / 25
     }
     
-    private func photoCard(in geometry: GeometryProxy) -> some View {
-        let cardWidth = geometry.size.width - 16
-        let cardHeight = geometry.size.height * 0.78
-        
-        return ZStack {
+    private func photoCard(width cardWidth: CGFloat, height cardHeight: CGFloat) -> some View {
+        ZStack {
             // Card background
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white.opacity(0.05))
@@ -340,19 +339,7 @@ struct SortingFeature: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, geometry.safeAreaInsets.top + 8)
-        .padding(.bottom, 12)
-        .background {
-            LinearGradient(
-                colors: [
-                    Color.appBackground,
-                    Color.appBackground.opacity(0.9),
-                    Color.appBackground.opacity(0)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .top)
-        }
+        .padding(.bottom, 8)
     }
     
     // MARK: - Bottom Section
@@ -371,21 +358,9 @@ struct SortingFeature: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, geometry.safeAreaInsets.bottom + 16)
+        .padding(.top, 8)
+        .padding(.bottom, geometry.safeAreaInsets.bottom + 12)
         .frame(maxWidth: .infinity)
-        .background {
-            LinearGradient(
-                colors: [
-                    Color.appBackground.opacity(0),
-                    Color.appBackground.opacity(0.8),
-                    Color.appBackground
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
-        }
         .animation(.spring(response: 0.35), value: sortStore.canUndo)
     }
     
