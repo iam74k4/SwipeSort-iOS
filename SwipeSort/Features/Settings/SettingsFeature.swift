@@ -15,6 +15,7 @@ struct SettingsFeature: View {
     
     @State private var showResetConfirmation = false
     @State private var showAbout = false
+    @State private var showTipJar = false
     
     var body: some View {
         NavigationStack {
@@ -61,6 +62,9 @@ struct SettingsFeature: View {
             }
             .sheet(isPresented: $showAbout) {
                 AboutView()
+            }
+            .sheet(isPresented: $showTipJar) {
+                TipJarView()
             }
         }
         .preferredColorScheme(.dark)
@@ -261,7 +265,7 @@ struct SettingsFeature: View {
             
             VStack(spacing: 0) {
                 // Contact / Feedback
-                Link(destination: URL(string: "mailto:support@example.com?subject=SwipeSort%20Feedback")!) {
+                Link(destination: URL(string: "mailto:iam74k4@gmail.com?subject=SwipeSort%20Feedback")!) {
                     SettingsRow(
                         icon: "envelope",
                         iconColor: .cyan,
@@ -292,7 +296,7 @@ struct SettingsFeature: View {
                 
                 // Donate / Tip
                 Button {
-                    // TODO: Implement StoreKit tip jar
+                    showTipJar = true
                 } label: {
                     HStack(spacing: 12) {
                         ZStack {
