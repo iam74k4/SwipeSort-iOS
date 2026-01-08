@@ -1,0 +1,130 @@
+{
+  "identifier" : "F8A4E2B1-1234-5678-9ABC-DEF012345678",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "120",
+      "familyShareable" : false,
+      "internalID" : "tip_small",
+      "localizations" : [
+        {
+          "description" : "開発者にコーヒー1杯を奢る",
+          "displayName" : "☕ コーヒー1杯",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Buy the developer a coffee",
+          "displayName" : "☕ Small Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.swipesort.tip.small",
+      "referenceName" : "Small Tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "320",
+      "familyShareable" : false,
+      "internalID" : "tip_medium",
+      "localizations" : [
+        {
+          "description" : "開発者にケーキセットを奢る",
+          "displayName" : "🍰 ケーキセット",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Buy the developer a cake set",
+          "displayName" : "🍰 Medium Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.swipesort.tip.medium",
+      "referenceName" : "Medium Tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "980",
+      "familyShareable" : false,
+      "internalID" : "tip_large",
+      "localizations" : [
+        {
+          "description" : "開発者にディナーを奢る",
+          "displayName" : "🍽️ ディナー",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Buy the developer a dinner",
+          "displayName" : "🍽️ Large Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.swipesort.tip.large",
+      "referenceName" : "Large Tip",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1234567890",
+    "_developerTeamID" : "XXXXXXXXXX",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 759033600,
+    "_locale" : "ja",
+    "_storefront" : "JPN",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
