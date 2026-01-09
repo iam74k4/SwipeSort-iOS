@@ -219,12 +219,36 @@ jobs:
             echo "Build directory contents:"
             ls -la build/ || echo "Build directory does not exist"
             echo ""
+            
+            # Check for certificate/provisioning errors
+            if grep -q "maximum number of certificates" build.log; then
+              echo "⚠️  CERTIFICATE ERROR DETECTED:"
+              echo "Your account has reached the maximum number of certificates."
+              echo ""
+              echo "To fix this:"
+              echo "1. Go to https://developer.apple.com/account/resources/certificates/list"
+              echo "2. Review and revoke unused certificates (especially 'iOS Distribution' type)"
+              echo "3. Retry the build"
+              echo ""
+            fi
+            
+            if grep -q "No profiles for" build.log; then
+              echo "⚠️  PROVISIONING PROFILE ERROR DETECTED:"
+              echo "No provisioning profiles found for 'com.swipesort.app'"
+              echo ""
+              echo "This usually happens when:"
+              echo "1. Certificate limit is reached (see above)"
+              echo "2. App Store Connect API key doesn't have proper permissions"
+              echo "3. Bundle ID is not registered in App Store Connect"
+              echo ""
+            fi
+            
             echo "==================== FULL BUILD LOG ===================="
             cat build.log
             echo "========================================================="
             echo ""
             echo "Checking for specific errors:"
-            grep -i "error\|failed\|signing\|provision" build.log | tail -50 || echo "No specific errors found in log"
+            grep -i "error\|failed\|signing\|provision\|certificate" build.log | tail -50 || echo "No specific errors found in log"
             set -e
             exit 1
           fi
