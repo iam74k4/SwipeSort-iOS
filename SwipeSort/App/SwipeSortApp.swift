@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-@available(iOS 26.0, *)
+@available(iOS 18.0, *)
 struct SwipeSortApp: App {
     var body: some Scene {
         WindowGroup {

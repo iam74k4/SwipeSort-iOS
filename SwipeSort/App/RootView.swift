@@ -8,7 +8,7 @@
 import SwiftUI
 @preconcurrency import Photos
 
-@available(iOS 26.0, *)
+@available(iOS 18.0, *)
 struct RootView: View {
     @State private var appState = AppState()
     @State private var photoLibrary = PhotoLibraryClient()
