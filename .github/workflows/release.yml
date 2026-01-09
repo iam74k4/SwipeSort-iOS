@@ -19,7 +19,7 @@ env:
   PROJECT: SwipeSort.xcodeproj
   ARCHIVE_PATH: build/SwipeSort.xcarchive
   EXPORT_PATH: build/export
-  XCODE_VERSION: '26.2'
+  XCODE_VERSION: '26.1.1'
 
 jobs:
   build-and-release:
