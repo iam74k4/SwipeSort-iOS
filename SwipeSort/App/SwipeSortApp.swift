@@ -2,7 +2,7 @@
 //  SwipeSortApp.swift
 //  SwipeSort
 //
-//  iOS 26.0+ Photo Sorting App
+//  iOS 18.0+ Photo Sorting App
 //
 
 import SwiftUI

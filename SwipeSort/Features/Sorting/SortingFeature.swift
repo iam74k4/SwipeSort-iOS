@@ -288,10 +288,10 @@ struct SortingFeature: View {
                 switch state.swipeDirection {
                 case .right:
                     StampView(text: "KEEP", color: .keepColor, rotation: -15)
-                        .position(x: cardWidth * 0.25, y: cardHeight * 0.18)
+                        .position(x: cardWidth * 0.35, y: cardHeight * 0.18)
                 case .left:
                     StampView(text: "DELETE", color: .deleteColor, rotation: 15)
-                        .position(x: cardWidth * 0.75, y: cardHeight * 0.18)
+                        .position(x: cardWidth * 0.65, y: cardHeight * 0.18)
                 case .none:
                     EmptyView()
                 }

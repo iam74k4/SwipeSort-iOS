@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -65,10 +65,8 @@
 /* Begin PBXFrameworksBuildPhase section */
 		AA000040 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -80,6 +78,7 @@
 				AA000052 /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		AA000051 /* SwipeSort */ = {
 			isa = PBXGroup;
@@ -122,14 +121,6 @@
 				AA000060A /* Store */,
 			);
 			path = Core;
-			sourceTree = "<group>";
-		};
-		AA000060A /* Store */ = {
-			isa = PBXGroup;
-			children = (
-				AA00002E /* TipStore.swift */,
-			);
-			path = Store;
 			sourceTree = "<group>";
 		};
 		AA000055 /* Features */ = {
@@ -233,6 +224,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		AA000060A /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				AA00002E /* TipStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -245,8 +244,6 @@
 				AA000062 /* Resources */,
 			);
 			buildRules = (
-			);
-			dependencies = (
 			);
 			name = SwipeSort;
 			productName = SwipeSort;
@@ -269,7 +266,6 @@
 				};
 			};
 			buildConfigurationList = AA000081 /* Build configuration list for PBXProject "SwipeSort" */;
-			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -279,6 +275,7 @@
 			);
 			mainGroup = AA000050;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 90;
 			productRefGroup = AA000052 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -291,19 +288,16 @@
 /* Begin PBXResourcesBuildPhase section */
 		AA000062 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				AA000003 /* Assets.xcassets in Resources */,
 				AA00002F /* Configuration.storekit in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AA000061 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				AA000001 /* SwipeSortApp.swift in Sources */,
 				AA000002 /* RootView.swift in Sources */,
@@ -328,12 +322,11 @@
 				AA00002B /* TipJarView.swift in Sources */,
 				AA00002D /* TipStore.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		AA000090 /* Debug */ = {
+		AA000090 /* Debug configuration for PBXProject "SwipeSort" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -398,7 +391,7 @@
 			};
 			name = Debug;
 		};
-		AA000091 /* Release */ = {
+		AA000091 /* Release configuration for PBXProject "SwipeSort" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -451,12 +444,13 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		AA000092 /* Debug */ = {
+		AA000092 /* Debug configuration for PBXNativeTarget "SwipeSort" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -464,7 +458,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = NL9ZXK2SGR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SwipeSort/Info.plist;
@@ -484,13 +478,15 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
-		AA000093 /* Release */ = {
+		AA000093 /* Release configuration for PBXNativeTarget "SwipeSort" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -498,7 +494,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = NL9ZXK2SGR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SwipeSort/Info.plist;
@@ -518,9 +514,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -530,19 +528,17 @@
 		AA000070 /* Build configuration list for PBXNativeTarget "SwipeSort" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AA000092 /* Debug */,
-				AA000093 /* Release */,
+				AA000092 /* Debug configuration for PBXNativeTarget "SwipeSort" */,
+				AA000093 /* Release configuration for PBXNativeTarget "SwipeSort" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		AA000081 /* Build configuration list for PBXProject "SwipeSort" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AA000090 /* Debug */,
-				AA000091 /* Release */,
+				AA000090 /* Debug configuration for PBXProject "SwipeSort" */,
+				AA000091 /* Release configuration for PBXProject "SwipeSort" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

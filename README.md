@@ -51,7 +51,7 @@ SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete cand
 ## Requirements
 
 - iOS 18.0 or later
-- iPhone / iPad (Universal)
+- iPhone only
 - Portrait orientation only
 
 ## Installation
