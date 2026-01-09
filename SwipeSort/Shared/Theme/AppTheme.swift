@@ -56,7 +56,6 @@ extension LinearGradient {
 
 extension View {
     /// Apply Liquid Glass effect background (iOS 26+)
-    @available(iOS 18.0, *)
     func liquidGlass(cornerRadius: CGFloat = 20) -> some View {
         self
             .background {
@@ -66,7 +65,6 @@ extension View {
     }
     
     /// Apply glass card style for settings and content cards
-    @available(iOS 18.0, *)
     func glassCard(cornerRadius: CGFloat = 20) -> some View {
         self
             .background {
@@ -76,7 +74,6 @@ extension View {
     }
     
     /// Apply glass pill style for buttons and badges
-    @available(iOS 18.0, *)
     func glassPill() -> some View {
         self
             .background {

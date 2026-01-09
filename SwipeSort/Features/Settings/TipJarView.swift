@@ -8,7 +8,6 @@
 import SwiftUI
 import StoreKit
 
-@available(iOS 18.0, *)
 struct TipJarView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tipStore = TipStore()
@@ -183,7 +182,6 @@ struct TipJarView: View {
 
 // MARK: - Tip Button
 
-@available(iOS 18.0, *)
 struct TipButton: View {
     let product: Product
     let tipProduct: TipProduct?

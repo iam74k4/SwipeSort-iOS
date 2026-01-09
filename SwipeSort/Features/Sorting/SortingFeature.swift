@@ -9,7 +9,6 @@ import SwiftUI
 @preconcurrency import Photos
 import PhotosUI
 
-@available(iOS 18.0, *)
 struct SortingFeature: View {
     @Bindable var photoLibrary: PhotoLibraryClient
     @Bindable var sortStore: SortResultStore
@@ -749,7 +748,6 @@ struct SortingFeature: View {
 
 // MARK: - Supporting Views
 
-@available(iOS 18.0, *)
 struct StatPill: View {
     let count: Int
     let color: Color
@@ -772,7 +770,6 @@ struct StatPill: View {
     }
 }
 
-@available(iOS 18.0, *)
 struct ProgressPill: View {
     let current: Int
     let total: Int
@@ -796,7 +793,6 @@ struct ProgressPill: View {
     }
 }
 
-@available(iOS 18.0, *)
 struct VideoChip: View {
     let duration: String
     

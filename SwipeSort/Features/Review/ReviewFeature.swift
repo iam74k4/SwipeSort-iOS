@@ -8,7 +8,6 @@
 import SwiftUI
 @preconcurrency import Photos
 
-@available(iOS 18.0, *)
 struct ReviewFeature: View {
     @Bindable var photoLibrary: PhotoLibraryClient
     @Bindable var sortStore: SortResultStore
@@ -514,7 +513,6 @@ struct ReviewFeature: View {
 
 // MARK: - Review Grid Item
 
-@available(iOS 18.0, *)
 struct ReviewGridItem: View {
     let item: PhotoAsset
     let isSelected: Bool
@@ -586,7 +584,6 @@ struct ReviewGridItem: View {
 
 // MARK: - Review Stat Badge
 
-@available(iOS 18.0, *)
 struct ReviewStatBadge: View {
     let icon: String
     let count: Int
