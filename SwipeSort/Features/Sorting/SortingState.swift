@@ -44,6 +44,11 @@ final class SortingState {
     var burstAssets: [PhotoAsset] = []
     var currentBurstCount: Int?
     
+    // MARK: - Delete Queue (batch delete to reduce iOS confirmation dialogs)
+    
+    var deleteQueue: [PhotoAsset] = []
+    static let batchDeleteThreshold = 5
+    
     // MARK: - Swipe State
     
     var offset: CGSize = .zero

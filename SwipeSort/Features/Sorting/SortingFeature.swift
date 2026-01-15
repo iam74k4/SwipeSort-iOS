@@ -18,6 +18,7 @@ struct SortingFeature: View {
 
     @State private var showDeleteError = false
     @State private var deleteErrorMessage = ""
+    @State private var showDeleteConfirmation = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -46,6 +47,18 @@ struct SortingFeature: View {
         } message: {
             Text(deleteErrorMessage)
         }
+        .confirmationDialog(
+            "\(state.deleteQueue.count)件を削除しますか？",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("削除", role: .destructive) {
+                Task { await flushDeleteQueue() }
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("削除された写真は「最近削除した項目」に移動します。")
+        }
     }
     
     // MARK: - Burst Selector Overlay
@@ -55,44 +68,29 @@ struct SortingFeature: View {
             burstAssets: state.burstAssets,
             photoLibrary: photoLibrary,
             onSelect: { selected, others in
-                // Keep selected, delete others immediately
+                // Keep selected, add others to delete queue
                 sortStore.addOrUpdate(assetID: selected.id, category: .keep)
                 
-                // 選択した写真のみ即座にリストから除外
+                // 選択した写真をリストから除外
                 state.unsortedAssets.removeAll { $0.id == selected.id }
                 
-                Task {
-                    if !others.isEmpty {
-                        let deleteTargets = others.map { $0.asset }
-                        do {
-                            try await photoLibrary.deleteAssets(deleteTargets)
-                            // 削除成功時のみ記録（Undo対象外）
-                            for other in others {
-                                sortStore.addOrUpdate(assetID: other.id, category: .delete, recordUndo: false)
-                                await MainActor.run {
-                                    state.unsortedAssets.removeAll { $0.id == other.id }
-                                }
-                            }
-                        } catch {
-                            deleteErrorMessage = "削除に失敗しました。写真アプリで削除状況をご確認ください。"
-                            showDeleteError = true
-                            // 削除失敗時は他の写真を一覧に残す
-                        }
-                    }
-                    
-                    await MainActor.run {
-                        state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
-                        state.updateCurrentAsset()
-                        
-                        if state.unsortedAssets.isEmpty {
-                            state.isComplete = true
-                        } else {
-                            Task { await loadCurrentImage() }
-                        }
-                    }
+                // 他の写真を削除キューに追加
+                for other in others {
+                    state.deleteQueue.append(other)
+                    state.unsortedAssets.removeAll { $0.id == other.id }
                 }
                 
+                state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+                state.updateCurrentAsset()
                 state.resetBurstSelector()
+                
+                // 自動削除は行わない（ユーザーが「削除」ボタンを押すまで待つ）
+                if state.unsortedAssets.isEmpty {
+                    state.isComplete = true
+                } else {
+                    Task { await loadCurrentImage() }
+                }
+                
                 HapticFeedback.notification(.success)
             },
             onCancel: {
@@ -232,9 +230,9 @@ struct SortingFeature: View {
     
     private func photoCard(width cardWidth: CGFloat, height cardHeight: CGFloat) -> some View {
         ZStack {
-            // Card background
+            // Card background (dark to blend with image edges)
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill(Color.black)
             
             // Photo content (Live Photo or regular)
             photoContentView
@@ -343,23 +341,32 @@ struct SortingFeature: View {
     private var photoContentView: some View {
         if state.isLoadingImage {
             ZStack {
-                Color.white.opacity(0.03)
+                Color.black
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
             }
         } else if state.isPlayingLivePhoto, let livePhoto = state.currentLivePhoto {
             // Live Photo playback
-            LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
+            ZStack {
+                Color.black
+                LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
+            }
         } else if state.isPlayingVideo, let videoItem = state.currentVideoItem {
-            VideoPlayerView(playerItem: videoItem, isPlaying: $state.isPlayingVideo)
+            ZStack {
+                Color.black
+                VideoPlayerView(playerItem: videoItem, isPlaying: $state.isPlayingVideo)
+            }
         } else if let image = state.currentImage {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
+            ZStack {
+                Color.black
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
         } else {
             ZStack {
-                Color.white.opacity(0.03)
+                Color.black
                 Image(systemName: "photo")
                     .font(.system(size: 48, weight: .thin))
                     .foregroundStyle(.white.opacity(0.2))
@@ -374,7 +381,12 @@ struct SortingFeature: View {
             // Stats
             HStack(spacing: 6) {
                 StatPill(count: sortStore.keepCount, color: .keepColor, icon: "checkmark")
-                StatPill(count: sortStore.deleteCount, color: .deleteColor, icon: "trash")
+                // 削除キューがある場合は削除待ち件数を表示
+                if state.deleteQueue.isEmpty {
+                    StatPill(count: sortStore.deleteCount, color: .deleteColor, icon: "trash")
+                } else {
+                    DeleteQueuePill(queueCount: state.deleteQueue.count, deletedCount: sortStore.deleteCount)
+                }
                 StatPill(count: sortStore.favoriteCount, color: .favoriteColor, icon: "heart.fill")
             }
             
@@ -396,14 +408,23 @@ struct SortingFeature: View {
                 VideoChip(duration: asset.formattedDuration)
             }
             
-            // Undo button (always reserve space to prevent layout shift)
-            undoButton
-                .opacity(sortStore.canUndo ? 1 : 0)
+            // Action buttons
+            HStack(spacing: 12) {
+                // Undo button
+                undoButton
+                    .opacity(sortStore.canUndo ? 1 : 0)
+                
+                // Delete queue button
+                if !state.deleteQueue.isEmpty {
+                    deleteQueueButton
+                }
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .animation(.easeInOut(duration: 0.2), value: sortStore.canUndo)
+        .animation(.easeInOut(duration: 0.2), value: state.deleteQueue.count)
     }
     
     // MARK: - Undo Button
@@ -424,6 +445,78 @@ struct SortingFeature: View {
             .glassPill()
             .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
+    }
+    
+    // MARK: - Delete Queue Button
+    
+    private var deleteQueueButton: some View {
+        HStack(spacing: 8) {
+            // Delete button
+            Button {
+                showDeleteConfirmation = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "trash.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("\(state.deleteQueue.count)件削除")
+                        .font(.system(size: 14, weight: .semibold))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.deleteColor, Color.deleteColor.opacity(0.7)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                }
+                .overlay {
+                    Capsule()
+                        .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                }
+                .shadow(color: Color.deleteColor.opacity(0.4), radius: 8, x: 0, y: 4)
+            }
+            
+            // Clear queue button
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    clearDeleteQueue()
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .frame(width: 32, height: 32)
+                    .background {
+                        Circle()
+                            .fill(Color.white.opacity(0.15))
+                    }
+            }
+        }
+    }
+    
+    private func clearDeleteQueue() {
+        // 削除キューをクリアして、アセットを未整理に戻す
+        for asset in state.deleteQueue {
+            if !state.unsortedAssets.contains(where: { $0.id == asset.id }) {
+                state.unsortedAssets.append(asset)
+            }
+        }
+        state.deleteQueue.removeAll()
+        state.isComplete = false
+        
+        // 現在のアセットを更新
+        state.currentIndex = 0
+        state.updateCurrentAsset()
+        
+        Task { await loadCurrentImage() }
+        
+        HapticFeedback.impact(.light)
     }
     
     // MARK: - Drag Gesture
@@ -506,13 +599,8 @@ struct SortingFeature: View {
             HapticFeedback.impact(.medium)
         case .delete:
             HapticFeedback.impact(.heavy)
-            let success = await deleteAsset(asset)
-            guard success else {
-                // 削除失敗時は一覧に残し、次に進まない
-                return
-            }
-            // 削除成功時のみ記録（Undo対象外）
-            sortStore.addOrUpdate(assetID: asset.id, category: .delete, recordUndo: false)
+            // キューに追加（まとめて削除でiOS確認ダイアログを減らす）
+            state.deleteQueue.append(asset)
         case .favorite, .unsorted:
             break
         }
@@ -520,6 +608,8 @@ struct SortingFeature: View {
         state.unsortedAssets.removeAll { $0.id == asset.id }
         state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
         state.updateCurrentAsset()
+        
+        // 自動削除は行わない（ユーザーが「削除」ボタンを押すまで待つ）
         
         if state.unsortedAssets.isEmpty {
             state.isComplete = true
@@ -698,6 +788,27 @@ struct SortingFeature: View {
         }
     }
     
+    /// キューに溜まった削除対象をまとめて削除（iOS確認ダイアログ1回で済む）
+    private func flushDeleteQueue() async {
+        guard !state.deleteQueue.isEmpty else { return }
+        
+        let assetsToDelete = state.deleteQueue
+        state.deleteQueue.removeAll()
+        
+        do {
+            try await photoLibrary.deleteAssets(assetsToDelete.map { $0.asset })
+            // 削除成功時のみ記録（Undo対象外）
+            for asset in assetsToDelete {
+                sortStore.addOrUpdate(assetID: asset.id, category: .delete, recordUndo: false)
+            }
+        } catch {
+            deleteErrorMessage = "\(assetsToDelete.count)件の削除に失敗しました。写真アプリで削除状況をご確認ください。"
+            showDeleteError = true
+            // 失敗した場合、アセットは既にunsortedAssetsから除外されているが、
+            // sortStoreには記録しない（実際には削除されていない可能性があるため）
+        }
+    }
+    
     private func preloadNextImage() async {
         let nextIndex = state.currentIndex + 1
         guard nextIndex < state.unsortedAssets.count else {
@@ -796,10 +907,39 @@ struct SortingFeature: View {
             // Stats
             HStack(spacing: 24) {
                 CompletedStat(count: sortStore.keepCount, label: "Keep", color: .keepColor, icon: "checkmark.circle.fill")
-                CompletedStat(count: sortStore.deleteCount, label: "削除済み", color: .deleteColor, icon: "trash.circle.fill")
+                CompletedStat(count: sortStore.deleteCount + state.deleteQueue.count, label: "削除", color: .deleteColor, icon: "trash.circle.fill")
                 CompletedStat(count: sortStore.favoriteCount, label: "お気に入り", color: .favoriteColor, icon: "heart.circle.fill")
             }
             .padding(.top, 8)
+            
+            // Delete button if queue is not empty
+            if !state.deleteQueue.isEmpty {
+                VStack(spacing: 12) {
+                    Text("\(state.deleteQueue.count)件が削除待ちです")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white.opacity(0.6))
+                    
+                    Button {
+                        showDeleteConfirmation = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("\(state.deleteQueue.count)件を削除")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.deleteColor)
+                        }
+                    }
+                    .padding(.horizontal, 40)
+                }
+                .padding(.top, 8)
+            }
         }
         .padding(32)
     }
@@ -826,6 +966,33 @@ struct StatPill: View {
         .padding(.vertical, 6)
         .background {
             Capsule().fill(Color.white.opacity(0.12))
+        }
+    }
+}
+
+@available(iOS 18.0, *)
+struct DeleteQueuePill: View {
+    let queueCount: Int
+    let deletedCount: Int
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "trash.fill")
+                .font(.system(size: 10, weight: .bold))
+            Text("\(queueCount)")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .monospacedDigit()
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background {
+            Capsule()
+                .fill(Color.deleteColor)
+        }
+        .overlay {
+            Capsule()
+                .strokeBorder(Color.white.opacity(0.3), lineWidth: 1)
         }
     }
 }
