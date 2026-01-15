@@ -1,0 +1,299 @@
+name: TestFlight
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: false
+        type: string
+
+env:
+  SCHEME: SwipeSort
+  PROJECT: SwipeSort.xcodeproj
+  ARCHIVE_PATH: build/SwipeSort.xcarchive
+  EXPORT_PATH: build/export
+  XCODE_VERSION: '26.2'
+
+jobs:
+  testflight:
+    name: Build and Upload to TestFlight
+    runs-on: macos-15
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Extract version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            # For main branch, use version from project or default
+            VERSION="1.0.0"
+          else
+            VERSION="1.0.0"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
+        shell: bash
+      
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      
+      - name: Show Xcode version
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+      
+      - name: Setup App Store Connect API Key
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          # Create API key file for App Store Connect API (required for automatic signing)
+          mkdir -p ~/.appstoreconnect/private_keys
+          mkdir -p ~/private_keys
+          
+          # Write the private key (preserving newlines)
+          printf "%s" "$APPSTORE_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          printf "%s" "$APPSTORE_PRIVATE_KEY" > ~/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          chmod 600 ~/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          
+          echo "API Key setup complete"
+          echo "Key file size:"
+          ls -la ~/.appstoreconnect/private_keys/
+          echo "Key file head (first line only):"
+          head -1 ~/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+      
+      - name: Create ExportOptions.plist
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+        run: |
+          cat > ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>destination</key>
+              <string>upload</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>teamID</key>
+              <string>${DEVELOPMENT_TEAM}</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>manageAppVersionAndBuildNumber</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          cat ExportOptions.plist
+      
+      - name: Build archive
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        continue-on-error: false
+        run: |
+          # Create build directory
+          mkdir -p build
+          
+          # Build archive with automatic signing using App Store Connect API
+          # Note: actool errors related to simulator runtime version mismatch
+          # are known CI issues and don't affect device builds
+          set +e
+          xcodebuild archive \
+            -project $PROJECT \
+            -scheme $SCHEME \
+            -archivePath $ARCHIVE_PATH \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            MARKETING_VERSION=${{ steps.version.outputs.version }} \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            CODE_SIGN_STYLE=Automatic \
+            ENABLE_PREVIEWS=NO \
+            SWIFT_OPTIMIZATION_LEVEL=-O \
+            ONLY_ACTIVE_ARCH=NO \
+            SKIP_INSTALL=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8 \
+            -authenticationKeyID "$APPSTORE_KEY_ID" \
+            -authenticationKeyIssuerID "$APPSTORE_ISSUER_ID" \
+            2>&1 | tee build.log
+          BUILD_EXIT_CODE=$?
+          
+          echo "xcodebuild exit code: $BUILD_EXIT_CODE"
+          
+          # Check if archive was created successfully
+          if [ -d "$ARCHIVE_PATH" ]; then
+            echo "✅ Archive created successfully at $ARCHIVE_PATH"
+            ls -la "$ARCHIVE_PATH"
+            if grep -q "actool.errors" build.log; then
+              echo "⚠️  actool warnings detected, but archive was created - continuing..."
+            fi
+            set -e
+            exit 0
+          else
+            # Check if the only error is actool.errors (simulator runtime version mismatch)
+            # This is a known CI issue that doesn't affect device builds
+            echo "Checking for actool.errors (simulator runtime version mismatch)..."
+            
+            # Check if actool.errors is present
+            HAS_ACTOOL_ERROR=$(grep -i "actool.errors\|No simulator runtime version" build.log | wc -l | tr -d ' ')
+            
+            if [ "$HAS_ACTOOL_ERROR" -gt "0" ]; then
+              echo "⚠️  actool.errors detected (simulator runtime version mismatch)"
+              echo "This is a known CI issue and can be ignored for device builds"
+              
+              # Count all errors excluding actool-related errors
+              ALL_ERRORS=$(grep -i "error:" build.log | wc -l | tr -d ' ')
+              ACTOOL_ERRORS=$(grep -i "error:" build.log | grep -i "actool\|simulator runtime" | wc -l | tr -d ' ')
+              NON_ACTOOL_ERRORS=$((ALL_ERRORS - ACTOOL_ERRORS))
+              
+              echo "Total errors: $ALL_ERRORS"
+              echo "actool-related errors: $ACTOOL_ERRORS"
+              echo "Non-actool errors: $NON_ACTOOL_ERRORS"
+              
+              # Check if Swift compilation succeeded (no Swift errors)
+              SWIFT_ERRORS=$(grep -i "error:" build.log | grep -i "swift" | grep -v "actool\|simulator runtime" | wc -l | tr -d ' ')
+              
+              if [ "$NON_ACTOOL_ERRORS" -eq "0" ] && [ "$SWIFT_ERRORS" -eq "0" ]; then
+                echo "✅ Only actool.errors detected - Swift compilation succeeded"
+                echo "The actool error is a known CI issue and doesn't affect device builds"
+                echo "Attempting to continue with build process..."
+                
+                # Try to find the archive in the DerivedData location
+                ARCHIVE_IN_DERIVED=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcarchive" -type d -newer build.log 2>/dev/null | head -1)
+                if [ -n "$ARCHIVE_IN_DERIVED" ] && [ -d "$ARCHIVE_IN_DERIVED" ]; then
+                  echo "✅ Found archive in DerivedData: $ARCHIVE_IN_DERIVED"
+                  mkdir -p build
+                  cp -R "$ARCHIVE_IN_DERIVED" "$ARCHIVE_PATH"
+                  echo "✅ Copied archive to $ARCHIVE_PATH"
+                  set -e
+                  exit 0
+                else
+                  # Even if archive not found, if only actool errors exist, try to proceed
+                  # The archive might have been created but not in expected location
+                  echo "⚠️  Archive not found in DerivedData, but only actool errors detected"
+                  echo "This is a known CI issue - checking if we can proceed anyway..."
+                  
+                  # Check if any .app bundle was created (indicating successful build)
+                  APP_BUNDLE=$(find ~/Library/Developer/Xcode/DerivedData -name "SwipeSort.app" -type d -newer build.log 2>/dev/null | head -1)
+                  if [ -n "$APP_BUNDLE" ] && [ -d "$APP_BUNDLE" ]; then
+                    echo "✅ Found app bundle: $APP_BUNDLE"
+                    echo "Build succeeded despite actool error - this is expected for device builds"
+                    echo "However, archive is required for IPA export - failing build"
+                    set -e
+                    exit 1
+                  else
+                    echo "❌ No app bundle found - build may have actually failed"
+                    set -e
+                    exit 1
+                  fi
+                fi
+              else
+                echo "❌ Non-actool errors detected - build actually failed"
+                echo "Swift errors: $SWIFT_ERRORS"
+                echo "Other errors: $NON_ACTOOL_ERRORS"
+              fi
+            fi
+            
+            echo "❌ Archive was not created"
+            echo "Build directory contents:"
+            ls -la build/ || echo "Build directory does not exist"
+            echo ""
+            
+            # Check for certificate/provisioning errors
+            if grep -q "maximum number of certificates" build.log; then
+              echo "⚠️  CERTIFICATE ERROR DETECTED:"
+              echo "Your account has reached the maximum number of certificates."
+              echo ""
+              echo "To fix this:"
+              echo "1. Go to https://developer.apple.com/account/resources/certificates/list"
+              echo "2. Review and revoke unused certificates (especially 'iOS Distribution' type)"
+              echo "3. Retry the build"
+              echo ""
+            fi
+            
+            if grep -q "No profiles for" build.log; then
+              echo "⚠️  PROVISIONING PROFILE ERROR DETECTED:"
+              echo "No provisioning profiles found for 'com.swipesort.app'"
+              echo ""
+              echo "This usually happens when:"
+              echo "1. Certificate limit is reached (see above)"
+              echo "2. App Store Connect API key doesn't have proper permissions"
+              echo "3. Bundle ID is not registered in App Store Connect"
+              echo ""
+            fi
+            
+            echo "==================== FULL BUILD LOG ===================="
+            cat build.log
+            echo "========================================================="
+            echo ""
+            echo "Checking for specific errors:"
+            grep -i "error\|failed\|signing\|provision\|certificate" build.log | tail -50 || echo "No specific errors found in log"
+            set -e
+            exit 1
+          fi
+      
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 7
+      
+      - name: Export IPA
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath $ARCHIVE_PATH \
+            -exportPath $EXPORT_PATH \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8 \
+            -authenticationKeyID "$APPSTORE_KEY_ID" \
+            -authenticationKeyIssuerID "$APPSTORE_ISSUER_ID"
+      
+      - name: Upload to TestFlight
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          # Create API key file for App Store Connect API
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo -n "$APPSTORE_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${APPSTORE_KEY_ID}.p8
+          
+          # Upload to App Store Connect using xcrun altool
+          # This will automatically upload to TestFlight
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$EXPORT_PATH/$SCHEME.ipa" \
+            --apiKey "$APPSTORE_KEY_ID" \
+            --apiIssuer "$APPSTORE_ISSUER_ID" \
+            --verbose || {
+              echo "Upload failed, checking error..."
+              exit 1
+            }

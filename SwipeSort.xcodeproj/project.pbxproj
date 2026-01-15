@@ -1,0 +1,540 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 90;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* SwipeSortApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000011 /* SwipeSortApp.swift */; };
+		AA000002 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000012 /* RootView.swift */; };
+		AA000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000013 /* Assets.xcassets */; };
+		AA000004 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000014 /* AppState.swift */; };
+		AA000005 /* SortCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000015 /* SortCategory.swift */; };
+		AA000006 /* SortRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000016 /* SortRecord.swift */; };
+		AA000007 /* PhotoAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000017 /* PhotoAsset.swift */; };
+		AA000008 /* PhotoLibraryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000018 /* PhotoLibraryClient.swift */; };
+		AA000009 /* SortResultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000019 /* SortResultStore.swift */; };
+		AA00000A /* SortingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001A /* SortingFeature.swift */; };
+		AA00000B /* SortingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001B /* SortingState.swift */; };
+		AA00000C /* SwipeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001C /* SwipeOverlay.swift */; };
+		AA00000D /* ReviewFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001D /* ReviewFeature.swift */; };
+		AA00000E /* ReviewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001E /* ReviewState.swift */; };
+		AA00000F /* SettingsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001F /* SettingsFeature.swift */; };
+		AA000010 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020 /* AppTheme.swift */; };
+		AA000021 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022 /* DateExtensions.swift */; };
+		AA000023 /* MediaBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000024 /* MediaBadge.swift */; };
+		AA000025 /* LivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* LivePhotoView.swift */; };
+		AA0000B0 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000B1 /* VideoPlayerView.swift */; };
+		AA000027 /* BurstSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000028 /* BurstSelectorView.swift */; };
+		AA000029 /* HeartAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* HeartAnimation.swift */; };
+		AA00002B /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* TipJarView.swift */; };
+		AA00002D /* TipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* TipStore.swift */; };
+		AA00002F /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AA000032 /* Configuration.storekit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AA000011 /* SwipeSortApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeSortApp.swift; sourceTree = "<group>"; };
+		AA000012 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AA000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000014 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		AA000015 /* SortCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortCategory.swift; sourceTree = "<group>"; };
+		AA000016 /* SortRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortRecord.swift; sourceTree = "<group>"; };
+		AA000017 /* PhotoAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAsset.swift; sourceTree = "<group>"; };
+		AA000018 /* PhotoLibraryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryClient.swift; sourceTree = "<group>"; };
+		AA000019 /* SortResultStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortResultStore.swift; sourceTree = "<group>"; };
+		AA00001A /* SortingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingFeature.swift; sourceTree = "<group>"; };
+		AA00001B /* SortingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingState.swift; sourceTree = "<group>"; };
+		AA00001C /* SwipeOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeOverlay.swift; sourceTree = "<group>"; };
+		AA00001D /* ReviewFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewFeature.swift; sourceTree = "<group>"; };
+		AA00001E /* ReviewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewState.swift; sourceTree = "<group>"; };
+		AA00001F /* SettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFeature.swift; sourceTree = "<group>"; };
+		AA000020 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		AA000022 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
+		AA000024 /* MediaBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBadge.swift; sourceTree = "<group>"; };
+		AA000026 /* LivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoView.swift; sourceTree = "<group>"; };
+		AA0000B1 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		AA000028 /* BurstSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurstSelectorView.swift; sourceTree = "<group>"; };
+		AA00002A /* HeartAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartAnimation.swift; sourceTree = "<group>"; };
+		AA00002C /* TipJarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJarView.swift; sourceTree = "<group>"; };
+		AA00002E /* TipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipStore.swift; sourceTree = "<group>"; };
+		AA000030 /* SwipeSort.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwipeSort.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA000032 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA000040 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA000050 = {
+			isa = PBXGroup;
+			children = (
+				AA000051 /* SwipeSort */,
+				AA000052 /* Products */,
+			);
+			sourceTree = "<group>";
+			usesTabs = 0;
+		};
+		AA000051 /* SwipeSort */ = {
+			isa = PBXGroup;
+			children = (
+				AA000053 /* App */,
+				AA000054 /* Core */,
+				AA000055 /* Features */,
+				AA000056 /* Shared */,
+				AA000013 /* Assets.xcassets */,
+				AA000031 /* Info.plist */,
+				AA000032 /* Configuration.storekit */,
+			);
+			path = SwipeSort;
+			sourceTree = "<group>";
+		};
+		AA000052 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA000030 /* SwipeSort.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA000053 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AA000011 /* SwipeSortApp.swift */,
+				AA000012 /* RootView.swift */,
+				AA000014 /* AppState.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AA000054 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				AA000057 /* Models */,
+				AA000058 /* PhotoLibrary */,
+				AA000059 /* Storage */,
+				AA000060A /* Store */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		AA000055 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				AA00005A /* Sorting */,
+				AA00005B /* Review */,
+				AA00005C /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		AA000056 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				AA00005D /* Theme */,
+				AA00005E /* Extensions */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		AA000057 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA000015 /* SortCategory.swift */,
+				AA000016 /* SortRecord.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA000058 /* PhotoLibrary */ = {
+			isa = PBXGroup;
+			children = (
+				AA000017 /* PhotoAsset.swift */,
+				AA000018 /* PhotoLibraryClient.swift */,
+			);
+			path = PhotoLibrary;
+			sourceTree = "<group>";
+		};
+		AA000059 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				AA000019 /* SortResultStore.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		AA00005A /* Sorting */ = {
+			isa = PBXGroup;
+			children = (
+				AA00001A /* SortingFeature.swift */,
+				AA00001B /* SortingState.swift */,
+				AA00005F /* Components */,
+			);
+			path = Sorting;
+			sourceTree = "<group>";
+		};
+		AA00005B /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				AA00001D /* ReviewFeature.swift */,
+				AA00001E /* ReviewState.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
+		AA00005C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AA00001F /* SettingsFeature.swift */,
+				AA00002C /* TipJarView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AA00005D /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				AA000020 /* AppTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		AA00005E /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AA000022 /* DateExtensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		AA00005F /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA00001C /* SwipeOverlay.swift */,
+				AA000024 /* MediaBadge.swift */,
+				AA000026 /* LivePhotoView.swift */,
+				AA0000B1 /* VideoPlayerView.swift */,
+				AA000028 /* BurstSelectorView.swift */,
+				AA00002A /* HeartAnimation.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AA000060A /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				AA00002E /* TipStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA000060 /* SwipeSort */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000070 /* Build configuration list for PBXNativeTarget "SwipeSort" */;
+			buildPhases = (
+				AA000061 /* Sources */,
+				AA000040 /* Frameworks */,
+				AA000062 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = SwipeSort;
+			productName = SwipeSort;
+			productReference = AA000030 /* SwipeSort.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA000080 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					AA000060 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+				};
+			};
+			buildConfigurationList = AA000081 /* Build configuration list for PBXProject "SwipeSort" */;
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ja,
+			);
+			mainGroup = AA000050;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 90;
+			productRefGroup = AA000052 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA000060 /* SwipeSort */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA000062 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				AA000003 /* Assets.xcassets in Resources */,
+				AA00002F /* Configuration.storekit in Resources */,
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA000061 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				AA000001 /* SwipeSortApp.swift in Sources */,
+				AA000002 /* RootView.swift in Sources */,
+				AA000004 /* AppState.swift in Sources */,
+				AA000005 /* SortCategory.swift in Sources */,
+				AA000006 /* SortRecord.swift in Sources */,
+				AA000007 /* PhotoAsset.swift in Sources */,
+				AA000008 /* PhotoLibraryClient.swift in Sources */,
+				AA000009 /* SortResultStore.swift in Sources */,
+				AA00000A /* SortingFeature.swift in Sources */,
+				AA00000B /* SortingState.swift in Sources */,
+				AA00000C /* SwipeOverlay.swift in Sources */,
+				AA00000D /* ReviewFeature.swift in Sources */,
+				AA00000E /* ReviewState.swift in Sources */,
+				AA00000F /* SettingsFeature.swift in Sources */,
+				AA000010 /* AppTheme.swift in Sources */,
+				AA000021 /* DateExtensions.swift in Sources */,
+				AA000023 /* MediaBadge.swift in Sources */,
+				AA000025 /* LivePhotoView.swift in Sources */,
+				AA0000B0 /* VideoPlayerView.swift in Sources */,
+				AA000027 /* BurstSelectorView.swift in Sources */,
+				AA000029 /* HeartAnimation.swift in Sources */,
+				AA00002B /* TipJarView.swift in Sources */,
+				AA00002D /* TipStore.swift in Sources */,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA000090 /* Debug configuration for PBXProject "SwipeSort" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		AA000091 /* Release configuration for PBXProject "SwipeSort" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+		AA000092 /* Debug configuration for PBXNativeTarget "SwipeSort" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = NL9ZXK2SGR;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwipeSort/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swipesort.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		AA000093 /* Release configuration for PBXNativeTarget "SwipeSort" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = NL9ZXK2SGR;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwipeSort/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swipesort.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA000070 /* Build configuration list for PBXNativeTarget "SwipeSort" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000092 /* Debug configuration for PBXNativeTarget "SwipeSort" */,
+				AA000093 /* Release configuration for PBXNativeTarget "SwipeSort" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA000081 /* Build configuration list for PBXProject "SwipeSort" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000090 /* Debug configuration for PBXProject "SwipeSort" */,
+				AA000091 /* Release configuration for PBXProject "SwipeSort" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA000080 /* Project object */;
+}

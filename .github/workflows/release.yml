@@ -1,0 +1,158 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  SCHEME: SwipeSort
+  PROJECT: SwipeSort.xcodeproj
+  ARCHIVE_PATH: build/SwipeSort.xcarchive
+  EXPORT_PATH: build/export
+  XCODE_VERSION: '26.2'
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: macos-15
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+      
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+      
+      - name: Show environment
+        run: |
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Swift version:"
+          swift --version
+          echo "Available SDKs:"
+          xcodebuild -showsdks
+      
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-release-${{ hashFiles('**/*.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-release-
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-
+      
+      - name: Generate CHANGELOG
+        id: changelog
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            CHANGELOG="## Release ${{ steps.version.outputs.version }}
+
+          ### Changes
+          - See commit history for details"
+          else
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREV_TAG" ]; then
+              CHANGELOG="## Release ${{ steps.version.outputs.version }}
+
+          ### Initial Release"
+            else
+              CHANGELOG="## Release ${{ steps.version.outputs.version }}
+
+          ### Changes since $PREV_TAG
+
+          $(git log ${PREV_TAG}..HEAD --pretty=format:'- %s' --no-merges)"
+            fi
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Build archive
+        run: |
+          mkdir -p build
+          xcodebuild archive \
+            -project $PROJECT \
+            -scheme $SCHEME \
+            -archivePath $ARCHIVE_PATH \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SWIFT_OPTIMIZATION_LEVEL=-O \
+            -derivedDataPath ~/Library/Developer/Xcode/DerivedData
+      
+      - name: Create ExportOptions.plist
+        run: |
+          cat > ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+      
+      - name: Export IPA
+        continue-on-error: true
+        run: |
+          mkdir -p $EXPORT_PATH
+          xcodebuild -exportArchive \
+            -archivePath $ARCHIVE_PATH \
+            -exportPath $EXPORT_PATH \
+            -exportOptionsPlist ExportOptions.plist \
+            || echo "Export failed (signing required for production builds)"
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwipeSort-${{ steps.version.outputs.version }}
+          path: |
+            ${{ env.ARCHIVE_PATH }}
+            ${{ env.EXPORT_PATH }}/*.ipa
+          retention-days: 90
+          if-no-files-found: warn
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', steps.version.outputs.version) || github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.ARCHIVE_PATH }}/Products/Applications/${{ env.SCHEME }}.app
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
