@@ -187,14 +187,14 @@ struct SortingFeature: View {
     
     private func photoCardStack(in geometry: GeometryProxy) -> some View {
         GeometryReader { cardGeometry in
-            let cardWidth = cardGeometry.size.width - 32
-            let cardHeight = cardGeometry.size.height - 24
+            let cardWidth = cardGeometry.size.width - 8
+            let cardHeight = cardGeometry.size.height - 8
             
             ZStack {
-                // Next card preview (behind)
+                // Next card preview (behind) - uses app background to blend seamlessly
                 if state.unsortedAssets.count > 1 {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color.white.opacity(0.03))
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.appBackground)
                         .frame(width: cardWidth, height: cardHeight)
                         .offset(y: 6)
                         .scaleEffect(0.97)
@@ -212,8 +212,8 @@ struct SortingFeature: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 0)
+        .padding(.vertical, 0)
         .animation(.spring(response: 0.35, dampingFraction: 0.75), value: state.offset)
     }
     
@@ -230,13 +230,13 @@ struct SortingFeature: View {
     
     private func photoCard(width cardWidth: CGFloat, height cardHeight: CGFloat) -> some View {
         ZStack {
-            // Card background (dark to blend with image edges)
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.black)
+            // Card background (matches app background to hide Aspect Fit padding)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.appBackground)
             
             // Photo content (Live Photo or regular)
             photoContentView
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             
             // Media type badges (top-left)
             if let asset = state.currentAsset {
@@ -341,7 +341,7 @@ struct SortingFeature: View {
     private var photoContentView: some View {
         if state.isLoadingImage {
             ZStack {
-                Color.black
+                Color.appBackground
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
@@ -349,24 +349,24 @@ struct SortingFeature: View {
         } else if state.isPlayingLivePhoto, let livePhoto = state.currentLivePhoto {
             // Live Photo playback
             ZStack {
-                Color.black
+                Color.appBackground
                 LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
             }
         } else if state.isPlayingVideo, let videoItem = state.currentVideoItem {
             ZStack {
-                Color.black
+                Color.appBackground
                 VideoPlayerView(playerItem: videoItem, isPlaying: $state.isPlayingVideo)
             }
         } else if let image = state.currentImage {
             ZStack {
-                Color.black
+                Color.appBackground
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
             }
         } else {
             ZStack {
-                Color.black
+                Color.appBackground
                 Image(systemName: "photo")
                     .font(.system(size: 48, weight: .thin))
                     .foregroundStyle(.white.opacity(0.2))
