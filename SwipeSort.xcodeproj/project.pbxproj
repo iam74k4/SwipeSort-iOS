@@ -19,8 +19,6 @@
 		AA00000A /* SortingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001A /* SortingFeature.swift */; };
 		AA00000B /* SortingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001B /* SortingState.swift */; };
 		AA00000C /* SwipeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001C /* SwipeOverlay.swift */; };
-		AA00000D /* ReviewFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001D /* ReviewFeature.swift */; };
-		AA00000E /* ReviewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001E /* ReviewState.swift */; };
 		AA00000F /* SettingsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001F /* SettingsFeature.swift */; };
 		AA000010 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020 /* AppTheme.swift */; };
 		AA000021 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022 /* DateExtensions.swift */; };
@@ -47,8 +45,6 @@
 		AA00001A /* SortingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingFeature.swift; sourceTree = "<group>"; };
 		AA00001B /* SortingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingState.swift; sourceTree = "<group>"; };
 		AA00001C /* SwipeOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeOverlay.swift; sourceTree = "<group>"; };
-		AA00001D /* ReviewFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewFeature.swift; sourceTree = "<group>"; };
-		AA00001E /* ReviewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewState.swift; sourceTree = "<group>"; };
 		AA00001F /* SettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFeature.swift; sourceTree = "<group>"; };
 		AA000020 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		AA000022 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
@@ -129,7 +125,6 @@
 			isa = PBXGroup;
 			children = (
 				AA00005A /* Sorting */,
-				AA00005B /* Review */,
 				AA00005C /* Settings */,
 			);
 			path = Features;
@@ -178,15 +173,6 @@
 				AA00005F /* Components */,
 			);
 			path = Sorting;
-			sourceTree = "<group>";
-		};
-		AA00005B /* Review */ = {
-			isa = PBXGroup;
-			children = (
-				AA00001D /* ReviewFeature.swift */,
-				AA00001E /* ReviewState.swift */,
-			);
-			path = Review;
 			sourceTree = "<group>";
 		};
 		AA00005C /* Settings */ = {
@@ -313,8 +299,6 @@
 				AA00000A /* SortingFeature.swift in Sources */,
 				AA00000B /* SortingState.swift in Sources */,
 				AA00000C /* SwipeOverlay.swift in Sources */,
-				AA00000D /* ReviewFeature.swift in Sources */,
-				AA00000E /* ReviewState.swift in Sources */,
 				AA00000F /* SettingsFeature.swift in Sources */,
 				AA000010 /* AppTheme.swift in Sources */,
 				AA000021 /* DateExtensions.swift in Sources */,

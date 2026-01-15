@@ -126,7 +126,7 @@ struct SettingsFeature: View {
                 
                 StatisticItem(
                     count: sortStore.deleteCount,
-                    label: "削除候補",
+                    label: "削除済み",
                     color: .deleteColor,
                     icon: "trash.circle.fill"
                 )
@@ -181,7 +181,7 @@ struct SettingsFeature: View {
                 GestureRow(
                     icon: "arrow.left",
                     direction: "左スワイプ",
-                    action: "削除候補",
+                    action: "削除",
                     color: .deleteColor
                 )
                 GestureRow(
@@ -605,7 +605,7 @@ struct AboutView: View {
                                     icon: "arrow.left.circle.fill",
                                     color: .deleteColor,
                                     text: "左スワイプ",
-                                    description: "削除候補"
+                                    description: "削除"
                                 )
                                 InstructionRow(
                                     icon: "heart.circle.fill",

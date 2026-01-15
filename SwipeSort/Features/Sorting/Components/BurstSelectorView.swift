@@ -196,7 +196,7 @@ struct BurstSelectorView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 16, weight: .semibold))
-                    Text("これを残す（他を削除候補に）")
+                    Text("これを残す（他を削除）")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(.white)

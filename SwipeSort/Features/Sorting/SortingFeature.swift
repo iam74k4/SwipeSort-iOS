@@ -58,34 +58,41 @@ struct SortingFeature: View {
                 // Keep selected, delete others immediately
                 sortStore.addOrUpdate(assetID: selected.id, category: .keep)
                 
+                // 選択した写真のみ即座にリストから除外
+                state.unsortedAssets.removeAll { $0.id == selected.id }
+                
                 Task {
                     if !others.isEmpty {
                         let deleteTargets = others.map { $0.asset }
                         do {
                             try await photoLibrary.deleteAssets(deleteTargets)
+                            // 削除成功時のみ記録（Undo対象外）
                             for other in others {
-                                sortStore.addOrUpdate(assetID: other.id, category: .delete)
+                                sortStore.addOrUpdate(assetID: other.id, category: .delete, recordUndo: false)
+                                await MainActor.run {
+                                    state.unsortedAssets.removeAll { $0.id == other.id }
+                                }
                             }
                         } catch {
                             deleteErrorMessage = "削除に失敗しました。写真アプリで削除状況をご確認ください。"
                             showDeleteError = true
+                            // 削除失敗時は他の写真を一覧に残す
+                        }
+                    }
+                    
+                    await MainActor.run {
+                        state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+                        state.updateCurrentAsset()
+                        
+                        if state.unsortedAssets.isEmpty {
+                            state.isComplete = true
+                        } else {
+                            Task { await loadCurrentImage() }
                         }
                     }
                 }
                 
-                // Remove all burst photos from unsorted
-                let burstIDs = Set(state.burstAssets.map { $0.id })
-                state.unsortedAssets.removeAll { burstIDs.contains($0.id) }
-                state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
-                state.updateCurrentAsset()
                 state.resetBurstSelector()
-                
-                if state.unsortedAssets.isEmpty {
-                    state.isComplete = true
-                } else {
-                    Task { await loadCurrentImage() }
-                }
-                
                 HapticFeedback.notification(.success)
             },
             onCancel: {
@@ -492,14 +499,20 @@ struct SortingFeature: View {
     private func processSort(direction: SwipeDirection) async {
         guard let asset = state.currentAsset else { return }
         let category = direction.category
+        
         switch category {
         case .keep:
             sortStore.addOrUpdate(assetID: asset.id, category: .keep)
             HapticFeedback.impact(.medium)
         case .delete:
             HapticFeedback.impact(.heavy)
-            await deleteAsset(asset)
-            sortStore.addOrUpdate(assetID: asset.id, category: .delete)
+            let success = await deleteAsset(asset)
+            guard success else {
+                // 削除失敗時は一覧に残し、次に進まない
+                return
+            }
+            // 削除成功時のみ記録（Undo対象外）
+            sortStore.addOrUpdate(assetID: asset.id, category: .delete, recordUndo: false)
         case .favorite, .unsorted:
             break
         }
@@ -674,12 +687,14 @@ struct SortingFeature: View {
         await preloadNextImage()
     }
 
-    private func deleteAsset(_ asset: PhotoAsset) async {
+    private func deleteAsset(_ asset: PhotoAsset) async -> Bool {
         do {
             try await photoLibrary.deleteAssets([asset.asset])
+            return true
         } catch {
             deleteErrorMessage = "削除に失敗しました。写真アプリで削除状況をご確認ください。"
             showDeleteError = true
+            return false
         }
     }
     

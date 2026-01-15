@@ -166,7 +166,7 @@ final class SortResultStore {
     
     // MARK: - Mutations
     
-    func addOrUpdate(assetID: String, category: SortCategory, previousCategory: SortCategory? = nil) {
+    func addOrUpdate(assetID: String, category: SortCategory, previousCategory: SortCategory? = nil, recordUndo: Bool = true) {
         guard let modelContext else {
             logger.error("Cannot add/update: storage is unavailable")
             return
@@ -185,16 +185,18 @@ final class SortResultStore {
             modelContext.insert(record)
         }
         
-        // Add undo record
-        let undoRecord = UndoRecord(
-            assetID: assetID,
-            previousCategory: previousCategory,
-            newCategory: category
-        )
-        modelContext.insert(undoRecord)
-        
-        // Trim undo history (keep last 100)
-        trimUndoHistory()
+        // Add undo record (skip for delete actions as they cannot be undone)
+        if recordUndo {
+            let undoRecord = UndoRecord(
+                assetID: assetID,
+                previousCategory: previousCategory,
+                newCategory: category
+            )
+            modelContext.insert(undoRecord)
+            
+            // Trim undo history (keep last 100)
+            trimUndoHistory()
+        }
         
         saveAndRefresh()
     }
