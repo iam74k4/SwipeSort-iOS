@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# SwipeSort-iOS
-=======
 # SwipeSort-iOS
 
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
@@ -146,4 +143,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Author
 
 iam74k4
->>>>>>> ac74cb9 (feat: Major UI/UX improvements)
