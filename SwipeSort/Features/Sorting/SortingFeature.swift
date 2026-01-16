@@ -691,12 +691,7 @@ struct SortingFeature: View {
             // Undo記録も削除
             sortStore.removeUndoRecord(for: asset.id)
             
-            if !state.unsortedAssets.contains(where: { $0.id == asset.id }) {
-                state.unsortedAssets.append(asset)
-            }
-            if !state.allUnsortedAssets.contains(where: { $0.id == asset.id }) {
-                state.allUnsortedAssets.append(asset)
-            }
+            state.restoreAssetToUnsorted(asset, atStart: false)
         }
         state.deleteQueue.removeAll()
         state.isComplete = false
@@ -869,7 +864,12 @@ struct SortingFeature: View {
         
         // Add to iOS Favorites album
         Task {
-            try? await photoLibrary.setFavorite(asset.asset, isFavorite: true)
+            do {
+                try await photoLibrary.setFavorite(asset.asset, isFavorite: true)
+            } catch {
+                // Non-critical: Favorite status update failed, but sorting continues
+                // Error is logged silently as this doesn't affect the core sorting functionality
+            }
         }
         
         // Animate out after heart animation
@@ -933,12 +933,7 @@ struct SortingFeature: View {
                 // アセットを未整理リストに戻す（undo()でカテゴリが未整理に戻された場合）
                 let currentCategory = sortStore.category(for: assetID)
                 if currentCategory == nil || currentCategory == .unsorted {
-                    if !state.unsortedAssets.contains(where: { $0.id == assetID }) {
-                        state.unsortedAssets.insert(asset, at: 0)
-                    }
-                    if !state.allUnsortedAssets.contains(where: { $0.id == assetID }) {
-                        state.allUnsortedAssets.insert(asset, at: 0)
-                    }
+                    state.restoreAssetToUnsorted(asset, atStart: true)
                 }
             } else if let asset = photoLibrary.allAssets.first(where: { $0.id == assetID }) {
                 // 通常のUndo処理（削除キューに含まれていない場合）
@@ -946,17 +941,17 @@ struct SortingFeature: View {
                 // If the undone action was a favorite, remove from iOS Favorites
                 let currentCategory = sortStore.category(for: assetID)
                 if currentCategory == .favorite {
-                    try? await photoLibrary.setFavorite(asset.asset, isFavorite: false)
+                    do {
+                        try await photoLibrary.setFavorite(asset.asset, isFavorite: false)
+                    } catch {
+                        // Non-critical: Favorite status update failed, but undo continues
+                        // Error is logged silently as this doesn't affect the core undo functionality
+                    }
                 }
                 
                 // カテゴリが未整理に戻された場合のみ、未整理リストに追加
                 if currentCategory == nil || currentCategory == .unsorted {
-                    if !state.unsortedAssets.contains(where: { $0.id == assetID }) {
-                        state.unsortedAssets.insert(asset, at: 0)
-                    }
-                    if !state.allUnsortedAssets.contains(where: { $0.id == assetID }) {
-                        state.allUnsortedAssets.insert(asset, at: 0)
-                    }
+                    state.restoreAssetToUnsorted(asset, atStart: true)
                 }
             }
             
@@ -1021,8 +1016,6 @@ struct SortingFeature: View {
         let targetAssetID = asset.id
         
         // Clear old images before loading new ones to free memory
-        let oldImage = state.currentImage
-        let oldLivePhoto = state.currentLivePhoto
         state.currentImage = nil
         state.currentLivePhoto = nil
         
@@ -1061,9 +1054,13 @@ struct SortingFeature: View {
         // Parallel loading: Load Live Photo and burst count concurrently
         async let livePhotoTask: PHLivePhoto? = asset.isLivePhoto ? photoLibrary.loadLivePhoto(for: asset.asset, targetSize: optimalSize) : nil
         
+        // Capture photoLibrary in MainActor context for burst count task
+        let photoLibraryForBurst = photoLibrary
         async let burstCountTask: Int? = {
             if let burstId = asset.burstIdentifier {
-                let burstAssets = photoLibrary.fetchBurstAssets(for: burstId)
+                let burstAssets = await MainActor.run {
+                    photoLibraryForBurst.fetchBurstAssets(for: burstId)
+                }
                 return burstAssets.count > 1 ? burstAssets.count : nil
             }
             return nil
@@ -1126,12 +1123,7 @@ struct SortingFeature: View {
                 // 削除記録を削除（実際には削除されていないため）
                 sortStore.remove(assetID: asset.id)
                 // アセットを未整理リストに戻す
-                if !state.unsortedAssets.contains(where: { $0.id == asset.id }) {
-                    state.unsortedAssets.append(asset)
-                }
-                if !state.allUnsortedAssets.contains(where: { $0.id == asset.id }) {
-                    state.allUnsortedAssets.append(asset)
-                }
+                state.restoreAssetToUnsorted(asset, atStart: false)
             }
             state.isComplete = false
             state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))

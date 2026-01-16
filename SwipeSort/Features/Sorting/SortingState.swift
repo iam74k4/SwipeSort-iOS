@@ -215,7 +215,7 @@ final class SortingState {
     
     /// Apply both media filter and category filter (without category filter)
     func applyFilters() {
-        var filtered = applyMediaFilter(to: allUnsortedAssets)
+        let filtered = applyMediaFilter(to: allUnsortedAssets)
         
         unsortedAssets = filtered
         currentIndex = 0
@@ -274,5 +274,26 @@ final class SortingState {
         // Also move in all assets
         allUnsortedAssets.removeAll { $0.id == asset.id }
         allUnsortedAssets.append(asset)
+    }
+    
+    /// Restore an asset to unsorted lists (both filtered and all)
+    /// - Parameters:
+    ///   - asset: The asset to restore
+    ///   - atStart: If true, insert at the beginning; otherwise append at the end
+    func restoreAssetToUnsorted(_ asset: PhotoAsset, atStart: Bool = false) {
+        if !unsortedAssets.contains(where: { $0.id == asset.id }) {
+            if atStart {
+                unsortedAssets.insert(asset, at: 0)
+            } else {
+                unsortedAssets.append(asset)
+            }
+        }
+        if !allUnsortedAssets.contains(where: { $0.id == asset.id }) {
+            if atStart {
+                allUnsortedAssets.insert(asset, at: 0)
+            } else {
+                allUnsortedAssets.append(asset)
+            }
+        }
     }
 }
