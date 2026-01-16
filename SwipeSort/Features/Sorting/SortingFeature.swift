@@ -8,6 +8,7 @@
 import SwiftUI
 @preconcurrency import Photos
 import PhotosUI
+import UIKit
 
 @available(iOS 18.0, *)
 struct SortingFeature: View {
@@ -19,6 +20,9 @@ struct SortingFeature: View {
     @State private var showDeleteError = false
     @State private var deleteErrorMessage = ""
     @State private var showDeleteConfirmation = false
+    @State private var showSwipeHint = false
+    
+    @AppStorage("hasSeenSwipeHint") private var hasSeenSwipeHint = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -42,22 +46,22 @@ struct SortingFeature: View {
         .task {
             await loadAssets()
         }
-        .alert("削除に失敗しました", isPresented: $showDeleteError) {
-            Button("OK") {}
+        .alert(NSLocalizedString("Delete Failed", comment: "Delete failed alert title"), isPresented: $showDeleteError) {
+            Button(NSLocalizedString("OK", comment: "OK button")) {}
         } message: {
             Text(deleteErrorMessage)
         }
         .confirmationDialog(
-            "\(state.deleteQueue.count)件を削除しますか？",
+            String(format: NSLocalizedString("Delete %d Items?", comment: "Delete confirmation"), state.deleteQueue.count),
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("削除", role: .destructive) {
+            Button(NSLocalizedString("Delete", comment: "Delete button"), role: .destructive) {
                 Task { await flushDeleteQueue() }
             }
-            Button("キャンセル", role: .cancel) {}
+            Button(NSLocalizedString("Cancel", comment: "Cancel button"), role: .cancel) {}
         } message: {
-            Text("削除された写真は「最近削除した項目」に移動します。")
+            Text(NSLocalizedString("Deleted photos will be moved to Recently Deleted.", comment: "Delete confirmation message"))
         }
     }
     
@@ -69,15 +73,20 @@ struct SortingFeature: View {
             photoLibrary: photoLibrary,
             onSelect: { selected, others in
                 // Keep selected, add others to delete queue
-                sortStore.addOrUpdate(assetID: selected.id, category: .keep)
+                let previousCategory = sortStore.category(for: selected.id)
+                sortStore.addOrUpdate(assetID: selected.id, category: .keep, previousCategory: previousCategory, recordUndo: true)
                 
                 // 選択した写真をリストから除外
-                state.unsortedAssets.removeAll { $0.id == selected.id }
+                state.removeAsset(selected)
                 
                 // 他の写真を削除キューに追加
                 for other in others {
+                    let otherPreviousCategory = sortStore.category(for: other.id)
+                    // Undo記録を作成（削除キューに入れたことを記録）
+                    sortStore.createUndoRecord(assetID: other.id, previousCategory: otherPreviousCategory)
+                    // 削除キューに入れるだけ（実際に削除されるまで削除カテゴリとして記録しない）
                     state.deleteQueue.append(other)
-                    state.unsortedAssets.removeAll { $0.id == other.id }
+                    state.removeAsset(other)
                 }
                 
                 state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
@@ -100,12 +109,11 @@ struct SortingFeature: View {
             onKeepAll: {
                 // Mark all burst photos as keep
                 for asset in state.burstAssets {
-                    sortStore.addOrUpdate(assetID: asset.id, category: .keep)
+                    let previousCategory = sortStore.category(for: asset.id)
+                    sortStore.addOrUpdate(assetID: asset.id, category: .keep, previousCategory: previousCategory, recordUndo: true)
+                    state.removeAsset(asset)
                 }
                 
-                // Remove all burst photos from unsorted
-                let burstIDs = Set(state.burstAssets.map { $0.id })
-                state.unsortedAssets.removeAll { burstIDs.contains($0.id) }
                 state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
                 state.updateCurrentAsset()
                 state.resetBurstSelector()
@@ -146,6 +154,14 @@ struct SortingFeature: View {
                     endRadius: 400
                 )
                 .animation(.easeOut(duration: 0.2), value: state.swipeDirection)
+            case .up:
+                RadialGradient(
+                    colors: [.skipColor.opacity(0.15), .clear],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: 400
+                )
+                .animation(.easeOut(duration: 0.2), value: state.swipeDirection)
             case .none:
                 Color.clear
             }
@@ -172,6 +188,16 @@ struct SortingFeature: View {
                 // Heart animation for double tap
                 if state.showHeartAnimation {
                     HeartAnimationView(isAnimating: $state.showHeartAnimation)
+                }
+                
+                // First-time swipe hint
+                if showSwipeHint {
+                    SwipeHintOverlay {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showSwipeHint = false
+                            hasSeenSwipeHint = true
+                        }
+                    }
                 }
             }
             .frame(maxHeight: .infinity)
@@ -214,7 +240,7 @@ struct SortingFeature: View {
         }
         .padding(.horizontal, 0)
         .padding(.vertical, 0)
-        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: state.offset)
+        .animation(.photoSlide, value: state.offset)
     }
     
     private var cardScale: CGFloat {
@@ -252,7 +278,7 @@ struct SortingFeature: View {
         .animation(.easeOut(duration: 0.2), value: state.imageOpacity)
         .onLongPressGesture(minimumDuration: 0.3, pressing: { pressing in
             guard let asset = state.currentAsset else { return }
-            state.isLongPressing = pressing
+                state.isLongPressing = pressing
 
             if asset.isLivePhoto {
                 if pressing && state.currentLivePhoto != nil {
@@ -262,7 +288,7 @@ struct SortingFeature: View {
                     state.isPlayingLivePhoto = false
                 }
             } else if asset.isVideo {
-                if pressing && state.currentVideoItem != nil {
+                if pressing {
                     state.isPlayingVideo = true
                     HapticFeedback.impact(.light)
                 } else {
@@ -326,6 +352,10 @@ struct SortingFeature: View {
                 case .left:
                     StampView(text: "DELETE", color: .deleteColor, rotation: 15)
                         .position(x: cardWidth * 0.65, y: cardHeight * 0.18)
+                case .up:
+                    StampView(text: "SKIP", color: .skipColor, rotation: 0)
+                        .position(x: cardWidth * 0.5, y: cardHeight * 0.85)
+                        .scaleEffect(1.1)  // Slightly larger for better visibility
                 case .none:
                     EmptyView()
                 }
@@ -350,18 +380,18 @@ struct SortingFeature: View {
             // Live Photo playback
             ZStack {
                 Color.appBackground
-                LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
+            LivePhotoPlayerView(livePhoto: livePhoto, isPlaying: $state.isPlayingLivePhoto)
             }
-        } else if state.isPlayingVideo, let videoItem = state.currentVideoItem {
+        } else if state.isPlayingVideo, let asset = state.currentAsset {
             ZStack {
                 Color.appBackground
-                VideoPlayerView(playerItem: videoItem, isPlaying: $state.isPlayingVideo)
+                VideoPlayerView(asset: asset.asset, isPlaying: $state.isPlayingVideo)
             }
         } else if let image = state.currentImage {
             ZStack {
                 Color.appBackground
-                Image(uiImage: image)
-                    .resizable()
+            Image(uiImage: image)
+                .resizable()
                     .aspectRatio(contentMode: .fit)
             }
         } else {
@@ -377,20 +407,110 @@ struct SortingFeature: View {
     // MARK: - Top Bar
     
     private func topBar(asset: PhotoAsset, geometry: GeometryProxy) -> some View {
-        HStack(spacing: 12) {
-            // Stats
-            HStack(spacing: 6) {
-                StatPill(count: sortStore.keepCount, color: .keepColor, icon: "checkmark")
+        HStack(spacing: 6) {
+            // Filter button
+            filterButton
+            
+            // Stats (tappable for filtering)
+            HStack(spacing: 4) {
+                Button {
+                    withAnimation(.overlayFade) {
+                        if state.selectedCategoryFilter == .keep {
+                            state.applyCategoryFilter(nil, sortStore: sortStore)
+                        } else {
+                            state.applyCategoryFilter(.keep, sortStore: sortStore)
+                        }
+                    }
+                    Task { await loadCurrentImage() }
+                } label: {
+                    StatPill(
+                        count: sortStore.keepCount,
+                        color: .keepColor,
+                        icon: "checkmark",
+                        isSelected: state.selectedCategoryFilter == .keep
+                    )
+                }
+                .buttonStyle(.plain)
+                
                 // 削除キューがある場合は削除待ち件数を表示
                 if state.deleteQueue.isEmpty {
-                    StatPill(count: sortStore.deleteCount, color: .deleteColor, icon: "trash")
+                    Button {
+                        withAnimation(.overlayFade) {
+                            if state.selectedCategoryFilter == .delete {
+                                state.applyCategoryFilter(nil, sortStore: sortStore)
+                            } else {
+                                state.applyCategoryFilter(.delete, sortStore: sortStore)
+                            }
+                        }
+                        Task { await loadCurrentImage() }
+                    } label: {
+                        StatPill(
+                            count: sortStore.deleteCount,
+                            color: .deleteColor,
+                            icon: "trash",
+                            isSelected: state.selectedCategoryFilter == .delete
+                        )
+                    }
+                    .buttonStyle(.plain)
                 } else {
-                    DeleteQueuePill(queueCount: state.deleteQueue.count, deletedCount: sortStore.deleteCount)
+                    Button {
+                        withAnimation(.overlayFade) {
+                            if state.selectedCategoryFilter == .delete {
+                                state.applyCategoryFilter(nil, sortStore: sortStore)
+                            } else {
+                                state.applyCategoryFilter(.delete, sortStore: sortStore)
+                            }
+                        }
+                        Task { await loadCurrentImage() }
+                    } label: {
+                        DeleteQueuePill(
+                            queueCount: state.deleteQueue.count,
+                            isSelected: state.selectedCategoryFilter == .delete
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
-                StatPill(count: sortStore.favoriteCount, color: .favoriteColor, icon: "heart.fill")
+                
+                Button {
+                    withAnimation(.overlayFade) {
+                        if state.selectedCategoryFilter == .favorite {
+                            state.applyCategoryFilter(nil, sortStore: sortStore)
+                        } else {
+                            state.applyCategoryFilter(.favorite, sortStore: sortStore)
+                        }
+                    }
+                    Task { await loadCurrentImage() }
+                } label: {
+                    StatPill(
+                        count: sortStore.favoriteCount,
+                        color: .favoriteColor,
+                        icon: "heart.fill",
+                        isSelected: state.selectedCategoryFilter == .favorite
+                    )
+            }
+                .buttonStyle(.plain)
+                
+                Button {
+                    withAnimation(.overlayFade) {
+                        if state.selectedCategoryFilter == .unsorted {
+                            state.applyCategoryFilter(nil, sortStore: sortStore)
+                        } else {
+                            state.applyCategoryFilter(.unsorted, sortStore: sortStore)
+                        }
+                    }
+                    Task { await loadCurrentImage() }
+                } label: {
+                    StatPill(
+                        count: sortStore.unsortedCount,
+                        color: .skipColor,
+                        icon: "arrow.up",
+                        isSelected: state.selectedCategoryFilter == .unsorted
+                    )
+                }
+                .buttonStyle(.plain)
             }
             
-            Spacer()
+            Spacer(minLength: 6)
             
             // Progress
             ProgressPill(current: sortStore.totalSortedCount + 1, total: state.totalCount)
@@ -399,20 +519,83 @@ struct SortingFeature: View {
         .padding(.vertical, 12)
     }
     
+    // MARK: - Filter Button
+    
+    private var filterButton: some View {
+        Menu {
+            ForEach(MediaFilter.allCases, id: \.self) { filter in
+                Button {
+                    withAnimation(.overlayFade) {
+                        state.applyFilter(filter, sortStore: sortStore)
+                    }
+                    Task { await loadCurrentImage() }
+                } label: {
+                    Label {
+                        HStack {
+                            Text(filter.localizedName)
+                            if filter == state.currentFilter {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    } icon: {
+                        Image(systemName: filter.icon)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: state.currentFilter.icon)
+                    .font(.system(size: 9, weight: .bold))
+                    .frame(width: 9) // アイコンの固定幅
+                if state.currentFilter != .all {
+                    Text(state.currentFilter.localizedName)
+                        .font(.system(size: 10, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .frame(maxWidth: 50)
+                }
+            }
+            .foregroundStyle(.white.opacity(state.currentFilter == .all ? 0.7 : 0.9))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .frame(width: state.currentFilter == .all ? nil : 70) // フィルター選択時は固定幅
+            .background {
+                Capsule()
+                    .fill(Color.white.opacity(0.12))
+            }
+            .overlay {
+                if state.currentFilter != .all {
+                    Capsule()
+                        .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                }
+            }
+        }
+        .id(state.currentFilter) // フィルター変更時にビューを再作成してレイアウトを安定させる
+    }
+    
     // MARK: - Bottom Section
     
     private func bottomSection(asset: PhotoAsset, geometry: GeometryProxy) -> some View {
         VStack(spacing: 12) {
-            // Video indicator
+            // Media info chips
+            HStack(spacing: 8) {
+                // Date chip
+                if let date = asset.creationDate {
+                    DateChip(date: date)
+                }
+                
+                // Video duration
             if asset.isVideo {
                 VideoChip(duration: asset.formattedDuration)
+                }
             }
             
             // Action buttons
             HStack(spacing: 12) {
                 // Undo button
-                undoButton
-                    .opacity(sortStore.canUndo ? 1 : 0)
+            undoButton
+                .opacity(sortStore.canUndo ? 1 : 0)
                 
                 // Delete queue button
                 if !state.deleteQueue.isEmpty {
@@ -431,12 +614,14 @@ struct SortingFeature: View {
     
     private var undoButton: some View {
         Button {
-            performUndo()
+            Task {
+                await performUndo()
+            }
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.uturn.backward")
                     .font(.system(size: 14, weight: .semibold))
-                Text("戻す")
+                Text(NSLocalizedString("Undo", comment: "Undo button"))
                     .font(.system(size: 14, weight: .semibold))
             }
             .foregroundStyle(.white)
@@ -445,66 +630,72 @@ struct SortingFeature: View {
             .glassPill()
             .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
+        .disabled(state.isUndoing || !sortStore.canUndo)
+        .opacity((state.isUndoing || !sortStore.canUndo) ? 0.5 : 1.0)
     }
     
     // MARK: - Delete Queue Button
     
     private var deleteQueueButton: some View {
-        HStack(spacing: 8) {
-            // Delete button
+        HStack(spacing: 0) {
+            // Delete button (left side)
             Button {
                 showDeleteConfirmation = true
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Image(systemName: "trash.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                    Text("\(state.deleteQueue.count)件削除")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("\(state.deleteQueue.count)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .monospacedDigit()
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .background {
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.deleteColor, Color.deleteColor.opacity(0.7)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                }
-                .overlay {
-                    Capsule()
-                        .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
-                }
-                .shadow(color: Color.deleteColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
             }
             
-            // Clear queue button
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.2))
+                .frame(width: 1, height: 20)
+            
+            // Clear queue button (right side)
             Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    clearDeleteQueue()
-                }
+        withAnimation(.buttonPress) {
+            clearDeleteQueue()
+        }
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.8))
-                    .frame(width: 32, height: 32)
-                    .background {
-                        Circle()
-                            .fill(Color.white.opacity(0.15))
-                    }
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
             }
         }
+        .background {
+            Capsule()
+                .fill(Color.deleteColor)
+        }
+        .overlay {
+            Capsule()
+                .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+        }
+        .shadow(color: Color.deleteColor.opacity(0.3), radius: 6, x: 0, y: 3)
     }
     
     private func clearDeleteQueue() {
         // 削除キューをクリアして、アセットを未整理に戻す
         for asset in state.deleteQueue {
+            // 削除記録を削除（存在する場合）
+            sortStore.remove(assetID: asset.id)
+            // Undo記録も削除
+            sortStore.removeUndoRecord(for: asset.id)
+            
             if !state.unsortedAssets.contains(where: { $0.id == asset.id }) {
                 state.unsortedAssets.append(asset)
+            }
+            if !state.allUnsortedAssets.contains(where: { $0.id == asset.id }) {
+                state.allUnsortedAssets.append(asset)
             }
         }
         state.deleteQueue.removeAll()
@@ -526,23 +717,47 @@ struct SortingFeature: View {
             .onChanged { value in
                 state.offset = value.translation
                 
-                if value.translation.width > SwipeThreshold.detectionStart {
+                let horizontal = value.translation.width
+                let vertical = value.translation.height
+                
+                // Determine primary direction based on magnitude
+                if abs(horizontal) > abs(vertical) {
+                    // Horizontal swipe
+                    if horizontal > SwipeThreshold.detectionStart {
                     state.swipeDirection = .right
-                } else if value.translation.width < -SwipeThreshold.detectionStart {
+                    } else if horizontal < -SwipeThreshold.detectionStart {
                     state.swipeDirection = .left
                 } else {
                     state.swipeDirection = .none
+                    }
+                } else {
+                    // Vertical swipe (only up for skip)
+                    if vertical < -SwipeThreshold.detectionStart {
+                        state.swipeDirection = .up
+                    } else {
+                        state.swipeDirection = .none
+                    }
                 }
             }
             .onEnded { value in
                 let horizontal = value.translation.width
+                let vertical = value.translation.height
                 
+                // Determine completion based on primary direction
+                if abs(horizontal) > abs(vertical) {
                 if horizontal > SwipeThreshold.horizontal {
                     completeSwipe(direction: .right)
                 } else if horizontal < -SwipeThreshold.horizontal {
                     completeSwipe(direction: .left)
                 } else {
                     resetPosition()
+                    }
+                } else {
+                    if vertical < -SwipeThreshold.vertical {
+                        completeSwipe(direction: .up)
+                    } else {
+                        resetPosition()
+                    }
                 }
             }
     }
@@ -562,6 +777,8 @@ struct SortingFeature: View {
                 state.offset = CGSize(width: 500, height: 50)
             case .left:
                 state.offset = CGSize(width: -500, height: 50)
+            case .up:
+                state.offset = CGSize(width: 0, height: -500)
             case .none:
                 break
             }
@@ -573,9 +790,17 @@ struct SortingFeature: View {
             
             await processSort(direction: direction)
             
+            // Clear old image before loading next
+            state.currentImage = nil
+            state.currentLivePhoto = nil
+            
+            // 次の画像を読み込む（nextImageが既に読み込まれている場合はそれを使用）
             if let next = state.nextImage {
                 state.currentImage = next
                 state.nextImage = nil
+            } else {
+                // nextImageが読み込まれていない場合は、現在のアセットの画像を読み込む
+                await loadCurrentImage()
             }
             
             state.offset = .zero
@@ -591,27 +816,42 @@ struct SortingFeature: View {
     
     private func processSort(direction: SwipeDirection) async {
         guard let asset = state.currentAsset else { return }
-        let category = direction.category
         
-        switch category {
-        case .keep:
-            sortStore.addOrUpdate(assetID: asset.id, category: .keep)
+        switch direction {
+        case .right:
+            let previousCategory = sortStore.category(for: asset.id)
+            sortStore.addOrUpdate(assetID: asset.id, category: .keep, previousCategory: previousCategory, recordUndo: true)
             HapticFeedback.impact(.medium)
-        case .delete:
+            state.removeAsset(asset)
+        case .left:
             HapticFeedback.impact(.heavy)
             // キューに追加（まとめて削除でiOS確認ダイアログを減らす）
+            // 削除キューに追加した時点では削除カテゴリとして記録しない（実際に削除されるまでカウントしない）
+            // Undo記録は作成する（戻すボタンを表示するため）
+            let previousCategory = sortStore.category(for: asset.id)
+            // Undo記録を作成（削除キューに入れたことを記録）
+            sortStore.createUndoRecord(assetID: asset.id, previousCategory: previousCategory)
+            // 削除キューに入れるだけ（まだ削除カテゴリとして記録しない）
             state.deleteQueue.append(asset)
-        case .favorite, .unsorted:
+            state.removeAsset(asset)
+        case .up:
+            // Skip: move to end of list (decide later)
+            HapticFeedback.impact(.light)
+            // スキップを未整理として記録（統計に表示するため）
+            let previousCategory = sortStore.category(for: asset.id)
+            sortStore.addOrUpdate(assetID: asset.id, category: .unsorted, previousCategory: previousCategory, recordUndo: true)
+            state.moveToEnd(asset)
+        case .none:
             break
         }
         
-        state.unsortedAssets.removeAll { $0.id == asset.id }
         state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
         state.updateCurrentAsset()
         
         // 自動削除は行わない（ユーザーが「削除」ボタンを押すまで待つ）
         
-        if state.unsortedAssets.isEmpty {
+        // isCompleteは実際にすべてのアセットが整理された場合のみtrue（フィルター結果ではない）
+        if state.allUnsortedAssets.isEmpty {
             state.isComplete = true
         }
     }
@@ -624,7 +864,8 @@ struct SortingFeature: View {
         HapticFeedback.notification(.success)
         
         // Add to favorites
-        sortStore.addOrUpdate(assetID: asset.id, category: .favorite)
+        let previousCategory = sortStore.category(for: asset.id)
+        sortStore.addOrUpdate(assetID: asset.id, category: .favorite, previousCategory: previousCategory, recordUndo: true)
         
         // Add to iOS Favorites album
         Task {
@@ -645,12 +886,17 @@ struct SortingFeature: View {
             
             try? await Task.sleep(for: .milliseconds(250))
             
+            // Clear old image before moving to next
+            state.currentImage = nil
+            state.currentLivePhoto = nil
+            
             // Move to next
-            state.unsortedAssets.removeAll { $0.id == asset.id }
+            state.removeAsset(asset)
             state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
             state.updateCurrentAsset()
             
-            if state.unsortedAssets.isEmpty {
+            // isCompleteは実際にすべてのアセットが整理された場合のみtrue（フィルター結果ではない）
+            if state.allUnsortedAssets.isEmpty {
                 state.isComplete = true
             }
             
@@ -667,40 +913,73 @@ struct SortingFeature: View {
         }
     }
     
-    private func performUndo() {
-        guard !state.isAnimatingOut else { return }
+    private func performUndo() async {
+        // 連打防止: 既にUndo処理中またはアニメーション中の場合、処理をスキップ
+        guard !state.isUndoing, !state.isAnimatingOut else { return }
+        
+        // Undo処理開始
+        state.isUndoing = true
         
         state.offset = CGSize(width: -400, height: 0)
         state.imageOpacity = 0
         
         if let assetID = sortStore.undo() {
-            if let asset = photoLibrary.allAssets.first(where: { $0.id == assetID }) {
-                // If the undone action was a favorite, remove from iOS Favorites
-                if asset.asset.isFavorite {
-                    Task {
-                        try? await photoLibrary.setFavorite(asset.asset, isFavorite: false)
+            // 削除キューからも取り消す（削除キューに含まれている場合）
+            if let index = state.deleteQueue.firstIndex(where: { $0.id == assetID }) {
+                let asset = state.deleteQueue[index]
+                state.deleteQueue.remove(at: index)
+                
+                // undo()で既にpreviousCategoryに戻されているので、ここでは削除キューから取り消すだけ
+                // アセットを未整理リストに戻す（undo()でカテゴリが未整理に戻された場合）
+                let currentCategory = sortStore.category(for: assetID)
+                if currentCategory == nil || currentCategory == .unsorted {
+                    if !state.unsortedAssets.contains(where: { $0.id == assetID }) {
+                        state.unsortedAssets.insert(asset, at: 0)
+                    }
+                    if !state.allUnsortedAssets.contains(where: { $0.id == assetID }) {
+                        state.allUnsortedAssets.insert(asset, at: 0)
                     }
                 }
+            } else if let asset = photoLibrary.allAssets.first(where: { $0.id == assetID }) {
+                // 通常のUndo処理（削除キューに含まれていない場合）
+                // undo()で既にpreviousCategoryに戻されている
+                // If the undone action was a favorite, remove from iOS Favorites
+                let currentCategory = sortStore.category(for: assetID)
+                if currentCategory == .favorite {
+                    try? await photoLibrary.setFavorite(asset.asset, isFavorite: false)
+                }
                 
-                state.unsortedAssets.insert(asset, at: 0)
+                // カテゴリが未整理に戻された場合のみ、未整理リストに追加
+                if currentCategory == nil || currentCategory == .unsorted {
+                    if !state.unsortedAssets.contains(where: { $0.id == assetID }) {
+                        state.unsortedAssets.insert(asset, at: 0)
+                    }
+                    if !state.allUnsortedAssets.contains(where: { $0.id == assetID }) {
+                        state.allUnsortedAssets.insert(asset, at: 0)
+                    }
+                }
+            }
+            
                 state.currentIndex = 0
                 state.updateCurrentAsset()
                 state.isComplete = false
-            }
         }
         
-        Task { await loadCurrentImage() }
+        await loadCurrentImage()
         
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        withAnimation(.photoSlide) {
             state.offset = .zero
             state.imageOpacity = 1.0
         }
         
         HapticFeedback.impact(.light)
+        
+        // Undo処理完了
+        state.isUndoing = false
     }
     
     private func resetPosition() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+        withAnimation(.buttonPress) {
             state.offset = .zero
             state.swipeDirection = .none
             state.imageOpacity = 1.0
@@ -713,33 +992,64 @@ struct SortingFeature: View {
         let allAssets = await photoLibrary.fetchAllAssets()
         let sortedIDs = sortStore.sortedIDs
         
-        state.unsortedAssets = allAssets.filter { !sortedIDs.contains($0.id) }
+        state.allAssets = allAssets  // 全アセットを保持（カテゴリフィルター用）
+        state.allUnsortedAssets = allAssets.filter { !sortedIDs.contains($0.id) }
         state.totalCount = allAssets.count
-        state.updateCurrentAsset()
-        
-        state.isComplete = state.unsortedAssets.isEmpty
+        state.applyFilter(state.currentFilter, sortStore: sortStore)  // Apply current filter with category filter
         
         await loadCurrentImage()
+        
+        // Show swipe hint for first-time users
+        if !hasSeenSwipeHint && !state.unsortedAssets.isEmpty {
+            try? await Task.sleep(for: .milliseconds(500))
+            withAnimation(.easeOut(duration: 0.3)) {
+                showSwipeHint = true
+            }
+        }
     }
     
     private func loadCurrentImage() async {
         guard let asset = state.currentAsset else {
+            // Clear old images when no asset
             state.currentImage = nil
             state.currentLivePhoto = nil
-            state.currentVideoItem = nil
             state.currentBurstCount = nil
             return
         }
         
+        // 読み込み対象のアセットIDを保存（競合状態を防ぐため）
+        let targetAssetID = asset.id
+        
+        // Clear old images before loading new ones to free memory
+        let oldImage = state.currentImage
+        let oldLivePhoto = state.currentLivePhoto
+        state.currentImage = nil
+        state.currentLivePhoto = nil
+        
         state.isLoadingImage = true
         state.imageOpacity = 0
+        
+        // Calculate optimal image size based on screen size and Retina scale
+        let screenSize = UIScreen.main.bounds.size
+        let scale = UIScreen.main.scale
+        // Use screen width/height with 2x scale for Retina, but cap at reasonable maximum
+        let optimalSize = CGSize(
+            width: min(screenSize.width * scale * 2, 2400),
+            height: min(screenSize.height * scale * 2, 2400)
+        )
         
         // Load main image (use fast preview for RAW images)
         let image = await photoLibrary.loadImage(
             for: asset.asset,
-            targetSize: CGSize(width: 1200, height: 1200),
+            targetSize: optimalSize,
             preferFastPreview: asset.isRAW
         )
+        
+        // アセットが変更されていないことを確認（競合状態を防ぐ）
+        guard state.currentAsset?.id == targetAssetID else {
+            state.isLoadingImage = false
+            return
+        }
         
         state.currentImage = image
         state.isLoadingImage = false
@@ -748,29 +1058,32 @@ struct SortingFeature: View {
             state.imageOpacity = 1.0
         }
         
-        // Load Live Photo if applicable
-        if asset.isLivePhoto {
-            let livePhoto = await photoLibrary.loadLivePhoto(for: asset.asset, targetSize: CGSize(width: 1200, height: 1200))
-            state.currentLivePhoto = livePhoto
-        } else {
-            state.currentLivePhoto = nil
-        }
-
-        // Load Video item if applicable
-        if asset.isVideo {
-            let item = await photoLibrary.loadVideoPlayerItem(for: asset.asset)
-            state.currentVideoItem = item
-        } else {
-            state.currentVideoItem = nil
+        // Parallel loading: Load Live Photo and burst count concurrently
+        async let livePhotoTask: PHLivePhoto? = asset.isLivePhoto ? photoLibrary.loadLivePhoto(for: asset.asset, targetSize: optimalSize) : nil
+        
+        async let burstCountTask: Int? = {
+            if let burstId = asset.burstIdentifier {
+                let burstAssets = photoLibrary.fetchBurstAssets(for: burstId)
+                return burstAssets.count > 1 ? burstAssets.count : nil
+            }
+            return nil
+        }()
+        
+        // Wait for both tasks to complete
+        let (livePhoto, burstCount) = await (livePhotoTask, burstCountTask)
+        
+        // アセットが変更されていないことを確認
+        guard state.currentAsset?.id == targetAssetID else {
+            state.isLoadingImage = false
+            return
         }
         
-        // Get burst count if applicable
-        if let burstId = asset.burstIdentifier {
-            let burstAssets = photoLibrary.fetchBurstAssets(for: burstId)
-            state.currentBurstCount = burstAssets.count
-        } else {
-            state.currentBurstCount = nil
-        }
+        // Update state with results
+        state.currentLivePhoto = livePhoto
+        state.currentBurstCount = burstCount
+
+        // Video itemは再生時に毎回新しいインスタンスを作成するため、
+        // ここでは読み込まない（VideoPlayerView内で読み込む）
         
         photoLibrary.updateCacheWindow(currentIndex: state.currentIndex, assets: state.unsortedAssets)
         
@@ -782,7 +1095,7 @@ struct SortingFeature: View {
             try await photoLibrary.deleteAssets([asset.asset])
             return true
         } catch {
-            deleteErrorMessage = "削除に失敗しました。写真アプリで削除状況をご確認ください。"
+            deleteErrorMessage = NSLocalizedString("Delete Failed Message", comment: "Delete failed error message")
             showDeleteError = true
             return false
         }
@@ -797,27 +1110,72 @@ struct SortingFeature: View {
         
         do {
             try await photoLibrary.deleteAssets(assetsToDelete.map { $0.asset })
-            // 削除成功時のみ記録（Undo対象外）
+            // 削除成功時：削除カテゴリとして記録（実際に削除された時点でカウントに含める）
             for asset in assetsToDelete {
-                sortStore.addOrUpdate(assetID: asset.id, category: .delete, recordUndo: false)
+                // 既存のUndo記録を削除（実際に削除されたため、Undoできない）
+                sortStore.removeUndoRecord(for: asset.id)
+                
+                let previousCategory = sortStore.category(for: asset.id)
+                // 実際に削除された時点で削除カテゴリとして記録（Undo記録は作成しない）
+                sortStore.addOrUpdate(assetID: asset.id, category: .delete, previousCategory: previousCategory, recordUndo: false)
             }
         } catch {
-            deleteErrorMessage = "\(assetsToDelete.count)件の削除に失敗しました。写真アプリで削除状況をご確認ください。"
+            // 削除失敗時：削除キューを復元（Undo記録はそのまま残す）
+            state.deleteQueue = assetsToDelete
+            for asset in assetsToDelete {
+                // 削除記録を削除（実際には削除されていないため）
+                sortStore.remove(assetID: asset.id)
+                // アセットを未整理リストに戻す
+                if !state.unsortedAssets.contains(where: { $0.id == asset.id }) {
+                    state.unsortedAssets.append(asset)
+                }
+                if !state.allUnsortedAssets.contains(where: { $0.id == asset.id }) {
+                    state.allUnsortedAssets.append(asset)
+                }
+            }
+            state.isComplete = false
+            state.currentIndex = min(state.currentIndex, max(0, state.unsortedAssets.count - 1))
+            state.updateCurrentAsset()
+            
+            deleteErrorMessage = String(format: NSLocalizedString("Delete Failed Multiple", comment: "Delete failed multiple error message"), assetsToDelete.count)
             showDeleteError = true
-            // 失敗した場合、アセットは既にunsortedAssetsから除外されているが、
-            // sortStoreには記録しない（実際には削除されていない可能性があるため）
         }
     }
     
     private func preloadNextImage() async {
-        let nextIndex = state.currentIndex + 1
-        guard nextIndex < state.unsortedAssets.count else {
+        // Preload multiple images in parallel for smoother swiping
+        let cacheAheadCount = 5
+        let startIndex = state.currentIndex + 1
+        let endIndex = min(startIndex + cacheAheadCount, state.unsortedAssets.count)
+        
+        guard startIndex < state.unsortedAssets.count else {
             state.nextImage = nil
             return
         }
         
-        let nextAsset = state.unsortedAssets[nextIndex]
-        state.nextImage = await photoLibrary.loadImage(for: nextAsset.asset, targetSize: CGSize(width: 1200, height: 1200))
+        // Calculate optimal image size for preloading
+        let screenSize = UIScreen.main.bounds.size
+        let scale = UIScreen.main.scale
+        let optimalSize = CGSize(
+            width: min(screenSize.width * scale * 2, 2400),
+            height: min(screenSize.height * scale * 2, 2400)
+        )
+        
+        // Load first image synchronously for immediate use
+        let nextAsset = state.unsortedAssets[startIndex]
+        state.nextImage = await photoLibrary.loadImage(for: nextAsset.asset, targetSize: optimalSize)
+        
+        // Preload remaining images in parallel (they'll be cached by PhotoLibraryClient)
+        if endIndex > startIndex + 1 {
+            await withTaskGroup(of: Void.self) { group in
+                for i in (startIndex + 1)..<endIndex {
+                    let asset = state.unsortedAssets[i]
+                    group.addTask {
+                        _ = await self.photoLibrary.loadImage(for: asset.asset, targetSize: optimalSize)
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - State Views
@@ -844,34 +1202,102 @@ struct SortingFeature: View {
                     .foregroundStyle(.white.opacity(0.8))
             }
             
-            Text("写真を読み込み中...")
+            Text(NSLocalizedString("Loading Photos...", comment: "Loading photos message"))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.white.opacity(0.6))
         }
     }
     
     private var emptyView: some View {
-        VStack(spacing: 20) {
+        // Check if filter is active
+        let isFilterActive = state.currentFilter != .all || state.selectedCategoryFilter != nil
+        
+        return VStack(spacing: 32) {
+            Spacer()
+            
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.05))
-                    .frame(width: 120, height: 120)
+                    .fill(
+                        RadialGradient(
+                            colors: [.purple.opacity(0.3), .clear],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 80
+                        )
+                    )
+                    .frame(width: 160, height: 160)
                 
-                Image(systemName: "photo.on.rectangle.angled")
-                    .font(.system(size: 48, weight: .thin))
-                    .foregroundStyle(.white.opacity(0.3))
+                Image(systemName: isFilterActive ? "line.3.horizontal.decrease.circle" : "photo.on.rectangle.angled")
+                    .font(.system(size: 60, weight: .thin))
+                    .foregroundStyle(.white.opacity(0.8))
             }
             
-            VStack(spacing: 8) {
-                Text("写真がありません")
-                    .font(.system(size: 20, weight: .semibold))
+            VStack(spacing: 12) {
+                Text(isFilterActive ? NSLocalizedString("No Matching Photos", comment: "No matching photos message") : NSLocalizedString("No Photos", comment: "No photos message"))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(.white)
                 
-                Text("フォトライブラリに写真を追加してください")
+                Text(isFilterActive ? NSLocalizedString("No Matching Photos Description", comment: "No matching photos description") : NSLocalizedString("No Photos Description", comment: "No photos description"))
                     .font(.system(size: 15))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
             }
+            
+            if isFilterActive {
+                // Clear filter button (main action when filter is active)
+                Button {
+                    withAnimation(.buttonPress) {
+                        state.applyCategoryFilter(nil, sortStore: sortStore)
+                        state.applyFilter(.all, sortStore: sortStore)
+                    }
+                } label: {
+                    Text(NSLocalizedString("Clear Filter", comment: "Clear filter button"))
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.purple, .blue],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        }
+                }
+                .padding(.horizontal, 40)
+            } else {
+                // Reload button (main action when no filter and no photos)
+                Button {
+                    Task {
+                        await loadAssets()
+                    }
+                } label: {
+                    Text(NSLocalizedString("Reload", comment: "Reload button"))
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.purple, .blue],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        }
+                }
+                .padding(.horizontal, 40)
+            }
+            
+            Spacer()
         }
+        .padding()
     }
     
     private var completedView: some View {
@@ -895,50 +1321,77 @@ struct SortingFeature: View {
             }
             
             VStack(spacing: 8) {
-                Text("整理完了!")
+                Text(NSLocalizedString("All Done!", comment: "All done title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(.white)
                 
-                Text("すべての写真を整理しました")
+                Text(NSLocalizedString("All photos have been sorted.", comment: "All photos sorted message"))
                     .font(.system(size: 15))
                     .foregroundStyle(.white.opacity(0.5))
             }
             
             // Stats
-            HStack(spacing: 24) {
+            HStack(spacing: 16) {
                 CompletedStat(count: sortStore.keepCount, label: "Keep", color: .keepColor, icon: "checkmark.circle.fill")
-                CompletedStat(count: sortStore.deleteCount + state.deleteQueue.count, label: "削除", color: .deleteColor, icon: "trash.circle.fill")
-                CompletedStat(count: sortStore.favoriteCount, label: "お気に入り", color: .favoriteColor, icon: "heart.circle.fill")
+                CompletedStat(count: sortStore.deleteCount, label: NSLocalizedString("Deleted", comment: "Deleted label"), color: .deleteColor, icon: "trash.circle.fill")
+                CompletedStat(count: sortStore.favoriteCount, label: NSLocalizedString("Favorites", comment: "Favorites label"), color: .favoriteColor, icon: "heart.circle.fill")
+                CompletedStat(count: sortStore.unsortedCount, label: NSLocalizedString("Skip", comment: "Skip label"), color: .skipColor, icon: "arrow.up.circle.fill")
             }
             .padding(.top, 8)
             
             // Delete button if queue is not empty
             if !state.deleteQueue.isEmpty {
-                VStack(spacing: 12) {
-                    Text("\(state.deleteQueue.count)件が削除待ちです")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.6))
-                    
-                    Button {
-                        showDeleteConfirmation = true
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 16, weight: .semibold))
-                            Text("\(state.deleteQueue.count)件を削除")
-                                .font(.system(size: 16, weight: .semibold))
+                VStack(spacing: 16) {
+                    HStack(spacing: 0) {
+                        // Delete button (left side)
+                        Button {
+                            showDeleteConfirmation = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "trash.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text(String(format: NSLocalizedString("Delete %d Items", comment: "Delete items button"), state.deleteQueue.count))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .monospacedDigit()
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 16)
                         }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.deleteColor)
+                        
+                        // Divider
+                        Rectangle()
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 1, height: 24)
+                        
+                        // Clear queue button (right side)
+                        Button {
+        withAnimation(.buttonPress) {
+            clearDeleteQueue()
+        }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 16)
                         }
                     }
-                    .padding(.horizontal, 40)
+                    .background {
+                        Capsule()
+                            .fill(Color.deleteColor)
+                    }
+                    .overlay {
+                        Capsule()
+                            .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                    }
+                    .shadow(color: Color.deleteColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                    
+                    Text(NSLocalizedString("Cancel with X", comment: "Cancel with X message"))
+                        .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.4))
                 }
-                .padding(.top, 8)
+                .padding(.top, 16)
             }
         }
         .padding(32)
@@ -952,48 +1405,57 @@ struct StatPill: View {
     let count: Int
     let color: Color
     let icon: String
+    var isSelected: Bool = false
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: 9, weight: .bold))
             Text("\(count)")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 12, weight: .bold, design: .rounded))
                 .monospacedDigit()
         }
-        .foregroundStyle(color)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .foregroundStyle(isSelected ? .white : color)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
         .background {
-            Capsule().fill(Color.white.opacity(0.12))
+            Capsule().fill(isSelected ? color : Color.white.opacity(0.12))
         }
+        .overlay {
+            if isSelected {
+                Capsule()
+                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+            }
+        }
+        .shadow(color: isSelected ? color.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
     }
 }
 
 @available(iOS 18.0, *)
 struct DeleteQueuePill: View {
     let queueCount: Int
-    let deletedCount: Int
+    var isSelected: Bool = false
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Image(systemName: "trash.fill")
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: 9, weight: .bold))
             Text("\(queueCount)")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 12, weight: .bold, design: .rounded))
                 .monospacedDigit()
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
         .background {
             Capsule()
                 .fill(Color.deleteColor)
         }
         .overlay {
             Capsule()
-                .strokeBorder(Color.white.opacity(0.3), lineWidth: 1)
+                .strokeBorder(isSelected ? Color.white.opacity(0.4) : Color.white.opacity(0.15), lineWidth: isSelected ? 2 : 1)
         }
+        .shadow(color: Color.deleteColor.opacity(isSelected ? 0.4 : 0.2), radius: isSelected ? 6 : 4, x: 0, y: 2)
     }
 }
 
@@ -1003,21 +1465,40 @@ struct ProgressPill: View {
     let total: Int
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Text("\(current)")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
             Text("/")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.white.opacity(0.4))
             Text("\(total)")
-                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(.white.opacity(0.5))
         }
         .monospacedDigit()
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
         .glassPill()
+    }
+}
+
+@available(iOS 18.0, *)
+struct DateChip: View {
+    let date: Date
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "calendar")
+                .font(.system(size: 10))
+            Text(date.relativeString)
+                .font(.system(size: 13, weight: .medium))
+        }
+        .foregroundStyle(.white.opacity(0.8))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .glassPill()
+        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -1033,8 +1514,8 @@ struct VideoChip: View {
                 .font(.system(size: 13, weight: .semibold))
                 .monospacedDigit()
         }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 14)
+        .foregroundStyle(.white.opacity(0.8))
+        .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .glassPill()
         .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
@@ -1050,9 +1531,78 @@ struct StampView: View {
         Text(text)
             .font(.system(size: 36, weight: .black, design: .rounded))
             .foregroundStyle(color)
-            .shadow(color: color.opacity(0.5), radius: 8, x: 0, y: 0)
-            .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+            .shadow(color: color.opacity(0.7), radius: 12, x: 0, y: 0)  // Stronger glow for better visibility
+            .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 3)  // Stronger outline
             .rotationEffect(.degrees(rotation))
+    }
+}
+
+struct SwipeHintOverlay: View {
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            // Semi-transparent background
+            Color.black.opacity(0.7)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 32) {
+                // Up - Skip
+                VStack(spacing: 8) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(Color.skipColor)
+                    Text(NSLocalizedString("Skip", comment: "Skip label"))
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Color.skipColor)
+                }
+                
+                // Swipe arrows and labels
+                HStack(spacing: 80) {
+                    // Left - Delete
+                    VStack(spacing: 8) {
+                        Image(systemName: "arrow.left.circle.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(Color.deleteColor)
+                        Text(NSLocalizedString("Delete", comment: "Delete button"))
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.deleteColor)
+                    }
+                    
+                    // Right - Keep
+                    VStack(spacing: 8) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(Color.keepColor)
+                        Text(NSLocalizedString("Save", comment: "Save button"))
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.keepColor)
+                    }
+                }
+                
+                // Double tap hint
+                VStack(spacing: 6) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color.favoriteColor)
+                    Text(NSLocalizedString("Double Tap = Favorite", comment: "Double tap hint"))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(.top, 8)
+                
+                // Dismiss hint
+                Text(NSLocalizedString("Tap to Start", comment: "Tap to start message"))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .padding(.top, 24)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onDismiss()
+        }
+        .transition(.opacity)
     }
 }
 

@@ -34,21 +34,28 @@ SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete", an
 
 ### Sorting
 - **Swipe Right**: Keep
-- **Swipe Left**: Delete immediately (moves to iOS "Recently Deleted")
+- **Swipe Left**: Add to delete queue (batch delete with "X items delete" button)
+- **Swipe Up**: Skip (decide later)
 - **Double Tap**: Add to favorites (syncs with iOS Favorites album ❤️)
 - **Long Press**: Play video or Live Photo (while pressing)
-- **Undo**: Revert the last action (except delete)
+- **Undo**: Revert the last action (can also remove from delete queue)
+- **Filter**: Filter by photos, videos, Live Photos, screenshots
+- **Category Filter**: Tap the stat pills (Keep/Delete/Favorite/Skip) in the top bar to show only that category
 
 ### Media Display
 - Full image display (Aspect Fit) - no cropping
 - Photo, video, and Live Photo support
 - RAW and burst photo support
+- Creation date display (relative time)
 
 ### Other Features
 - Persistent sorting results (SwiftData)
 - Progress display (X / Y items)
+- Statistics display (real-time count of Keep/Delete/Favorite/Skip)
 - Large library support (PHCachingImageManager for prefetching)
 - 2-tab interface: Sort / Settings
+- Tip Jar: Support the developer with optional in-app purchases (StoreKit 2)
+- Settings screen with statistics, gesture guide, haptic feedback toggle, and support links
 
 ## Requirements
 
@@ -87,8 +94,10 @@ SwipeSort-iOS/
 │   │   ├── PhotoLibrary/
 │   │   │   ├── PhotoAsset.swift    # Asset wrapper
 │   │   │   └── PhotoLibraryClient.swift  # Photo access
-│   │   └── Storage/
-│   │       └── SortResultStore.swift     # SwiftData store
+│   │   ├── Storage/
+│   │   │   └── SortResultStore.swift     # SwiftData store
+│   │   └── Store/
+│   │       └── TipStore.swift            # StoreKit 2 tip jar
 │   ├── Features/
 │   │   ├── Sorting/
 │   │   │   ├── SortingFeature.swift      # Sorting screen
@@ -96,9 +105,13 @@ SwipeSort-iOS/
 │   │   │   └── Components/
 │   │   │       ├── SwipeOverlay.swift
 │   │   │       ├── LivePhotoView.swift
-│   │   │       └── VideoPlayerView.swift
+│   │   │       ├── VideoPlayerView.swift
+│   │   │       ├── BurstSelectorView.swift
+│   │   │       ├── HeartAnimation.swift
+│   │   │       └── MediaBadge.swift
 │   │   └── Settings/
-│   │       └── SettingsFeature.swift     # Settings screen
+│   │       ├── SettingsFeature.swift     # Settings screen
+│   │       └── TipJarView.swift          # Tip jar for developer support
 │   ├── Shared/
 │   │   ├── Theme/
 │   │   │   └── AppTheme.swift      # Colors, gradients, haptics
@@ -119,9 +132,12 @@ SwipeSort-iOS/
 ## Usage
 
 1. Launch the app and grant photo library access
-2. Swipe photos left/right to sort, double tap for favorites
+2. Swipe photos left/right to sort, swipe up to skip, double tap for favorites
 3. Long press to preview videos and Live Photos
-4. Deleted items go to iOS "Recently Deleted" (recoverable for 30 days)
+4. Use filter button to filter by photos, videos, Live Photos, etc.
+5. Swipe left to add to delete queue, tap "X items delete" button to batch delete
+6. Tap "Undo" button to revert the last action (can also remove from delete queue)
+7. Deleted items go to iOS "Recently Deleted" (recoverable for 30 days)
 
 ## License
 

@@ -29,6 +29,13 @@ struct SettingsFeature: View {
     private var feedbackMailURL: URL? {
         URL(string: "mailto:\(supportEmail)?subject=SwipeSort%20Feedback")
     }
+    
+    private var discordURL: URL? {
+        guard let raw = Bundle.main.object(forInfoDictionaryKey: "SwipeSortDiscordURL") as? String else { return nil }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return URL(string: trimmed)
+    }
 
     private var appStoreReviewURL: URL? {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "SwipeSortAppStoreID") as? String else { return nil }
@@ -71,22 +78,22 @@ struct SettingsFeature: View {
                 .padding(.bottom, 20)
             }
             .background(Color.appBackground.ignoresSafeArea())
-            .navigationTitle("設定")
+            .navigationTitle(NSLocalizedString("Settings", comment: "Settings title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .confirmationDialog(
-                "データをリセット",
+                NSLocalizedString("Reset Data", comment: "Reset data confirmation title"),
                 isPresented: $showResetConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("リセット", role: .destructive) {
+                Button(NSLocalizedString("Reset", comment: "Reset button"), role: .destructive) {
                     sortStore.reset()
                     HapticFeedback.notification(.success)
                 }
-                Button("キャンセル", role: .cancel) {}
+                Button(NSLocalizedString("Cancel", comment: "Cancel button"), role: .cancel) {}
             } message: {
-                Text("すべての整理結果とUndo履歴が削除されます。この操作は取り消せません。")
+                Text(NSLocalizedString("Reset Data Message", comment: "Reset data confirmation message"))
             }
             .sheet(isPresented: $showAbout) {
                 AboutView()
@@ -94,8 +101,8 @@ struct SettingsFeature: View {
             .sheet(isPresented: $showTipJar) {
                 TipJarView()
             }
-            .alert("開けませんでした", isPresented: $showLinkError) {
-                Button("OK") {}
+            .alert(NSLocalizedString("Could Not Open", comment: "Could not open alert"), isPresented: $showLinkError) {
+                Button(NSLocalizedString("OK", comment: "OK button")) {}
             } message: {
                 Text(linkErrorMessage)
             }
@@ -108,7 +115,7 @@ struct SettingsFeature: View {
     private var statisticsCard: some View {
         VStack(spacing: 20) {
             HStack {
-                Text("統計")
+                Text(NSLocalizedString("Statistics", comment: "Statistics title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -116,7 +123,7 @@ struct SettingsFeature: View {
                 Spacer()
             }
             
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 StatisticItem(
                     count: sortStore.keepCount,
                     label: "Keep",
@@ -126,16 +133,23 @@ struct SettingsFeature: View {
                 
                 StatisticItem(
                     count: sortStore.deleteCount,
-                    label: "削除済み",
+                    label: NSLocalizedString("Deleted", comment: "Deleted label"),
                     color: .deleteColor,
                     icon: "trash.circle.fill"
                 )
                 
                 StatisticItem(
                     count: sortStore.favoriteCount,
-                    label: "お気に入り",
+                    label: NSLocalizedString("Favorites", comment: "Favorites label"),
                     color: .favoriteColor,
                     icon: "heart.circle.fill"
+                )
+                
+                StatisticItem(
+                    count: sortStore.unsortedCount,
+                    label: NSLocalizedString("Skip", comment: "Skip label"),
+                    color: .skipColor,
+                    icon: "arrow.up.circle.fill"
                 )
             }
             
@@ -143,14 +157,14 @@ struct SettingsFeature: View {
                 .background(.white.opacity(0.1))
             
             HStack {
-                Text("合計")
+                Text(NSLocalizedString("Total", comment: "Total label"))
                     .foregroundStyle(.white.opacity(0.6))
                 Spacer()
                 Text("\(sortStore.totalSortedCount)")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white)
-                Text("枚")
+                Text(NSLocalizedString("items", comment: "Items unit"))
                     .foregroundStyle(.white.opacity(0.5))
             }
         }
@@ -163,7 +177,7 @@ struct SettingsFeature: View {
     private var gestureGuideCard: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("操作方法")
+                Text(NSLocalizedString("Operations", comment: "Operations title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -174,21 +188,33 @@ struct SettingsFeature: View {
             VStack(spacing: 12) {
                 GestureRow(
                     icon: "arrow.right",
-                    direction: "右スワイプ",
-                    action: "Keep",
+                    direction: NSLocalizedString("Swipe Right", comment: "Swipe right"),
+                    action: NSLocalizedString("Keep", comment: "Keep action"),
                     color: .keepColor
                 )
                 GestureRow(
                     icon: "arrow.left",
-                    direction: "左スワイプ",
-                    action: "削除",
+                    direction: NSLocalizedString("Swipe Left", comment: "Swipe left"),
+                    action: NSLocalizedString("Add to Delete Queue", comment: "Add to delete queue"),
                     color: .deleteColor
                 )
                 GestureRow(
+                    icon: "arrow.up",
+                    direction: NSLocalizedString("Swipe Up", comment: "Swipe up"),
+                    action: NSLocalizedString("Skip", comment: "Skip action"),
+                    color: .skipColor
+                )
+                GestureRow(
                     icon: "hand.tap.fill",
-                    direction: "ダブルタップ",
-                    action: "お気に入り",
+                    direction: NSLocalizedString("Double Tap", comment: "Double tap"),
+                    action: NSLocalizedString("Favorite", comment: "Favorite action"),
                     color: .favoriteColor
+                )
+                GestureRow(
+                    icon: "hand.point.up.left.fill",
+                    direction: NSLocalizedString("Long Press", comment: "Long press"),
+                    action: NSLocalizedString("Play (Video/Live Photo)", comment: "Play video/Live Photo"),
+                    color: .blue
                 )
             }
         }
@@ -201,7 +227,7 @@ struct SettingsFeature: View {
     private var settingsCard: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("設定")
+                Text(NSLocalizedString("Settings", comment: "Settings title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -221,10 +247,10 @@ struct SettingsFeature: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("触覚フィードバック")
+                        Text(NSLocalizedString("Haptic Feedback", comment: "Haptic feedback"))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
-                        Text("スワイプ時に振動")
+                        Text(NSLocalizedString("Vibrate on Swipe", comment: "Vibrate on swipe"))
                             .font(.system(size: 12))
                             .foregroundStyle(.white.opacity(0.5))
                     }
@@ -241,7 +267,7 @@ struct SettingsFeature: View {
     private var dataCard: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("データ")
+                Text(NSLocalizedString("Data Management", comment: "Data management title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -263,10 +289,10 @@ struct SettingsFeature: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("データをリセット")
+                        Text(NSLocalizedString("Reset All Data", comment: "Reset all data"))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.white)
-                        Text("すべての整理結果を削除")
+                        Text(NSLocalizedString("Delete All Sorting Results", comment: "Delete all sorting results"))
                             .font(.system(size: 12))
                             .foregroundStyle(.white.opacity(0.5))
                     }
@@ -288,7 +314,7 @@ struct SettingsFeature: View {
     private var supportCard: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("サポート")
+                Text(NSLocalizedString("Support", comment: "Support title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -297,19 +323,41 @@ struct SettingsFeature: View {
             }
             
             VStack(spacing: 0) {
-                // Contact / Feedback
+                // Contact / Feedback - Email
                 Button {
                     if let url = feedbackMailURL {
                         UIApplication.shared.open(url)
                     } else {
-                        linkErrorMessage = "お問い合わせ用メールアドレスが未設定です。"
+                        linkErrorMessage = NSLocalizedString("Email Not Configured", comment: "Email not configured")
                         showLinkError = true
                     }
                 } label: {
                     SettingsRow(
                         icon: "envelope",
                         iconColor: .cyan,
-                        title: "お問い合わせ・フィードバック",
+                        title: NSLocalizedString("Send Feedback", comment: "Send feedback"),
+                        showChevron: true,
+                        isExternal: true
+                    )
+                }
+                
+                Divider()
+                    .background(.white.opacity(0.1))
+                    .padding(.leading, 48)
+                
+                // Contact / Feedback - Discord
+                Button {
+                    if let url = discordURL {
+                        UIApplication.shared.open(url)
+                    } else {
+                        linkErrorMessage = NSLocalizedString("Discord Not Configured", comment: "Discord not configured")
+                        showLinkError = true
+                    }
+                } label: {
+                    SettingsRow(
+                        icon: "message.fill",
+                        iconColor: .indigo,
+                        title: NSLocalizedString("Discord Support", comment: "Discord support"),
                         showChevron: true,
                         isExternal: true
                     )
@@ -324,14 +372,14 @@ struct SettingsFeature: View {
                     if let url = appStoreReviewURL {
                         UIApplication.shared.open(url)
                     } else {
-                        linkErrorMessage = "App Store IDが未設定です（Info.plistの`SwipeSortAppStoreID`を設定してください）。"
+                        linkErrorMessage = NSLocalizedString("App Store ID Not Configured", comment: "App Store ID not configured")
                         showLinkError = true
                     }
                 } label: {
                     SettingsRow(
                         icon: "star",
                         iconColor: .yellow,
-                        title: "レビューを書く",
+                        title: NSLocalizedString("Rate on App Store", comment: "Rate on App Store"),
                         showChevron: true,
                         isExternal: true
                     )
@@ -362,10 +410,10 @@ struct SettingsFeature: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("開発者をサポート")
+                            Text(NSLocalizedString("Developer Support", comment: "Developer support"))
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundStyle(.white)
-                            Text("チップで応援する")
+                            Text(NSLocalizedString("Support with Tip", comment: "Support with tip"))
                                 .font(.system(size: 12))
                                 .foregroundStyle(.white.opacity(0.5))
                         }
@@ -389,7 +437,7 @@ struct SettingsFeature: View {
     private var aboutCard: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("情報")
+                Text(NSLocalizedString("About", comment: "About title"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.5))
                     .textCase(.uppercase)
@@ -404,7 +452,7 @@ struct SettingsFeature: View {
                     SettingsRow(
                         icon: "info.circle",
                         iconColor: .blue,
-                        title: "SwipeSortについて",
+                        title: NSLocalizedString("About", comment: "About this app"),
                         showChevron: true
                     )
                 }
@@ -417,14 +465,14 @@ struct SettingsFeature: View {
                     if let url = privacyPolicyURL {
                         UIApplication.shared.open(url)
                     } else {
-                        linkErrorMessage = "プライバシーポリシーURLが未設定です（Info.plistの`SwipeSortPrivacyPolicyURL`を設定してください）。"
+                        linkErrorMessage = NSLocalizedString("Privacy Policy URL Not Configured", comment: "Privacy policy URL not configured")
                         showLinkError = true
                     }
                 } label: {
                     SettingsRow(
                         icon: "hand.raised",
                         iconColor: .green,
-                        title: "プライバシーポリシー",
+                        title: NSLocalizedString("Privacy Policy", comment: "Privacy policy"),
                         showChevron: true,
                         isExternal: true
                     )
@@ -571,7 +619,7 @@ struct AboutView: View {
                             Text("SwipeSort")
                                 .font(.system(size: 28, weight: .bold))
                             
-                            Text("バージョン 1.0")
+                            Text(String(format: NSLocalizedString("Version %@", comment: "Version"), "1.0"))
                                 .font(.system(size: 14))
                                 .foregroundStyle(.secondary)
                         }
@@ -581,48 +629,78 @@ struct AboutView: View {
                     // Description
                     VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("SwipeSortについて")
+                            Text(NSLocalizedString("About", comment: "About this app"))
                                 .font(.system(size: 17, weight: .semibold))
                             
-                            Text("直感的なスワイプ操作で写真を簡単に整理できるアプリです。大量の写真も素早くKeep・削除・お気に入りに分類できます。")
+                            Text(NSLocalizedString("About Description", comment: "About description"))
                                 .font(.system(size: 15))
                                 .foregroundStyle(.secondary)
                                 .lineSpacing(4)
                         }
                         
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("操作方法")
+                            Text(NSLocalizedString("Operations", comment: "Operations title"))
                                 .font(.system(size: 17, weight: .semibold))
                             
                             VStack(spacing: 12) {
                                 InstructionRow(
                                     icon: "arrow.right.circle.fill",
                                     color: .keepColor,
-                                    text: "右スワイプ",
-                                    description: "Keep（残す）"
+                                    text: NSLocalizedString("Swipe Right", comment: "Swipe right"),
+                                    description: NSLocalizedString("Keep", comment: "Keep action")
                                 )
                                 InstructionRow(
                                     icon: "arrow.left.circle.fill",
                                     color: .deleteColor,
-                                    text: "左スワイプ",
-                                    description: "削除"
+                                    text: NSLocalizedString("Swipe Left", comment: "Swipe left"),
+                                    description: NSLocalizedString("Add to Delete Queue", comment: "Add to delete queue")
+                                )
+                                InstructionRow(
+                                    icon: "arrow.up.circle.fill",
+                                    color: .skipColor,
+                                    text: NSLocalizedString("Swipe Up", comment: "Swipe up"),
+                                    description: NSLocalizedString("Skip", comment: "Skip action")
                                 )
                                 InstructionRow(
                                     icon: "heart.circle.fill",
                                     color: .favoriteColor,
-                                    text: "ダブルタップ",
-                                    description: "お気に入り"
+                                    text: NSLocalizedString("Double Tap", comment: "Double tap"),
+                                    description: NSLocalizedString("Favorite", comment: "Favorite action")
+                                )
+                                InstructionRow(
+                                    icon: "hand.point.up.left.fill",
+                                    color: .blue,
+                                    text: NSLocalizedString("Long Press", comment: "Long press"),
+                                    description: NSLocalizedString("Play (Video/Live Photo)", comment: "Play video/Live Photo")
                                 )
                             }
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("削除について")
+                            Text(NSLocalizedString("About Delete", comment: "About delete"))
                                 .font(.system(size: 17, weight: .semibold))
                             
-                        Text("左スワイプで写真は即時削除され、iOSの「最近削除した項目」に移動します。30日以内であれば復元できます。")
+                            Text(NSLocalizedString("About Delete Description", comment: "About delete description"))
                                 .font(.system(size: 15))
                                 .foregroundStyle(.secondary)
+                                .lineSpacing(4)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(NSLocalizedString("Other Features", comment: "Other features"))
+                                .font(.system(size: 17, weight: .semibold))
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(NSLocalizedString("• Filter: Filter by photos, videos, Live Photos, etc.", comment: "Filter feature"))
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(.secondary)
+                                Text(NSLocalizedString("• Undo: Cancel the last action", comment: "Undo feature"))
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(.secondary)
+                                Text(NSLocalizedString("• Date Display: Show photo creation date", comment: "Date display feature"))
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(.secondary)
+                            }
                                 .lineSpacing(4)
                         }
                     }
@@ -632,13 +710,13 @@ struct AboutView: View {
                 }
             }
             .background(Color.appBackground.ignoresSafeArea())
-            .navigationTitle("SwipeSortについて")
+            .navigationTitle(NSLocalizedString("About", comment: "About this app"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("閉じる") { dismiss() }
+                    Button(NSLocalizedString("Close", comment: "Close button")) { dismiss() }
                 }
             }
         }

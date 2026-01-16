@@ -16,16 +16,16 @@ enum SortCategory: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .unsorted: return "未整理"
-        case .keep: return "Keep"
-        case .delete: return "削除済み"
-        case .favorite: return "お気に入り"
+        case .unsorted: return NSLocalizedString("Unsorted", comment: "Unsorted category")
+        case .keep: return NSLocalizedString("Keep", comment: "Keep category")
+        case .delete: return NSLocalizedString("Deleted", comment: "Deleted category")
+        case .favorite: return NSLocalizedString("Favorites", comment: "Favorites category")
         }
     }
     
     var iconName: String {
         switch self {
-        case .unsorted: return "questionmark.circle"
+        case .unsorted: return "arrow.up.circle.fill"  // Skip uses arrow.up
         case .keep: return "checkmark.circle.fill"
         case .delete: return "trash.circle.fill"
         case .favorite: return "heart.circle.fill"
@@ -46,12 +46,14 @@ enum SortCategory: String, Codable, CaseIterable, Sendable {
 enum SwipeDirection: String, Codable, Sendable {
     case left   // Delete
     case right  // Keep
+    case up     // Skip (decide later)
     case none
     
     var category: SortCategory {
         switch self {
         case .left: return .delete
         case .right: return .keep
+        case .up: return .unsorted  // Skip keeps it unsorted
         case .none: return .unsorted
         }
     }

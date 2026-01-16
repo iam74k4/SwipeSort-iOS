@@ -15,6 +15,7 @@ extension Color {
     static let deleteColor = Color(red: 1.0, green: 0.3, blue: 0.3)
     static let favoriteColor = Color(red: 1.0, green: 0.75, blue: 0.0)
     static let unsortedColor = Color.gray
+    static let skipColor = Color(red: 0.2, green: 0.7, blue: 1.0)  // Bright cyan for skip (better visibility)
     
     // Gradient colors
     static let keepGradientStart = Color(red: 0.2, green: 0.8, blue: 0.4)
@@ -55,16 +56,6 @@ extension LinearGradient {
 // MARK: - View Modifiers
 
 extension View {
-    /// Apply Liquid Glass effect background (iOS 26+)
-    @available(iOS 18.0, *)
-    func liquidGlass(cornerRadius: CGFloat = 20) -> some View {
-        self
-            .background {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            }
-    }
-    
     /// Apply glass card style for settings and content cards
     @available(iOS 18.0, *)
     func glassCard(cornerRadius: CGFloat = 20) -> some View {
@@ -130,5 +121,6 @@ enum HapticFeedback {
 
 enum SwipeThreshold {
     static let horizontal: CGFloat = 120
+    static let vertical: CGFloat = 100
     static let detectionStart: CGFloat = 50
 }

@@ -39,27 +39,27 @@ struct TipJarView: View {
                     .padding(.vertical, 32)
                 }
             }
-            .navigationTitle("開発者をサポート")
+            .navigationTitle(NSLocalizedString("Support Developer", comment: "Support developer"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("閉じる") { dismiss() }
+                    Button(NSLocalizedString("Close", comment: "Close button")) { dismiss() }
                 }
             }
-            .alert("エラー", isPresented: Binding(
+            .alert(NSLocalizedString("Purchase Failed", comment: "Purchase failed"), isPresented: Binding(
                 get: { tipStore.purchaseError != nil },
                 set: { if !$0 { tipStore.purchaseError = nil } }
             )) {
-                Button("OK") { tipStore.purchaseError = nil }
+                Button(NSLocalizedString("OK", comment: "OK button")) { tipStore.purchaseError = nil }
             } message: {
                 Text(tipStore.purchaseError ?? "")
             }
-            .alert("ありがとうございます！ 🎉", isPresented: $tipStore.showThankYou) {
-                Button("閉じる") { dismiss() }
+            .alert(NSLocalizedString("Thank You!", comment: "Thank you"), isPresented: $tipStore.showThankYou) {
+                Button(NSLocalizedString("Close", comment: "Close button")) { dismiss() }
             } message: {
-                Text("あなたのサポートに心から感謝します！\n開発のモチベーションになります。")
+                Text(NSLocalizedString("Thank You Message", comment: "Thank you message"))
             }
         }
         .preferredColorScheme(.dark)
@@ -94,12 +94,12 @@ struct TipJarView: View {
             }
             
             VStack(spacing: 8) {
-                Text("SwipeSortを気に入っていただけましたか？")
+                Text(NSLocalizedString("Did You Like SwipeSort?", comment: "Did you like SwipeSort"))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                 
-                Text("チップで開発者を応援できます。\nいただいたサポートは今後の開発に活用されます。")
+                Text(NSLocalizedString("Tip Message", comment: "Tip message"))
                     .font(.system(size: 15))
                     .foregroundStyle(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct TipJarView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 .scaleEffect(1.2)
             
-            Text("読み込み中...")
+            Text(NSLocalizedString("Loading...", comment: "Loading"))
                 .font(.system(size: 14))
                 .foregroundStyle(.white.opacity(0.5))
         }
@@ -131,14 +131,14 @@ struct TipJarView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(.yellow)
             
-            Text("商品を読み込めませんでした")
+            Text(NSLocalizedString("Failed to Load Products", comment: "Failed to load products"))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.white)
             
             Button {
                 Task { await tipStore.loadProducts() }
             } label: {
-                Text("再試行")
+                Text(NSLocalizedString("Retry", comment: "Retry button"))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
@@ -169,11 +169,11 @@ struct TipJarView: View {
     
     private var footerView: some View {
         VStack(spacing: 8) {
-            Text("チップは任意です")
+            Text(NSLocalizedString("Tips are Optional", comment: "Tips are optional"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.4))
             
-            Text("チップなしでもすべての機能を\nご利用いただけます。")
+            Text(NSLocalizedString("All Features Available Without Tips", comment: "All features available without tips"))
                 .font(.system(size: 12))
                 .foregroundStyle(.white.opacity(0.3))
                 .multilineTextAlignment(.center)
@@ -204,7 +204,7 @@ struct TipButton: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.white)
                     
-                    Text("開発者に感謝を伝える")
+                    Text(NSLocalizedString("Show Appreciation to Developer", comment: "Show appreciation to developer"))
                         .font(.system(size: 12))
                         .foregroundStyle(.white.opacity(0.5))
                 }

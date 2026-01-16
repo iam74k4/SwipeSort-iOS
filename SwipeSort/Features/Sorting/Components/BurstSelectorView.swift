@@ -67,11 +67,11 @@ struct BurstSelectorView: View {
     
     private var headerView: some View {
         VStack(spacing: 8) {
-            Text("バースト写真")
+            Text(NSLocalizedString("Burst Photos", comment: "Burst photos"))
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.white)
             
-            Text("\(burstAssets.count)枚から1枚を選択")
+            Text(String(format: NSLocalizedString("Select 1 from %d Photos", comment: "Select 1 from N photos"), burstAssets.count))
                 .font(.system(size: 15))
                 .foregroundStyle(.white.opacity(0.6))
         }
@@ -196,7 +196,7 @@ struct BurstSelectorView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 16, weight: .semibold))
-                    Text("これを残す（他を削除）")
+                    Text(NSLocalizedString("Keep This (Delete Others)", comment: "Keep this and delete others"))
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(.white)
@@ -219,7 +219,7 @@ struct BurstSelectorView: View {
                 Button {
                     onKeepAll()
                 } label: {
-                    Text("すべてKeep")
+                    Text(NSLocalizedString("Keep All", comment: "Keep all"))
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -233,7 +233,7 @@ struct BurstSelectorView: View {
                 Button {
                     onCancel()
                 } label: {
-                    Text("スキップ")
+                    Text(NSLocalizedString("Skip", comment: "Skip label"))
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white.opacity(0.7))
                         .frame(maxWidth: .infinity)

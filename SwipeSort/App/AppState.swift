@@ -33,8 +33,8 @@ final class AppState {
         
         var title: String {
             switch self {
-            case .sorting: return "整理"
-            case .settings: return "設定"
+            case .sorting: return NSLocalizedString("Sort", comment: "Sort tab")
+            case .settings: return NSLocalizedString("Settings", comment: "Settings tab")
             }
         }
         

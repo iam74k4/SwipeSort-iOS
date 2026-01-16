@@ -65,11 +65,11 @@ struct RootView: View {
                 }
                 
                 VStack(spacing: 12) {
-                    Text("写真へのアクセスが必要です")
+                    Text(NSLocalizedString("Photo Access Required", comment: "Photo access required"))
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(.white)
                     
-                    Text("SwipeSortは写真と動画を整理するために、\nフォトライブラリへのアクセスが必要です。")
+                    Text(NSLocalizedString("Photo Access Description", comment: "Photo access description"))
                         .font(.system(size: 15))
                         .foregroundStyle(.white.opacity(0.6))
                         .multilineTextAlignment(.center)
@@ -81,7 +81,7 @@ struct RootView: View {
                         await appState.requestAuthorization()
                     }
                 } label: {
-                    Text("アクセスを許可")
+                    Text(NSLocalizedString("Allow Access", comment: "Allow access button"))
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -125,8 +125,8 @@ struct RootView: View {
         .onAppear {
             showStorageAlertIfNeeded()
         }
-        .alert("保存に関するお知らせ", isPresented: $showStorageAlert) {
-            Button("OK") {}
+        .alert(NSLocalizedString("Storage Alert Title", comment: "Storage alert title"), isPresented: $showStorageAlert) {
+            Button(NSLocalizedString("OK", comment: "OK button")) {}
         } message: {
             Text(storageAlertMessage)
         }
@@ -138,19 +138,19 @@ struct RootView: View {
 
         // Priority: critical > fallback > non-critical error
         if sortStore.isCriticalError {
-            storageAlertMessage = "端末内への保存領域の初期化に失敗しました。\n\n整理結果は保存されず、アプリを終了すると失われる可能性があります。端末の空き容量を確保して再起動してください。"
+            storageAlertMessage = NSLocalizedString("Storage Critical Error", comment: "Storage critical error")
             showStorageAlert = true
             return
         }
 
         if sortStore.isUsingFallbackStorage {
-            storageAlertMessage = "端末内への保存領域の初期化に失敗したため、一時的な保存（メモリ上）で動作しています。\n\nアプリを終了すると整理結果が失われます。端末の空き容量を確保して再起動してください。"
+            storageAlertMessage = NSLocalizedString("Storage Fallback Error", comment: "Storage fallback error")
             showStorageAlert = true
             return
         }
 
         if sortStore.hasStorageError {
-            storageAlertMessage = "保存領域の初期化で問題が発生しました。\n\n一部の整理結果が保存されない可能性があります。端末の空き容量を確保して再起動してください。"
+            storageAlertMessage = NSLocalizedString("Storage Error", comment: "Storage error")
             showStorageAlert = true
         }
     }
@@ -182,11 +182,11 @@ struct RootView: View {
                 }
                 
                 VStack(spacing: 12) {
-                    Text("アクセスが拒否されています")
+                    Text(NSLocalizedString("Access Denied", comment: "Access denied"))
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(.white)
                     
-                    Text("設定アプリからSwipeSortへの\n写真アクセスを許可してください。")
+                    Text(NSLocalizedString("Access Denied Description", comment: "Access denied description"))
                         .font(.system(size: 15))
                         .foregroundStyle(.white.opacity(0.6))
                         .multilineTextAlignment(.center)
@@ -198,7 +198,7 @@ struct RootView: View {
                         UIApplication.shared.open(url)
                     }
                 } label: {
-                    Text("設定を開く")
+                    Text(NSLocalizedString("Open Settings", comment: "Open settings button"))
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)

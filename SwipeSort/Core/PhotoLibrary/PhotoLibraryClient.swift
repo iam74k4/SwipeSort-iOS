@@ -13,6 +13,14 @@ import UIKit
 import SwiftUI
 import os
 
+// MARK: - Cache State
+
+/// Nonisolated class to store cache state (since @Observable classes can't have nonisolated vars)
+private final class CacheState: @unchecked Sendable {
+    var cachedAssets: Set<PHAsset> = []
+    let lock = NSLock()
+}
+
 // MARK: - Photo Library Client
 
 @MainActor
@@ -31,6 +39,9 @@ final class PhotoLibraryClient {
     // MARK: - Private Properties
     
     private nonisolated let imageManager = PHCachingImageManager()
+    
+    // Track currently cached assets to stop old cache when window moves
+    private nonisolated let cacheState = CacheState()
     
     // MARK: - Constants
     
@@ -160,6 +171,7 @@ final class PhotoLibraryClient {
         
         final class ThumbnailLoadState: @unchecked Sendable {
             var hasResumed = false
+            var lastImage: UIImage?
             let lock = NSLock()
         }
         let state = ThumbnailLoadState()
@@ -176,18 +188,28 @@ final class PhotoLibraryClient {
                 
                 guard !state.hasResumed else { return }
                 
+                // Store image if available (even if degraded)
+                if let image = image {
+                    state.lastImage = image
+                }
+                
                 let isError = info?[PHImageErrorKey] != nil
                 let isCancelled = info?[PHImageCancelledKey] as? Bool ?? false
+                let isDegraded = info?[PHImageResultIsDegradedKey] as? Bool ?? false
                 
+                // Early return on error or cancellation (don't wait for timeout)
                 if isError || isCancelled {
                     state.hasResumed = true
+                    self.logger.warning("Thumbnail load failed: error=\(isError), cancelled=\(isCancelled) for asset \(asset.localIdentifier)")
                     continuation.resume(returning: nil)
                     return
                 }
                 
-                if let image = image {
+                // Return immediately when we have a non-degraded image
+                if let image = image, !isDegraded {
                     state.hasResumed = true
                     continuation.resume(returning: image)
+                    return
                 }
             }
             
@@ -199,7 +221,8 @@ final class PhotoLibraryClient {
                     state.hasResumed = true
                     self?.imageManager.cancelImageRequest(requestID)
                     self?.logger.warning("Thumbnail load timeout after \(Self.thumbnailLoadTimeout)s for asset \(asset.localIdentifier)")
-                    continuation.resume(returning: nil)
+                    // Return last image if available (even if degraded), otherwise nil
+                    continuation.resume(returning: state.lastImage)
                 }
             }
         }
@@ -352,18 +375,40 @@ final class PhotoLibraryClient {
         guard currentIndex < endIndex else { return }
         
         let assetsToCache = assets[currentIndex..<endIndex].map { $0.asset }
+        let assetsToCacheSet = Set(assetsToCache)
         
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .highQualityFormat
-        options.resizeMode = .fast
-        options.isNetworkAccessAllowed = true
+        cacheState.lock.lock()
+        defer { cacheState.lock.unlock() }
         
-        imageManager.startCachingImages(
-            for: assetsToCache,
-            targetSize: Self.defaultTargetSize,
-            contentMode: .aspectFit,
-            options: options
-        )
+        // Stop caching for assets that are no longer in the window
+        let assetsToStop = cacheState.cachedAssets.subtracting(assetsToCacheSet)
+        if !assetsToStop.isEmpty {
+            imageManager.stopCachingImages(
+                for: Array(assetsToStop),
+                targetSize: Self.defaultTargetSize,
+                contentMode: .aspectFit,
+                options: nil
+            )
+        }
+        
+        // Start caching for new assets in the window
+        let assetsToStart = assetsToCacheSet.subtracting(cacheState.cachedAssets)
+        if !assetsToStart.isEmpty {
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.resizeMode = .fast
+            options.isNetworkAccessAllowed = true
+            
+            imageManager.startCachingImages(
+                for: Array(assetsToStart),
+                targetSize: Self.defaultTargetSize,
+                contentMode: .aspectFit,
+                options: options
+            )
+        }
+        
+        // Update cached assets set
+        cacheState.cachedAssets = assetsToCacheSet
     }
     
     // MARK: - Helpers

@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version:
@@ -27,6 +29,28 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
+      
+      - name: Check if tag exists on main branch
+        id: check_tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Checking if tag $TAG_NAME exists on main branch..."
+          
+          # Fetch main branch
+          git fetch origin main:main 2>/dev/null || true
+          
+          # Check if tag exists on main branch
+          if git merge-base --is-ancestor "$TAG_NAME" main 2>/dev/null || git branch -r --contains "$TAG_NAME" | grep -q "origin/main"; then
+            echo "✅ Tag $TAG_NAME exists on main branch"
+            echo "tag_on_main=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Tag $TAG_NAME does not exist on main branch"
+            echo "tag_on_main=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
       
       - name: Extract version
         id: version
@@ -34,12 +58,19 @@ jobs:
           if [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION="${{ github.event.inputs.version }}"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            # Only proceed if tag is on main branch
+            if [[ "${{ steps.check_tag.outputs.tag_on_main }}" != "true" ]]; then
+              echo "❌ Tag is not on main branch. Skipping TestFlight upload."
+              exit 1
+            fi
             VERSION=${GITHUB_REF#refs/tags/v}
           elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
-            # For main branch, use version from project or default
+            # For main branch push, check if it's a tag creation
+            # This is a fallback - normally tags trigger the workflow
             VERSION="1.0.0"
           else
-            VERSION="1.0.0"
+            echo "❌ This workflow only runs on main branch or tags on main branch"
+            exit 1
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"

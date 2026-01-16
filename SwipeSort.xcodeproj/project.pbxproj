@@ -30,6 +30,7 @@
 		AA00002B /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* TipJarView.swift */; };
 		AA00002D /* TipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* TipStore.swift */; };
 		AA00002F /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AA000032 /* Configuration.storekit */; };
+		AA693FA6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA693FA7 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +59,9 @@
 		AA000030 /* SwipeSort.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwipeSort.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA000032 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		AA693FA7 /* Localizable.strings */ = {isa = PBXVariantGroup; children = (AAAE2777 /* ja */, AA081223 /* en */); name = Localizable.strings; sourceTree = "<group>"; };
+		AAAE2777 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AA081223 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,10 +90,19 @@
 				AA000055 /* Features */,
 				AA000056 /* Shared */,
 				AA000013 /* Assets.xcassets */,
+				AA52A2A6 /* Resources */,
 				AA000031 /* Info.plist */,
 				AA000032 /* Configuration.storekit */,
 			);
 			path = SwipeSort;
+			sourceTree = "<group>";
+		};
+		AA52A2A6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AA693FA7 /* Localizable.strings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		AA000052 /* Products */ = {
@@ -280,6 +293,7 @@
 			files = (
 				AA000003 /* Assets.xcassets in Resources */,
 				AA00002F /* Configuration.storekit in Resources */,
+				AA693FA6 /* Localizable.strings in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */

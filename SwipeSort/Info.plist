@@ -16,6 +16,8 @@
 	<true/>
 	<key>SwipeSortSupportEmail</key>
 	<string>iam74k4@gmail.com</string>
+	<key>SwipeSortDiscordURL</key>
+	<string>https://discord.gg/your-server</string>
 	<key>SwipeSortAppStoreID</key>
 	<string>000000000</string>
 	<key>SwipeSortPrivacyPolicyURL</key>
