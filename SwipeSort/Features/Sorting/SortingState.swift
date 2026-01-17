@@ -113,6 +113,11 @@ final class SortingState {
     
     // MARK: - Methods
     
+    /// Updates the current asset based on the current index.
+    ///
+    /// This method sets `currentAsset` to the asset at `currentIndex` in the
+    /// `unsortedAssets` array, or `nil` if the array is empty. It also resets
+    /// Live Photo and video playback state when the asset changes.
     func updateCurrentAsset() {
         if unsortedAssets.isEmpty {
             currentAsset = nil
@@ -130,6 +135,11 @@ final class SortingState {
         isPlayingVideo = false
     }
     
+    /// Resets all swipe and animation state to initial values.
+    ///
+    /// This method clears the swipe offset, direction, animation flags, and
+    /// media playback state. It's typically called when starting a new swipe
+    /// or when canceling an in-progress swipe.
     func reset() {
         offset = .zero
         swipeDirection = .none
@@ -138,13 +148,25 @@ final class SortingState {
         isPlayingLivePhoto = false
         isLongPressing = false
         isPlayingVideo = false
+        showHeartAnimation = false
     }
     
+    /// Resets the burst photo selector state.
+    ///
+    /// This method hides the burst selector overlay and clears the burst assets list.
     func resetBurstSelector() {
         showingBurstSelector = false
         burstAssets = []
     }
     
+    /// Applies a media type filter to the assets.
+    ///
+    /// This method filters assets by media type (photos, videos, Live Photos, screenshots, or all).
+    /// If a `sortStore` is provided, it also applies category filtering.
+    ///
+    /// - Parameters:
+    ///   - filter: The media type filter to apply
+    ///   - sortStore: Optional sort store for category filtering
     @MainActor
     func applyFilter(_ filter: MediaFilter, sortStore: SortResultStore? = nil) {
         currentFilter = filter
@@ -180,8 +202,8 @@ final class SortingState {
                 // iOS screenshots typically have portrait aspect ratios around 2.16 (19.5:9) or 2.17 (16:9)
                 // Common ratios: ~2.16 (iPhone X and newer), ~1.78 (iPhone 6/7/8), ~2.17 (some models)
                 // Allow some tolerance for different models and orientations
-                let isPortraitScreenshot = aspectRatio >= 2.0 && aspectRatio <= 2.3
-                let isLandscapeScreenshot = aspectRatio >= 0.43 && aspectRatio <= 0.5  // Inverse of portrait
+                let isPortraitScreenshot = aspectRatio >= ScreenshotConstants.minPortraitAspectRatio && aspectRatio <= ScreenshotConstants.maxPortraitAspectRatio
+                let isLandscapeScreenshot = aspectRatio >= ScreenshotConstants.minLandscapeAspectRatio && aspectRatio <= ScreenshotConstants.maxLandscapeAspectRatio
                 
                 // Also check for common screenshot pixel dimensions (for exact matches)
                 // This helps catch edge cases where aspect ratio alone might not be enough
@@ -224,7 +246,15 @@ final class SortingState {
         isComplete = allUnsortedAssets.isEmpty
     }
     
-    /// Apply category filter (called from SortingFeature with sortStore)
+    /// Applies a category filter to show only assets in the specified category.
+    ///
+    /// This method filters assets to show only those that have been sorted into
+    /// the specified category (Keep, Delete, Favorite, or Skip). Passing `nil`
+    /// removes the category filter.
+    ///
+    /// - Parameters:
+    ///   - category: The category to filter by, or `nil` to remove the filter
+    ///   - sortStore: The sort store to query for category information
     @MainActor
     func applyCategoryFilter(_ category: SortCategory?, sortStore: SortResultStore) {
         selectedCategoryFilter = category
@@ -252,8 +282,13 @@ final class SortingState {
         isComplete = allUnsortedAssets.isEmpty
     }
     
-    /// Remove an asset from both filtered and all lists
-    /// Optimized: Use single loop instead of two separate removeAll calls
+    /// Removes an asset from both the filtered and all unsorted asset lists.
+    ///
+    /// This method efficiently removes an asset using O(n) operations instead of
+    /// O(n²) operations. The asset is removed from both `unsortedAssets` and
+    /// `allUnsortedAssets` arrays.
+    ///
+    /// - Parameter asset: The asset to remove
     func removeAsset(_ asset: PhotoAsset) {
         let assetID = asset.id
         // Remove from unsortedAssets using firstIndex for O(n) instead of removeAll's O(n²)
@@ -267,7 +302,12 @@ final class SortingState {
         // allAssetsからは削除しない（カテゴリフィルターで表示するため）
     }
     
-    /// Move asset to end (for skip)
+    /// Moves an asset to the end of the unsorted assets list.
+    ///
+    /// This method is used when the user skips an asset (swipes up). The asset
+    /// is moved to the end so it can be reviewed later.
+    ///
+    /// - Parameter asset: The asset to move to the end
     func moveToEnd(_ asset: PhotoAsset) {
         unsortedAssets.removeAll { $0.id == asset.id }
         unsortedAssets.append(asset)
@@ -276,10 +316,14 @@ final class SortingState {
         allUnsortedAssets.append(asset)
     }
     
-    /// Restore an asset to unsorted lists (both filtered and all)
+    /// Restores an asset to the unsorted lists.
+    ///
+    /// This method is used when undoing a sort action. The asset is added back
+    /// to both `unsortedAssets` and `allUnsortedAssets` arrays.
+    ///
     /// - Parameters:
     ///   - asset: The asset to restore
-    ///   - atStart: If true, insert at the beginning; otherwise append at the end
+    ///   - atStart: If `true`, inserts at the beginning; otherwise appends at the end
     func restoreAssetToUnsorted(_ asset: PhotoAsset, atStart: Bool = false) {
         if !unsortedAssets.contains(where: { $0.id == asset.id }) {
             if atStart {

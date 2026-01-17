@@ -18,8 +18,8 @@
 "Delete Failed" = "削除に失敗しました";
 "Delete %d Items?" = "%d件を削除しますか？";
 "Deleted photos will be moved to Recently Deleted." = "削除された写真は「最近削除した項目」に移動します。";
-"Delete Failed Message" = "削除に失敗しました。写真アプリで削除状況をご確認ください。";
-"Delete Failed Multiple" = "%d件の削除に失敗しました。写真アプリで削除状況をご確認ください。";
+"Delete Failed Message" = "写真の削除に失敗しました。\n\n考えられる原因：\n• 写真へのアクセス権限が不足している\n• 写真が既に削除されている\n• 端末のストレージが不足している\n\n解決方法：\n設定アプリで写真へのアクセス権限を確認するか、写真アプリで直接削除してください。";
+"Delete Failed Multiple" = "%d件の写真の削除に失敗しました。\n\n考えられる原因：\n• 写真へのアクセス権限が不足している\n• 一部の写真が既に削除されている\n• 端末のストレージが不足している\n\n解決方法：\n設定アプリで写真へのアクセス権限を確認するか、写真アプリで直接削除してください。";
 "Loading Photos..." = "写真を読み込み中...";
 "No Photos" = "写真がありません";
 "Please add photos to your photo library." = "フォトライブラリに写真を追加してください";
@@ -84,9 +84,9 @@
 "Access Denied Description" = "設定アプリからSwipeSortへの\n写真アクセスを許可してください。";
 "Open Settings" = "設定を開く";
 "Storage Alert Title" = "保存に関するお知らせ";
-"Storage Critical Error" = "端末内への保存領域の初期化に失敗しました。\n\n整理結果は保存されず、アプリを終了すると失われる可能性があります。端末の空き容量を確保して再起動してください。";
-"Storage Fallback Error" = "端末内への保存領域の初期化に失敗したため、一時的な保存（メモリ上）で動作しています。\n\nアプリを終了すると整理結果が失われます。端末の空き容量を確保して再起動してください。";
-"Storage Error" = "保存領域の初期化で問題が発生しました。\n\n一部の整理結果が保存されない可能性があります。端末の空き容量を確保して再起動してください。";
+"Storage Critical Error" = "保存領域の初期化に失敗しました\n\n整理結果は保存されず、アプリを終了すると失われる可能性があります。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
+"Storage Fallback Error" = "保存領域の初期化に失敗しました\n\n一時的な保存（メモリ上）で動作しています。アプリを終了すると整理結果が失われます。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
+"Storage Error" = "保存領域の初期化で問題が発生しました\n\n一部の整理結果が保存されない可能性があります。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
 
 // MARK: - Media Filter
 "All" = "すべて";
@@ -139,3 +139,28 @@
 "No Matching Photos Description" = "フィルター条件に一致する写真がありません。
 フィルターを変更するか、すべてのフィルターを解除してください。";
 "Clear Filter" = "フィルターを解除";
+
+// MARK: - Accessibility
+"Photo Card" = "写真カード";
+"Photo Card Hint" = "左右にスワイプして整理、上にスワイプでスキップ、ダブルタップでお気に入りに追加";
+"Add to Favorites" = "お気に入りに追加";
+"Add to Favorites Hint" = "ダブルタップでお気に入りに追加します";
+"Filter Photos" = "写真をフィルター";
+"Filter Photos Hint" = "写真、動画、Live Photoなどで絞り込みます";
+"Keep Count" = "Keep %d件";
+"Keep Count Hint" = "Keepに分類された写真の数。タップでフィルター";
+"Delete Count" = "削除 %d件";
+"Delete Count Hint" = "削除キューに追加された写真の数。タップでフィルター";
+"Favorite Count" = "お気に入り %d件";
+"Favorite Count Hint" = "お気に入りに追加された写真の数。タップでフィルター";
+"Skip Count" = "スキップ %d件";
+"Skip Count Hint" = "スキップした写真の数。タップでフィルター";
+"Undo Last Action" = "直前の操作を取り消し";
+"Undo Last Action Hint" = "最後に行った整理操作を取り消します";
+"Delete Queued Photos" = "削除キューから削除";
+"Delete Queued Photos Hint" = "削除キューに追加された写真を削除します";
+"Clear Delete Queue" = "削除キューをクリア";
+"Clear Delete Queue Hint" = "削除キューからすべての写真を削除します";
+"Play Live Photo" = "Live Photoを再生";
+"Play Video" = "動画を再生";
+"Long Press to Play" = "長押しで再生";

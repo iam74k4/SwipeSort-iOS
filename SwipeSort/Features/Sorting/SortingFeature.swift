@@ -186,9 +186,7 @@ struct SortingFeature: View {
                     .allowsHitTesting(false)
                 
                 // Heart animation for double tap
-                if state.showHeartAnimation {
-                    HeartAnimationView(isAnimating: $state.showHeartAnimation)
-                }
+                HeartAnimationView(isAnimating: $state.showHeartAnimation)
                 
                 // First-time swipe hint
                 if showSwipeHint {
@@ -231,6 +229,9 @@ struct SortingFeature: View {
                     .offset(state.offset)
                     .scaleEffect(cardScale, anchor: .center)
                     .rotationEffect(.degrees(cardRotation))
+                    .accessibilityLabel(NSLocalizedString("Photo Card", comment: "Photo Card"))
+                    .accessibilityHint(NSLocalizedString("Photo Card Hint", comment: "Photo Card Hint"))
+                    .accessibilityAddTraits(.isButton)
                     .onTapGesture(count: 2) {
                         performFavorite()
                     }
@@ -296,6 +297,7 @@ struct SortingFeature: View {
                 }
             }
         }, perform: {})
+        .accessibilityHint(NSLocalizedString("Long Press to Play", comment: "Long Press to Play"))
     }
     
     // MARK: - Media Badges
@@ -431,6 +433,8 @@ struct SortingFeature: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(String(format: NSLocalizedString("Keep Count", comment: "Keep Count"), sortStore.keepCount))
+                .accessibilityHint(NSLocalizedString("Keep Count Hint", comment: "Keep Count Hint"))
                 
                 // 削除キューがある場合は削除待ち件数を表示
                 if state.deleteQueue.isEmpty {
@@ -452,6 +456,8 @@ struct SortingFeature: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(String(format: NSLocalizedString("Delete Count", comment: "Delete Count"), sortStore.deleteCount))
+                    .accessibilityHint(NSLocalizedString("Delete Count Hint", comment: "Delete Count Hint"))
                 } else {
                     Button {
                         withAnimation(.overlayFade) {
@@ -469,6 +475,8 @@ struct SortingFeature: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(String(format: NSLocalizedString("Delete Count", comment: "Delete Count"), state.deleteQueue.count))
+                    .accessibilityHint(NSLocalizedString("Delete Count Hint", comment: "Delete Count Hint"))
                 }
                 
                 Button {
@@ -489,6 +497,8 @@ struct SortingFeature: View {
                     )
             }
                 .buttonStyle(.plain)
+                .accessibilityLabel(String(format: NSLocalizedString("Favorite Count", comment: "Favorite Count"), sortStore.favoriteCount))
+                .accessibilityHint(NSLocalizedString("Favorite Count Hint", comment: "Favorite Count Hint"))
                 
                 Button {
                     withAnimation(.overlayFade) {
@@ -508,6 +518,8 @@ struct SortingFeature: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(String(format: NSLocalizedString("Skip Count", comment: "Skip Count"), sortStore.unsortedCount))
+                .accessibilityHint(NSLocalizedString("Skip Count Hint", comment: "Skip Count Hint"))
             }
             
             Spacer(minLength: 6)
@@ -572,6 +584,8 @@ struct SortingFeature: View {
             }
         }
         .id(state.currentFilter) // フィルター変更時にビューを再作成してレイアウトを安定させる
+        .accessibilityLabel(NSLocalizedString("Filter Photos", comment: "Filter Photos"))
+        .accessibilityHint(NSLocalizedString("Filter Photos Hint", comment: "Filter Photos Hint"))
     }
     
     // MARK: - Bottom Section
@@ -622,7 +636,7 @@ struct SortingFeature: View {
                 Image(systemName: "arrow.uturn.backward")
                     .font(.system(size: 14, weight: .semibold))
                 Text(NSLocalizedString("Undo", comment: "Undo button"))
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.body.weight(.semibold))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 20)
@@ -632,6 +646,8 @@ struct SortingFeature: View {
         }
         .disabled(state.isUndoing || !sortStore.canUndo)
         .opacity((state.isUndoing || !sortStore.canUndo) ? 0.5 : 1.0)
+        .accessibilityLabel(NSLocalizedString("Undo Last Action", comment: "Undo Last Action"))
+        .accessibilityHint(NSLocalizedString("Undo Last Action Hint", comment: "Undo Last Action Hint"))
     }
     
     // MARK: - Delete Queue Button
@@ -653,6 +669,8 @@ struct SortingFeature: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
             }
+            .accessibilityLabel(NSLocalizedString("Delete Queued Photos", comment: "Delete Queued Photos"))
+            .accessibilityHint(NSLocalizedString("Delete Queued Photos Hint", comment: "Delete Queued Photos Hint"))
             
             // Divider
             Rectangle()
@@ -661,9 +679,9 @@ struct SortingFeature: View {
             
             // Clear queue button (right side)
             Button {
-        withAnimation(.buttonPress) {
-            clearDeleteQueue()
-        }
+                withAnimation(.buttonPress) {
+                    clearDeleteQueue()
+                }
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .bold))
@@ -671,6 +689,8 @@ struct SortingFeature: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
             }
+            .accessibilityLabel(NSLocalizedString("Clear Delete Queue", comment: "Clear Delete Queue"))
+            .accessibilityHint(NSLocalizedString("Clear Delete Queue Hint", comment: "Clear Delete Queue Hint"))
         }
         .background {
             Capsule()
@@ -761,6 +781,9 @@ struct SortingFeature: View {
     
     private func completeSwipe(direction: SwipeDirection) {
         guard direction != .none, !state.isAnimatingOut else { return }
+        
+        // Reset heart animation when starting swipe animation
+        state.showHeartAnimation = false
         
         state.isAnimatingOut = true
         
@@ -876,6 +899,11 @@ struct SortingFeature: View {
         Task {
             try? await Task.sleep(for: .milliseconds(600))
             
+            // Hide heart animation before card animation starts
+            await MainActor.run {
+                state.showHeartAnimation = false
+            }
+            
             await preloadNextImage()
             
             state.isAnimatingOut = true
@@ -919,6 +947,9 @@ struct SortingFeature: View {
         
         // Undo処理開始
         state.isUndoing = true
+        
+        // Reset heart animation when undoing
+        state.showHeartAnimation = false
         
         state.offset = CGSize(width: -400, height: 0)
         state.imageOpacity = 0
@@ -1027,8 +1058,8 @@ struct SortingFeature: View {
         let scale = UIScreen.main.scale
         // Use screen width/height with 2x scale for Retina, but cap at reasonable maximum
         let optimalSize = CGSize(
-            width: min(screenSize.width * scale * 2, 2400),
-            height: min(screenSize.height * scale * 2, 2400)
+            width: min(screenSize.width * scale * 2, ImageConstants.maxImageSize),
+            height: min(screenSize.height * scale * 2, ImageConstants.maxImageSize)
         )
         
         // Load main image (use fast preview for RAW images)
@@ -1092,7 +1123,13 @@ struct SortingFeature: View {
             try await photoLibrary.deleteAssets([asset.asset])
             return true
         } catch {
-            deleteErrorMessage = NSLocalizedString("Delete Failed Message", comment: "Delete failed error message")
+            // Error message based on error type
+            let errorDescription = error.localizedDescription.lowercased()
+            if errorDescription.contains("permission") || errorDescription.contains("authorization") {
+                deleteErrorMessage = NSLocalizedString("Delete Failed Message", comment: "Delete failed error message - permission issue")
+            } else {
+                deleteErrorMessage = NSLocalizedString("Delete Failed Message", comment: "Delete failed error message - general error")
+            }
             showDeleteError = true
             return false
         }
@@ -1149,8 +1186,8 @@ struct SortingFeature: View {
         let screenSize = UIScreen.main.bounds.size
         let scale = UIScreen.main.scale
         let optimalSize = CGSize(
-            width: min(screenSize.width * scale * 2, 2400),
-            height: min(screenSize.height * scale * 2, 2400)
+            width: min(screenSize.width * scale * 2, ImageConstants.maxImageSize),
+            height: min(screenSize.height * scale * 2, ImageConstants.maxImageSize)
         )
         
         // Load first image synchronously for immediate use
@@ -1226,12 +1263,12 @@ struct SortingFeature: View {
             
             VStack(spacing: 12) {
                 Text(isFilterActive ? NSLocalizedString("No Matching Photos", comment: "No matching photos message") : NSLocalizedString("No Photos", comment: "No photos message"))
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.title2.weight(.semibold))
                     .foregroundStyle(.white)
                 
                 Text(isFilterActive ? NSLocalizedString("No Matching Photos Description", comment: "No matching photos description") : NSLocalizedString("No Photos Description", comment: "No photos description"))
-                    .font(.system(size: 15))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.body)
+                    .foregroundStyle(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
@@ -1243,9 +1280,10 @@ struct SortingFeature: View {
                         state.applyCategoryFilter(nil, sortStore: sortStore)
                         state.applyFilter(.all, sortStore: sortStore)
                     }
+                    Task { await loadCurrentImage() }
                 } label: {
                     Text(NSLocalizedString("Clear Filter", comment: "Clear filter button"))
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -1269,7 +1307,7 @@ struct SortingFeature: View {
                     }
                 } label: {
                     Text(NSLocalizedString("Reload", comment: "Reload button"))
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -1380,8 +1418,8 @@ struct SortingFeature: View {
                     .shadow(color: Color.deleteColor.opacity(0.3), radius: 8, x: 0, y: 4)
                     
                     Text(NSLocalizedString("Cancel with X", comment: "Cancel with X message"))
-                        .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.4))
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.4))
                 }
                 .padding(.top, 16)
             }

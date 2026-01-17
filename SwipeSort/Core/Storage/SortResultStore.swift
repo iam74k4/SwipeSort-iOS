@@ -125,6 +125,11 @@ final class SortResultStore {
     
     // MARK: - Query
     
+    /// Returns a set of all asset IDs that have been sorted into any category.
+    ///
+    /// This property returns a cached set of sorted asset IDs for efficient
+    /// filtering. The cache is automatically invalidated when sort records are
+    /// added, updated, or removed.
     var sortedIDs: Set<String> {
         // Return cached value if available
         if let cached = _sortedIDsCache {
@@ -179,6 +184,13 @@ final class SortResultStore {
         return records.map { $0.assetID }
     }
     
+    /// Returns the sort category for the specified asset ID.
+    ///
+    /// This method uses a cache to avoid repeated database queries for the same
+    /// asset. If the asset has not been sorted, returns `nil`.
+    ///
+    /// - Parameter assetID: The asset identifier to look up
+    /// - Returns: The `SortCategory` for the asset, or `nil` if not sorted
     func category(for assetID: String) -> SortCategory? {
         // Check cache first
         if let cached = categoryCache[assetID] {
@@ -213,6 +225,19 @@ final class SortResultStore {
     
     // MARK: - Mutations
     
+    /// Adds or updates a sort record for the specified asset.
+    ///
+    /// This method creates a new sort record if one doesn't exist, or updates
+    /// an existing record with the new category. It also creates an undo record
+    /// by default to allow reverting the action.
+    ///
+    /// - Parameters:
+    ///   - assetID: The asset identifier to sort
+    ///   - category: The category to assign to the asset
+    ///   - previousCategory: The previous category (if known). If `nil`, it will
+    ///     be retrieved from the existing record or set to `nil` for new records
+    ///   - recordUndo: If `true`, creates an undo record. Set to `false` when
+    ///     performing undo operations to avoid infinite undo chains
     func addOrUpdate(assetID: String, category: SortCategory, previousCategory: SortCategory? = nil, recordUndo: Bool = true) {
         guard let modelContext else {
             logger.error("Cannot add/update: storage is unavailable")
@@ -261,6 +286,12 @@ final class SortResultStore {
         saveAndRefresh()
     }
     
+    /// Removes the sort record for the specified asset.
+    ///
+    /// This method removes the asset from sorted categories, effectively marking
+    /// it as unsorted. The asset can be sorted again later.
+    ///
+    /// - Parameter assetID: The asset identifier to remove from sorted records
     func remove(assetID: String) {
         guard let modelContext else { return }
         let descriptor = FetchDescriptor<SortRecord>(
@@ -276,6 +307,12 @@ final class SortResultStore {
         }
     }
     
+    /// Removes sort records for multiple assets.
+    ///
+    /// This method is more efficient than calling `remove(assetID:)` multiple times
+    /// as it performs a single database save operation after all removals.
+    ///
+    /// - Parameter assetIDs: An array of asset identifiers to remove from sorted records
     func remove(assetIDs: [String]) {
         guard let modelContext else { return }
         for id in assetIDs {
@@ -295,6 +332,14 @@ final class SortResultStore {
     
     // MARK: - Undo
     
+    /// Reverts the last sorting action.
+    ///
+    /// This method restores the previous category for the most recently sorted asset,
+    /// or removes the sort record if the asset was previously unsorted. The undo
+    /// history is limited to the last 100 actions.
+    ///
+    /// - Returns: The asset ID that was undone, or `nil` if there are no actions to undo
+    /// - Note: This method does not create a new undo record to avoid infinite undo chains
     func undo() -> String? {
         guard let modelContext else { return nil }
         var descriptor = FetchDescriptor<UndoRecord>(
@@ -342,8 +387,15 @@ final class SortResultStore {
         return assetID
     }
     
-    /// Create undo record only (without creating/updating SortRecord)
-    /// Used when adding items to delete queue (before actual deletion)
+    /// Creates an undo record without modifying the sort record.
+    ///
+    /// This method is used when adding items to the delete queue, before the actual
+    /// deletion occurs. It allows the user to undo the action of adding an item
+    /// to the delete queue.
+    ///
+    /// - Parameters:
+    ///   - assetID: The asset identifier
+    ///   - previousCategory: The previous category before adding to delete queue
     func createUndoRecord(assetID: String, previousCategory: SortCategory?) {
         guard let modelContext else { return }
         
@@ -364,7 +416,12 @@ final class SortResultStore {
         saveAndRefresh()
     }
     
-    /// Remove undo record for a specific asset (used when asset is actually deleted)
+    /// Removes the undo record for a specific asset.
+    ///
+    /// This method is called when an asset is actually deleted from the photo library,
+    /// as deleted assets cannot be undone.
+    ///
+    /// - Parameter assetID: The asset identifier whose undo record should be removed
     func removeUndoRecord(for assetID: String) {
         guard let modelContext else { return }
         let descriptor = FetchDescriptor<UndoRecord>(
@@ -398,6 +455,12 @@ final class SortResultStore {
     
     // MARK: - Reset
     
+    /// Resets all sorting data, removing all sort records and undo history.
+    ///
+    /// This method permanently deletes all sort records and undo records from the
+    /// database. This action cannot be undone.
+    ///
+    /// - Warning: This operation is destructive and cannot be reversed
     func reset() {
         guard let modelContext else {
             logger.error("Cannot reset: storage is unavailable")

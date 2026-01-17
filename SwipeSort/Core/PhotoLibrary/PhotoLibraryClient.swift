@@ -61,6 +61,14 @@ final class PhotoLibraryClient {
     
     // MARK: - Fetch All Assets
     
+    /// Fetches all photos and videos from the user's photo library.
+    ///
+    /// This method fetches all assets sorted by creation date (newest first) and updates
+    /// the `allAssets` property and loading progress. The method is async and should be
+    /// called from the main actor context.
+    ///
+    /// - Returns: An array of `PhotoAsset` objects representing all photos and videos
+    /// - Note: This method requires photo library access permission
     func fetchAllAssets() async -> [PhotoAsset] {
         isLoading = true
         loadingProgress = 0
@@ -93,8 +101,19 @@ final class PhotoLibraryClient {
     
     // MARK: - Image Loading (nonisolated to avoid MainActor issues in callbacks)
     
-    /// Load image with optional RAW optimization
-    /// For RAW images, uses embedded preview for faster initial display
+    /// Loads an image for the specified photo asset.
+    ///
+    /// This method loads an image asynchronously with optional RAW optimization.
+    /// For RAW images, setting `preferFastPreview` to `true` uses the embedded JPEG
+    /// preview for faster initial display.
+    ///
+    /// - Parameters:
+    ///   - asset: The PHAsset to load the image for
+    ///   - targetSize: Optional target size for the image. Defaults to 1200x1200 if nil
+    ///   - preferFastPreview: If `true`, prioritizes fast preview for RAW images
+    /// - Returns: The loaded UIImage, or `nil` if loading fails or times out
+    /// - Note: This method includes a timeout mechanism (30 seconds) to prevent hanging
+    ///   on slow network requests. Network access is allowed for iCloud photos.
     nonisolated func loadImage(for asset: PHAsset, targetSize: CGSize? = nil, preferFastPreview: Bool = false) async -> UIImage? {
         let size = targetSize ?? CGSize(width: 1200, height: 1200)
         
@@ -161,6 +180,16 @@ final class PhotoLibraryClient {
         }
     }
     
+    /// Loads a thumbnail image for the specified photo asset.
+    ///
+    /// This method loads a small thumbnail (200x200) optimized for quick display
+    /// in lists or previews. The method returns immediately when a non-degraded
+    /// image is available.
+    ///
+    /// - Parameter asset: The PHAsset to load the thumbnail for
+    /// - Returns: The loaded thumbnail UIImage, or `nil` if loading fails or times out
+    /// - Note: This method includes a timeout mechanism (10 seconds) and returns
+    ///   the last available image (even if degraded) if the timeout is reached.
     nonisolated func loadThumbnail(for asset: PHAsset) async -> UIImage? {
         let thumbnailSize = CGSize(width: 200, height: 200)
         
@@ -230,6 +259,17 @@ final class PhotoLibraryClient {
     
     // MARK: - Live Photo Loading
     
+    /// Loads a Live Photo for the specified photo asset.
+    ///
+    /// This method loads both the image and video components of a Live Photo
+    /// asynchronously. Network access is allowed for iCloud photos.
+    ///
+    /// - Parameters:
+    ///   - asset: The PHAsset to load the Live Photo for
+    ///   - targetSize: Target size for the Live Photo
+    /// - Returns: The loaded PHLivePhoto, or `nil` if loading fails or times out
+    /// - Note: This method includes a timeout mechanism (30 seconds) to prevent
+    ///   hanging on slow network requests.
     nonisolated func loadLivePhoto(for asset: PHAsset, targetSize: CGSize) async -> PHLivePhoto? {
         let options = PHLivePhotoRequestOptions()
         options.deliveryMode = .opportunistic
@@ -298,7 +338,14 @@ final class PhotoLibraryClient {
     
     // MARK: - Burst Photos
     
-    /// Fetch all photos in a burst sequence
+    /// Fetches all photos in a burst sequence.
+    ///
+    /// This method retrieves all photos that belong to the same burst sequence
+    /// identified by the burst identifier. Photos are sorted by creation date
+    /// (oldest first).
+    ///
+    /// - Parameter burstIdentifier: The burst identifier string from a burst photo
+    /// - Returns: An array of `PhotoAsset` objects representing all photos in the burst
     nonisolated func fetchBurstAssets(for burstIdentifier: String) -> [PhotoAsset] {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "burstIdentifier == %@", burstIdentifier)
@@ -318,6 +365,16 @@ final class PhotoLibraryClient {
     
     // MARK: - Deletion
     
+    /// Deletes the specified assets from the photo library.
+    ///
+    /// This method permanently deletes assets from the user's photo library.
+    /// Deleted assets are moved to the "Recently Deleted" album and can be
+    /// recovered for 30 days.
+    ///
+    /// - Parameter assets: An array of PHAsset objects to delete
+    /// - Throws: An error if deletion fails (e.g., permission denied)
+    /// - Note: This method updates the `allAssets` property to remove deleted assets
+    ///   from the cache. The deletion is performed in a background context.
     nonisolated func deleteAssets(_ assets: [PHAsset]) async throws {
         // Capture assets for use in nonisolated context
         let assetsToDelete = assets
@@ -337,7 +394,15 @@ final class PhotoLibraryClient {
     
     // MARK: - Favorites
     
-    /// Set the favorite status for an asset in iOS Photos
+    /// Sets the favorite status for a single asset in iOS Photos.
+    ///
+    /// This method updates the favorite status of an asset, which syncs with
+    /// the iOS Favorites album. The change is persisted in the photo library.
+    ///
+    /// - Parameters:
+    ///   - asset: The PHAsset to update
+    ///   - isFavorite: `true` to mark as favorite, `false` to remove from favorites
+    /// - Throws: An error if the operation fails (e.g., permission denied)
     nonisolated func setFavorite(_ asset: PHAsset, isFavorite: Bool) async throws {
         try await PHPhotoLibrary.shared().performChanges {
             let request = PHAssetChangeRequest(for: asset)
@@ -347,7 +412,17 @@ final class PhotoLibraryClient {
         logger.info("Set favorite=\(isFavorite) for asset \(asset.localIdentifier)")
     }
     
-    /// Set favorite status for multiple assets
+    /// Sets the favorite status for multiple assets in iOS Photos.
+    ///
+    /// This method updates the favorite status of multiple assets in a single
+    /// operation, which is more efficient than calling `setFavorite(_:isFavorite:)`
+    /// multiple times.
+    ///
+    /// - Parameters:
+    ///   - assets: An array of PHAsset objects to update
+    ///   - isFavorite: `true` to mark as favorite, `false` to remove from favorites
+    /// - Throws: An error if the operation fails (e.g., permission denied)
+    /// - Note: If the array is empty, this method returns immediately without error
     nonisolated func setFavorite(_ assets: [PHAsset], isFavorite: Bool) async throws {
         guard !assets.isEmpty else { return }
         
@@ -368,6 +443,17 @@ final class PhotoLibraryClient {
     
     // MARK: - Caching
     
+    /// Updates the image cache window for efficient photo loading.
+    ///
+    /// This method manages the PHCachingImageManager cache window, starting to cache
+    /// images for assets near the current index and stopping caching for assets
+    /// that are no longer in the window. This improves performance by preloading
+    /// images that are likely to be viewed soon.
+    ///
+    /// - Parameters:
+    ///   - currentIndex: The current index in the assets array
+    ///   - assets: The array of PhotoAsset objects currently being displayed
+    /// - Note: The cache window includes the current asset and the next 5 assets
     nonisolated func updateCacheWindow(currentIndex: Int, assets: [PhotoAsset]) {
         guard !assets.isEmpty else { return }
         

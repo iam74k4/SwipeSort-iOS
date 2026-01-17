@@ -116,8 +116,8 @@ struct SettingsFeature: View {
         VStack(spacing: 20) {
             HStack {
                 Text(NSLocalizedString("Statistics", comment: "Statistics title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -126,7 +126,7 @@ struct SettingsFeature: View {
             HStack(spacing: 12) {
                 StatisticItem(
                     count: sortStore.keepCount,
-                    label: "Keep",
+                    label: NSLocalizedString("Keep", comment: "Keep label"),
                     color: .keepColor,
                     icon: "checkmark.circle.fill"
                 )
@@ -158,14 +158,14 @@ struct SettingsFeature: View {
             
             HStack {
                 Text(NSLocalizedString("Total", comment: "Total label"))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(.white.opacity(0.7))
                 Spacer()
                 Text("\(sortStore.totalSortedCount)")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white)
                 Text(NSLocalizedString("items", comment: "Items unit"))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(.white.opacity(0.7))
             }
         }
         .padding(20)
@@ -178,8 +178,8 @@ struct SettingsFeature: View {
         VStack(spacing: 16) {
             HStack {
                 Text(NSLocalizedString("Operations", comment: "Operations title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -228,8 +228,8 @@ struct SettingsFeature: View {
         VStack(spacing: 16) {
             HStack {
                 Text(NSLocalizedString("Settings", comment: "Settings title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -248,11 +248,11 @@ struct SettingsFeature: View {
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(NSLocalizedString("Haptic Feedback", comment: "Haptic feedback"))
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.body.weight(.medium))
                             .foregroundStyle(.white)
                         Text(NSLocalizedString("Vibrate on Swipe", comment: "Vibrate on swipe"))
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                 }
             }
@@ -268,8 +268,8 @@ struct SettingsFeature: View {
         VStack(spacing: 16) {
             HStack {
                 Text(NSLocalizedString("Data Management", comment: "Data management title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -290,11 +290,11 @@ struct SettingsFeature: View {
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(NSLocalizedString("Reset All Data", comment: "Reset all data"))
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.body.weight(.medium))
                             .foregroundStyle(.white)
                         Text(NSLocalizedString("Delete All Sorting Results", comment: "Delete all sorting results"))
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     
                     Spacer()
@@ -315,8 +315,8 @@ struct SettingsFeature: View {
         VStack(spacing: 16) {
             HStack {
                 Text(NSLocalizedString("Support", comment: "Support title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()

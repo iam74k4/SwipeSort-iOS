@@ -124,3 +124,20 @@ enum SwipeThreshold {
     static let vertical: CGFloat = 100
     static let detectionStart: CGFloat = 50
 }
+
+enum ImageConstants {
+    /// Maximum image size for loading (pixels)
+    /// Used to prevent excessive memory usage while maintaining quality
+    static let maxImageSize: CGFloat = 2400
+}
+
+enum ScreenshotConstants {
+    /// Minimum aspect ratio for portrait screenshots
+    static let minPortraitAspectRatio: Double = 2.0
+    /// Maximum aspect ratio for portrait screenshots
+    static let maxPortraitAspectRatio: Double = 2.3
+    /// Minimum aspect ratio for landscape screenshots (inverse of portrait)
+    static let minLandscapeAspectRatio: Double = 0.43
+    /// Maximum aspect ratio for landscape screenshots (inverse of portrait)
+    static let maxLandscapeAspectRatio: Double = 0.5
+}

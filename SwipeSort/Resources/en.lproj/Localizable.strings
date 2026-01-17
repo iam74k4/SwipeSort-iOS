@@ -18,8 +18,8 @@
 "Delete Failed" = "Delete Failed";
 "Delete %d Items?" = "Delete %d items?";
 "Deleted photos will be moved to Recently Deleted." = "Deleted photos will be moved to Recently Deleted.";
-"Delete Failed Message" = "Failed to delete. Please check the deletion status in the Photos app.";
-"Delete Failed Multiple" = "Failed to delete %d items. Please check the deletion status in the Photos app.";
+"Delete Failed Message" = "Failed to delete photo.\n\nPossible causes:\n• Insufficient photo access permissions\n• Photo has already been deleted\n• Device storage is full\n\nSolution:\nCheck photo access permissions in Settings app, or delete directly from Photos app.";
+"Delete Failed Multiple" = "Failed to delete %d photos.\n\nPossible causes:\n• Insufficient photo access permissions\n• Some photos have already been deleted\n• Device storage is full\n\nSolution:\nCheck photo access permissions in Settings app, or delete directly from Photos app.";
 "Loading Photos..." = "Loading photos...";
 "No Photos" = "No Photos";
 "Please add photos to your photo library." = "Please add photos to your photo library.";
@@ -84,9 +84,9 @@
 "Access Denied Description" = "Please allow photo access for SwipeSort\nin the Settings app.";
 "Open Settings" = "Open Settings";
 "Storage Alert Title" = "Storage Notice";
-"Storage Critical Error" = "Failed to initialize storage on device.\n\nSorting results will not be saved and may be lost when the app is closed. Please free up space and restart.";
-"Storage Fallback Error" = "Failed to initialize storage on device, so the app is running with temporary storage (in memory).\n\nSorting results will be lost when the app is closed. Please free up space and restart.";
-"Storage Error" = "A problem occurred while initializing storage.\n\nSome sorting results may not be saved. Please free up space and restart.";
+"Storage Critical Error" = "Failed to initialize storage\n\nSorting results will not be saved and may be lost when the app is closed.\n\nSolution:\n1. Free up space on your device\n2. Restart the app\n3. If the problem persists, restart your device";
+"Storage Fallback Error" = "Failed to initialize storage\n\nThe app is running with temporary storage (in memory). Sorting results will be lost when the app is closed.\n\nSolution:\n1. Free up space on your device\n2. Restart the app\n3. If the problem persists, restart your device";
+"Storage Error" = "A problem occurred while initializing storage\n\nSome sorting results may not be saved.\n\nSolution:\n1. Free up space on your device\n2. Restart the app\n3. If the problem persists, restart your device";
 
 // MARK: - Media Filter
 "All" = "All";
@@ -139,3 +139,28 @@
 "No Matching Photos Description" = "No photos match the current filter.
 Change the filter or clear all filters.";
 "Clear Filter" = "Clear Filter";
+
+// MARK: - Accessibility
+"Photo Card" = "Photo Card";
+"Photo Card Hint" = "Swipe left or right to sort, swipe up to skip, double tap to add to favorites";
+"Add to Favorites" = "Add to Favorites";
+"Add to Favorites Hint" = "Double tap to add to favorites";
+"Filter Photos" = "Filter Photos";
+"Filter Photos Hint" = "Filter by photos, videos, Live Photos, etc.";
+"Keep Count" = "Keep %d items";
+"Keep Count Hint" = "Number of photos sorted as Keep. Tap to filter";
+"Delete Count" = "Delete %d items";
+"Delete Count Hint" = "Number of photos in delete queue. Tap to filter";
+"Favorite Count" = "Favorites %d items";
+"Favorite Count Hint" = "Number of photos added to favorites. Tap to filter";
+"Skip Count" = "Skip %d items";
+"Skip Count Hint" = "Number of photos skipped. Tap to filter";
+"Undo Last Action" = "Undo Last Action";
+"Undo Last Action Hint" = "Undo the last sorting action";
+"Delete Queued Photos" = "Delete Queued Photos";
+"Delete Queued Photos Hint" = "Delete photos in the delete queue";
+"Clear Delete Queue" = "Clear Delete Queue";
+"Clear Delete Queue Hint" = "Remove all photos from the delete queue";
+"Play Live Photo" = "Play Live Photo";
+"Play Video" = "Play Video";
+"Long Press to Play" = "Long press to play";
