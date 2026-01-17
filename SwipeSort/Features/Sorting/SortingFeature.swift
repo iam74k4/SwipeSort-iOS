@@ -1054,13 +1054,13 @@ struct SortingFeature: View {
         // Parallel loading: Load Live Photo and burst count concurrently
         async let livePhotoTask: PHLivePhoto? = asset.isLivePhoto ? photoLibrary.loadLivePhoto(for: asset.asset, targetSize: optimalSize) : nil
         
-        // Capture photoLibrary in MainActor context for burst count task
-        let photoLibraryForBurst = photoLibrary
+        // Capture burstIdentifier for burst count task
+        let burstId = asset.burstIdentifier
         async let burstCountTask: Int? = {
-            if let burstId = asset.burstIdentifier {
-                let burstAssets = await MainActor.run {
-                    photoLibraryForBurst.fetchBurstAssets(for: burstId)
-                }
+            if let burstId = burstId {
+                // fetchBurstAssets is nonisolated, but photoLibrary is MainActor-isolated
+                // So we need to call it from MainActor context
+                let burstAssets = await photoLibrary.fetchBurstAssets(for: burstId)
                 return burstAssets.count > 1 ? burstAssets.count : nil
             }
             return nil
