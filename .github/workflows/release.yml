@@ -33,16 +33,22 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Extract version from tag
+      - name: Get version and build number
         id: version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+            MARKETING_VERSION="${{ github.event.inputs.version }}"
           else
-            VERSION=${GITHUB_REF#refs/tags/v}
+            MARKETING_VERSION=${GITHUB_REF#refs/tags/v}
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
+          # スクリプトを使用してビルド番号を取得
+          chmod +x scripts/version.sh
+          source scripts/version.sh
+          # タグから取得したバージョンを使用（スクリプトの結果を上書き）
+          export MARKETING_VERSION="$MARKETING_VERSION"
+          echo "marketing_version=$MARKETING_VERSION" >> $GITHUB_OUTPUT
+          echo "current_project_version=$CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $MARKETING_VERSION (build: $CURRENT_PROJECT_VERSION)"
       
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -71,18 +77,18 @@ jobs:
         id: changelog
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            CHANGELOG="## Release ${{ steps.version.outputs.version }}
+            CHANGELOG="## Release ${{ steps.version.outputs.marketing_version }}
 
           ### Changes
           - See commit history for details"
           else
             PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
             if [ -z "$PREV_TAG" ]; then
-              CHANGELOG="## Release ${{ steps.version.outputs.version }}
+              CHANGELOG="## Release ${{ steps.version.outputs.marketing_version }}
 
           ### Initial Release"
             else
-              CHANGELOG="## Release ${{ steps.version.outputs.version }}
+              CHANGELOG="## Release ${{ steps.version.outputs.marketing_version }}
 
           ### Changes since $PREV_TAG
 
@@ -102,6 +108,8 @@ jobs:
             -archivePath $ARCHIVE_PATH \
             -destination 'generic/platform=iOS' \
             -configuration Release \
+            MARKETING_VERSION=${{ steps.version.outputs.marketing_version }} \
+            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
@@ -137,7 +145,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: SwipeSort-${{ steps.version.outputs.version }}
+          name: SwipeSort-${{ steps.version.outputs.marketing_version }}
           path: |
             ${{ env.ARCHIVE_PATH }}
             ${{ env.EXPORT_PATH }}/*.ipa
@@ -147,8 +155,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', steps.version.outputs.version) || github.ref_name }}
-          name: Release ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', steps.version.outputs.marketing_version) || github.ref_name }}
+          name: Release ${{ steps.version.outputs.marketing_version }}
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false

@@ -75,6 +75,43 @@ cd SwipeSort-iOS
 
 4. Build and run on a device or simulator
 
+## Version Management
+
+This project uses **automatic version management** based on Git tags. The version is automatically set during build time - you don't need to manually update version numbers.
+
+### How It Works
+
+- **Main branch**: Uses the version from the latest Git tag (e.g., `v1.0.0` → `1.0.0`)
+- **Develop branch**: Uses the next patch version (e.g., `v1.0.0` → `1.0.1`)
+- **Build number**: Automatically calculated from the number of commits since the latest tag
+
+### Creating Version Tags
+
+To create a new version tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The tag format should follow Semantic Versioning: `vX.Y.Z` (e.g., `v1.0.0`, `v1.1.0`, `v2.0.0`)
+
+### Automatic Version Setting
+
+- **Local builds**: The version script automatically updates `project.pbxproj` during build (changes are not committed to Git)
+- **CI/CD**: The version script is automatically used in GitHub Actions workflows
+- **No manual steps required**: Just build the project, and the version will be set automatically
+
+### Troubleshooting
+
+- **No tags found**: The script will use default values (`0.0.1` for main, `0.0.2` for develop)
+- **Not in a Git repository**: The script will use default values and continue the build
+- **Build number increases**: Each commit increases the build number automatically
+
+### Note
+
+The `project.pbxproj` file may show as modified after building, but **you don't need to commit these changes**. The version is updated only during build time.
+
 ## Project Structure
 
 ```

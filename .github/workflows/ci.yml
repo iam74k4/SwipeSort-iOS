@@ -56,6 +56,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
       
+      - name: Get version from script
+        id: version
+        run: |
+          chmod +x scripts/version.sh
+          source scripts/version.sh
+          echo "marketing_version=$MARKETING_VERSION" >> $GITHUB_OUTPUT
+          echo "current_project_version=$CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $MARKETING_VERSION (build: $CURRENT_PROJECT_VERSION)"
+      
       - name: Build project
         run: |
           xcodebuild build \
@@ -63,6 +72,8 @@ jobs:
             -scheme $SCHEME \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -configuration Debug \
+            MARKETING_VERSION=${{ steps.version.outputs.marketing_version }} \
+            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
@@ -103,6 +114,15 @@ jobs:
             ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-
             ${{ runner.os }}-xcode-
       
+      - name: Get version from script
+        id: version
+        run: |
+          chmod +x scripts/version.sh
+          source scripts/version.sh
+          echo "marketing_version=$MARKETING_VERSION" >> $GITHUB_OUTPUT
+          echo "current_project_version=$CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $MARKETING_VERSION (build: $CURRENT_PROJECT_VERSION)"
+      
       - name: Run tests
         id: test
         continue-on-error: true
@@ -112,6 +132,8 @@ jobs:
             -scheme $SCHEME \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -configuration Debug \
+            MARKETING_VERSION=${{ steps.version.outputs.marketing_version }} \
+            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
