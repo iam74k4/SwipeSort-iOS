@@ -54,7 +54,10 @@ final class PlayerContainerView: UIView {
     override class var layerClass: AnyClass { AVPlayerLayer.self }
 
     var playerLayer: AVPlayerLayer {
-        layer as! AVPlayerLayer
+        guard let playerLayer = layer as? AVPlayerLayer else {
+            fatalError("Expected AVPlayerLayer, but got \(type(of: layer))")
+        }
+        return playerLayer
     }
 
     var player: AVPlayer? {

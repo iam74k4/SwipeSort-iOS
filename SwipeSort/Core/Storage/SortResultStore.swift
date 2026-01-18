@@ -18,7 +18,7 @@ final class SortResultStore {
     
     // MARK: - Model Container
     
-    private var modelContainer: ModelContainer!
+    private var modelContainer: ModelContainer?
     private var modelContext: ModelContext? { modelContainer?.mainContext }
     
     // MARK: - Cached Counts
