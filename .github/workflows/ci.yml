@@ -70,7 +70,7 @@ jobs:
           xcodebuild build \
             -project $PROJECT \
             -scheme $SCHEME \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             MARKETING_VERSION=${{ steps.version.outputs.marketing_version }} \
             CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
@@ -130,7 +130,7 @@ jobs:
           xcodebuild test \
             -project $PROJECT \
             -scheme $SCHEME \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             MARKETING_VERSION=${{ steps.version.outputs.marketing_version }} \
             CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
