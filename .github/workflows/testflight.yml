@@ -53,16 +53,13 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          # version.shスクリプトを一度だけ実行してビルド番号を取得
-          chmod +x scripts/version.sh
-          source scripts/version.sh
+          # ビルド番号は github.run_number を使用（常に増加、重複なし）
+          CURRENT_PROJECT_VERSION=${{ github.run_number }}
           
           # バージョン取得ロジック
           if [ -n "${{ github.event.inputs.version }}" ]; then
             # workflow_dispatchで手動指定された場合
             MARKETING_VERSION="${{ github.event.inputs.version }}"
-            # ビルド番号はversion.shスクリプトから取得（既に実行済み）
-            CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             # タグからバージョンを取得（main 上のタグのみ許可）
             if [[ "${{ steps.check_tag.outputs.tag_on_main }}" != "true" ]]; then
@@ -70,11 +67,6 @@ jobs:
               exit 1
             fi
             MARKETING_VERSION=${GITHUB_REF#refs/tags/v}
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            CURRENT_PROJECT_VERSION=$(git rev-list --count "$TAG_NAME"..HEAD 2>/dev/null || echo "0")
-            if ! [[ "$CURRENT_PROJECT_VERSION" =~ ^[0-9]+$ ]] || [ "$CURRENT_PROJECT_VERSION" -lt 0 ] 2>/dev/null; then
-              CURRENT_PROJECT_VERSION="0"
-            fi
           else
             echo "❌ This workflow runs only on tag push (v*) or workflow_dispatch."
             exit 1
