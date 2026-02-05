@@ -21,13 +21,16 @@ struct SettingsFeature: View {
     @State private var showLinkError = false
     @State private var linkErrorMessage = ""
 
-    private var supportEmail: String {
-        (Bundle.main.object(forInfoDictionaryKey: "SwipeSortSupportEmail") as? String)
-            ?? "iam74k4@gmail.com"
+    private var supportEmail: String? {
+        guard let raw = Bundle.main.object(forInfoDictionaryKey: "SwipeSortSupportEmail") as? String else { return nil }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return trimmed
     }
 
     private var feedbackMailURL: URL? {
-        URL(string: "mailto:\(supportEmail)?subject=SwipeSort%20Feedback")
+        guard let email = supportEmail else { return nil }
+        return URL(string: "mailto:\(email)?subject=SwipeSort%20Feedback")
     }
     
     private var discordURL: URL? {
@@ -55,7 +58,7 @@ struct SettingsFeature: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: ThemeLayout.spacingItem) {
                     // Statistics Card
                     statisticsCard
                     
@@ -74,8 +77,8 @@ struct SettingsFeature: View {
                     // About
                     aboutCard
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.horizontal, ThemeLayout.spacingItem)
+                .padding(.bottom, ThemeLayout.spacingItem)
             }
             .background(Color.appBackground.ignoresSafeArea())
             .navigationTitle(NSLocalizedString("Settings", comment: "Settings title"))
@@ -107,23 +110,22 @@ struct SettingsFeature: View {
                 Text(linkErrorMessage)
             }
         }
-        .preferredColorScheme(.dark)
     }
     
     // MARK: - Statistics Card
     
     private var statisticsCard: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("Statistics", comment: "Statistics title"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
             }
             
-            HStack(spacing: 12) {
+            HStack(spacing: ThemeLayout.paddingSmall) {
                 StatisticItem(
                     count: sortStore.keepCount,
                     label: NSLocalizedString("Keep", comment: "Keep label"),
@@ -145,47 +147,43 @@ struct SettingsFeature: View {
                     icon: "heart.circle.fill"
                 )
                 
-                StatisticItem(
-                    count: sortStore.unsortedCount,
-                    label: NSLocalizedString("Skip", comment: "Skip label"),
-                    color: .skipColor,
-                    icon: "arrow.up.circle.fill"
-                )
             }
             
             Divider()
-                .background(.white.opacity(0.1))
+                .background(Color.appBackgroundSecondary)
             
             HStack {
                 Text(NSLocalizedString("Total", comment: "Total label"))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(.themeCaption)
+                    .foregroundStyle(Color.themeSecondary)
                 Spacer()
                 Text("\(sortStore.totalSortedCount)")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.themeDisplayValue)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.themePrimary)
                 Text(NSLocalizedString("items", comment: "Items unit"))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(.themeCaption)
+                    .foregroundStyle(Color.themeSecondary)
             }
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
     
     // MARK: - Gesture Guide Card
     
     private var gestureGuideCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("Operations", comment: "Operations title"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
             }
             
-            VStack(spacing: 12) {
+            VStack(spacing: ThemeLayout.paddingSmall) {
                 GestureRow(
                     icon: "arrow.right",
                     direction: NSLocalizedString("Swipe Right", comment: "Swipe right"),
@@ -199,12 +197,6 @@ struct SettingsFeature: View {
                     color: .deleteColor
                 )
                 GestureRow(
-                    icon: "arrow.up",
-                    direction: NSLocalizedString("Swipe Up", comment: "Swipe up"),
-                    action: NSLocalizedString("Skip", comment: "Skip action"),
-                    color: .skipColor
-                )
-                GestureRow(
                     icon: "hand.tap.fill",
                     direction: NSLocalizedString("Double Tap", comment: "Double tap"),
                     action: NSLocalizedString("Favorite", comment: "Favorite action"),
@@ -214,62 +206,64 @@ struct SettingsFeature: View {
                     icon: "hand.point.up.left.fill",
                     direction: NSLocalizedString("Long Press", comment: "Long press"),
                     action: NSLocalizedString("Play (Video/Live Photo)", comment: "Play video/Live Photo"),
-                    color: .blue
+                    color: .iconMedia
                 )
             }
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
     
     // MARK: - Settings Card
     
     private var settingsCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("Settings", comment: "Settings title"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
             }
             
             Toggle(isOn: $hapticFeedbackEnabled) {
-                HStack(spacing: 12) {
+                HStack(spacing: ThemeLayout.spacingMedium) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.purple.opacity(0.2))
-                            .frame(width: 36, height: 36)
+                        RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
+                            .fill(Color.iconHaptic.opacity(0.2))
+                            .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                         Image(systemName: "iphone.radiowaves.left.and.right")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.purple)
+                            .font(.themeLabel)
+                            .foregroundStyle(Color.iconHaptic)
                     }
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: ThemeLayout.spacingTiny) {
                         Text(NSLocalizedString("Haptic Feedback", comment: "Haptic feedback"))
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.white)
+                            .font(.themeRowTitle)
+                            .foregroundStyle(Color.themePrimary)
                         Text(NSLocalizedString("Vibrate on Swipe", comment: "Vibrate on swipe"))
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.6))
+                            .font(.themeCaptionSecondary)
+                            .foregroundStyle(Color.themeSecondary)
                     }
                 }
             }
-            .tint(.purple)
+            .tint(Color.iconHaptic)
+            .accessibilityLabel(NSLocalizedString("Haptic Feedback", comment: "Haptic feedback"))
+            .accessibilityHint(NSLocalizedString("Toggle to enable or disable vibration feedback", comment: "Haptic feedback hint"))
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
     
     // MARK: - Data Card
     
     private var dataCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("Data Management", comment: "Data management title"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -278,45 +272,47 @@ struct SettingsFeature: View {
             Button {
                 showResetConfirmation = true
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: ThemeLayout.spacingMedium) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.red.opacity(0.2))
-                            .frame(width: 36, height: 36)
+                        RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
+                            .fill(Color.iconDanger.opacity(0.2))
+                            .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                         Image(systemName: "trash")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.red)
+                            .font(.themeLabel)
+                            .foregroundStyle(Color.iconDanger)
                     }
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: ThemeLayout.spacingTiny) {
                         Text(NSLocalizedString("Reset All Data", comment: "Reset all data"))
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.white)
+                            .font(.themeRowTitle)
+                            .foregroundStyle(Color.themePrimary)
                         Text(NSLocalizedString("Delete All Sorting Results", comment: "Delete all sorting results"))
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.6))
+                            .font(.themeCaptionSecondary)
+                            .foregroundStyle(Color.themeSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.3))
+                        .font(.themeButtonSmall)
+                        .foregroundStyle(Color.themeTertiary)
                 }
             }
+            .accessibilityLabel(NSLocalizedString("Reset All Data", comment: "Reset all data"))
+            .accessibilityHint(NSLocalizedString("Delete all sorting results and start fresh", comment: "Reset data hint"))
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
     
     // MARK: - Support Card
     
     private var supportCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("Support", comment: "Support title"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -334,16 +330,18 @@ struct SettingsFeature: View {
                 } label: {
                     SettingsRow(
                         icon: "envelope",
-                        iconColor: .cyan,
+                        iconColor: .iconFeedback,
                         title: NSLocalizedString("Send Feedback", comment: "Send feedback"),
                         showChevron: true,
                         isExternal: true
                     )
                 }
+                .accessibilityLabel(NSLocalizedString("Send Feedback", comment: "Send feedback"))
+                .accessibilityHint(NSLocalizedString("Opens email to send feedback", comment: "Send feedback hint"))
                 
                 Divider()
-                    .background(.white.opacity(0.1))
-                    .padding(.leading, 48)
+                    .background(Color.appBackgroundSecondary)
+                    .padding(.leading, ThemeLayout.spacingXLarge)
                 
                 // Contact / Feedback - Discord
                 Button {
@@ -356,16 +354,18 @@ struct SettingsFeature: View {
                 } label: {
                     SettingsRow(
                         icon: "message.fill",
-                        iconColor: .indigo,
+                        iconColor: .iconCommunity,
                         title: NSLocalizedString("Discord Support", comment: "Discord support"),
                         showChevron: true,
                         isExternal: true
                     )
                 }
+                .accessibilityLabel(NSLocalizedString("Discord Support", comment: "Discord support"))
+                .accessibilityHint(NSLocalizedString("Opens Discord for community support", comment: "Discord hint"))
                 
                 Divider()
-                    .background(.white.opacity(0.1))
-                    .padding(.leading, 48)
+                    .background(Color.appBackgroundSecondary)
+                    .padding(.leading, ThemeLayout.spacingXLarge)
                 
                 // Rate on App Store
                 Button {
@@ -378,24 +378,26 @@ struct SettingsFeature: View {
                 } label: {
                     SettingsRow(
                         icon: "star",
-                        iconColor: .yellow,
+                        iconColor: .iconRating,
                         title: NSLocalizedString("Rate on App Store", comment: "Rate on App Store"),
                         showChevron: true,
                         isExternal: true
                     )
                 }
+                .accessibilityLabel(NSLocalizedString("Rate on App Store", comment: "Rate on App Store"))
+                .accessibilityHint(NSLocalizedString("Opens App Store to leave a review", comment: "Rate hint"))
                 
                 Divider()
-                    .background(.white.opacity(0.1))
-                    .padding(.leading, 48)
+                    .background(Color.appBackgroundSecondary)
+                    .padding(.leading, ThemeLayout.spacingXLarge)
                 
                 // Donate / Tip
                 Button {
                     showTipJar = true
                 } label: {
-                    HStack(spacing: 12) {
+                    HStack(spacing: ThemeLayout.spacingMedium) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
                                 .fill(
                                     LinearGradient(
                                         colors: [.pink, .orange],
@@ -403,43 +405,45 @@ struct SettingsFeature: View {
                                         endPoint: .bottomTrailing
                                     )
                                 )
-                                .frame(width: 36, height: 36)
+                                .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                             Image(systemName: "heart.fill")
-                                .font(.system(size: 16))
+                                .font(.themeButtonSmall)
                                 .foregroundStyle(.white)
                         }
                         
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: ThemeLayout.spacingTiny) {
                             Text(NSLocalizedString("Developer Support", comment: "Developer support"))
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(.white)
+                                .font(.themeRowTitle)
+                                .foregroundStyle(Color.themePrimary)
                             Text(NSLocalizedString("Support with Tip", comment: "Support with tip"))
-                                .font(.system(size: 12))
-                                .foregroundStyle(.white.opacity(0.5))
+                                .font(.themeSectionLabel)
+                                .foregroundStyle(Color.themeTertiary)
                         }
                         
                         Spacer()
                         
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.3))
+                            .font(.themeButtonSmall)
+                            .foregroundStyle(Color.themeTertiary)
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, ThemeLayout.spacingSmall)
                 }
+                .accessibilityLabel(NSLocalizedString("Developer Support", comment: "Developer support"))
+                .accessibilityHint(NSLocalizedString("Opens tip jar to support the developer", comment: "Tip jar hint"))
             }
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
     
     // MARK: - About Card
     
     private var aboutCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             HStack {
                 Text(NSLocalizedString("About", comment: "About title"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.themeSectionLabel)
+                    .foregroundStyle(Color.themeTertiary)
                     .textCase(.uppercase)
                     .tracking(1)
                 Spacer()
@@ -451,15 +455,17 @@ struct SettingsFeature: View {
                 } label: {
                     SettingsRow(
                         icon: "info.circle",
-                        iconColor: .blue,
+                        iconColor: .iconInfo,
                         title: NSLocalizedString("About", comment: "About this app"),
                         showChevron: true
                     )
                 }
+                .accessibilityLabel(NSLocalizedString("About", comment: "About this app"))
+                .accessibilityHint(NSLocalizedString("Shows app information and usage guide", comment: "About hint"))
                 
                 Divider()
-                    .background(.white.opacity(0.1))
-                    .padding(.leading, 48)
+                    .background(Color.appBackgroundSecondary)
+                    .padding(.leading, ThemeLayout.spacingXXLarge)
                 
                 Button {
                     if let url = privacyPolicyURL {
@@ -471,15 +477,17 @@ struct SettingsFeature: View {
                 } label: {
                     SettingsRow(
                         icon: "hand.raised",
-                        iconColor: .green,
+                        iconColor: .iconPrivacy,
                         title: NSLocalizedString("Privacy Policy", comment: "Privacy policy"),
                         showChevron: true,
                         isExternal: true
                     )
                 }
+                .accessibilityLabel(NSLocalizedString("Privacy Policy", comment: "Privacy policy"))
+                .accessibilityHint(NSLocalizedString("Opens privacy policy in browser", comment: "Privacy policy hint"))
             }
         }
-        .padding(20)
+        .padding(ThemeLayout.spacingItem)
         .glassCard()
     }
 }
@@ -494,27 +502,29 @@ struct StatisticItem: View {
     let icon: String
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: ThemeLayout.paddingSmall) {
             ZStack {
                 Circle()
                     .fill(color.opacity(0.15))
-                    .frame(width: 48, height: 48)
+                    .frame(width: ThemeLayout.iconContainerSmall, height: ThemeLayout.iconContainerSmall)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 22))
+                    .font(.themeBody)
                     .foregroundStyle(color)
             }
             
             Text("\(count)")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.themeDisplayValue)
                 .monospacedDigit()
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.themePrimary)
             
             Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.themeSectionLabel)
+                .foregroundStyle(Color.themeTertiary)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(count)")
     }
 }
 
@@ -526,28 +536,30 @@ struct GestureRow: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ThemeLayout.spacingMedium) {
             ZStack {
                 Circle()
                     .fill(color.opacity(0.15))
-                    .frame(width: 36, height: 36)
+                    .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.themeButtonSmall)
                     .foregroundStyle(color)
             }
             
             Text(direction)
-                .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.6))
+                .font(.themeCaption)
+                .foregroundStyle(Color.themeSecondary)
             
             Spacer()
             
             Text(action)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.themeCaption.weight(.semibold))
                 .foregroundStyle(color)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ThemeLayout.spacingXSmall)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(direction): \(action)")
     }
 }
 
@@ -560,29 +572,29 @@ struct SettingsRow: View {
     var isExternal: Bool = false
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ThemeLayout.spacingMedium) {
             ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
                     .fill(iconColor.opacity(0.2))
-                    .frame(width: 36, height: 36)
+                    .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                 Image(systemName: icon)
-                    .font(.system(size: 16))
+                    .font(.themeButtonSmall)
                     .foregroundStyle(iconColor)
             }
             
             Text(title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(.white)
+                .font(.themeRowTitle)
+                .foregroundStyle(Color.themePrimary)
             
             Spacer()
             
             if showChevron {
                 Image(systemName: isExternal ? "arrow.up.right" : "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.3))
+                    .font(.themeButtonSmall)
+                    .foregroundStyle(Color.themeTertiary)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, ThemeLayout.spacingSmall)
     }
 }
 
@@ -595,54 +607,54 @@ struct AboutView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 40) {
+                VStack(spacing: ThemeLayout.spacingSection) {
                     // App Icon
-                    VStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.purple, .blue],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+                    VStack(spacing: ThemeLayout.spacingMediumLarge) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.purple, .blue],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                                .frame(width: 100, height: 100)
-                            
-                            Image(systemName: "hand.draw.fill")
-                                .font(.system(size: 44))
-                                .foregroundStyle(.white)
-                        }
-                        .shadow(color: .purple.opacity(0.5), radius: 20, x: 0, y: 10)
+                            )
+                            .frame(width: ThemeLayout.iconContainerLarge, height: ThemeLayout.iconContainerLarge)
                         
-                        VStack(spacing: 4) {
+                        Image(systemName: "hand.draw.fill")
+                            .font(.themeTitleLarge)
+                            .foregroundStyle(.white)
+                    }
+                    .shadow(color: .purple.opacity(0.5), radius: ThemeLayout.shadowRadiusLarge, x: 0, y: ThemeLayout.shadowYLarge)
+                        
+                        VStack(spacing: ThemeLayout.spacingXSmall) {
                             Text("SwipeSort")
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.themeTitleLarge)
                             
-                            Text(String(format: NSLocalizedString("Version %@", comment: "Version"), "1.0"))
-                                .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
+                            Text(String(format: NSLocalizedString("Version %@", comment: "Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"))
+                                .font(.themeCaption)
+                                .foregroundStyle(Color.themeTertiary)
                         }
                     }
-                    .padding(.top, 40)
+                    .padding(.top, ThemeLayout.paddingLarge)
                     
                     // Description
-                    VStack(alignment: .leading, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ThemeLayout.spacingItem) {
+                        VStack(alignment: .leading, spacing: ThemeLayout.spacingSmall) {
                             Text(NSLocalizedString("About", comment: "About this app"))
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.themeRowTitle.weight(.semibold))
                             
                             Text(NSLocalizedString("About Description", comment: "About description"))
-                                .font(.system(size: 15))
-                                .foregroundStyle(.secondary)
-                                .lineSpacing(4)
+                                .font(.themeButtonSmall)
+                                .foregroundStyle(Color.themeTertiary)
+                                .lineSpacing(ThemeLayout.lineSpacingDefault)
                         }
                         
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: ThemeLayout.spacingMediumLarge) {
                             Text(NSLocalizedString("Operations", comment: "Operations title"))
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.themeRowTitle.weight(.semibold))
                             
-                            VStack(spacing: 12) {
+                            VStack(spacing: ThemeLayout.paddingSmall) {
                                 InstructionRow(
                                     icon: "arrow.right.circle.fill",
                                     color: .keepColor,
@@ -656,12 +668,6 @@ struct AboutView: View {
                                     description: NSLocalizedString("Add to Delete Queue", comment: "Add to delete queue")
                                 )
                                 InstructionRow(
-                                    icon: "arrow.up.circle.fill",
-                                    color: .skipColor,
-                                    text: NSLocalizedString("Swipe Up", comment: "Swipe up"),
-                                    description: NSLocalizedString("Skip", comment: "Skip action")
-                                )
-                                InstructionRow(
                                     icon: "heart.circle.fill",
                                     color: .favoriteColor,
                                     text: NSLocalizedString("Double Tap", comment: "Double tap"),
@@ -669,44 +675,44 @@ struct AboutView: View {
                                 )
                                 InstructionRow(
                                     icon: "hand.point.up.left.fill",
-                                    color: .blue,
+                                    color: .iconMedia,
                                     text: NSLocalizedString("Long Press", comment: "Long press"),
                                     description: NSLocalizedString("Play (Video/Live Photo)", comment: "Play video/Live Photo")
                                 )
                             }
                         }
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: ThemeLayout.spacingSmall) {
                             Text(NSLocalizedString("About Delete", comment: "About delete"))
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.themeRowTitle.weight(.semibold))
                             
                             Text(NSLocalizedString("About Delete Description", comment: "About delete description"))
-                                .font(.system(size: 15))
-                                .foregroundStyle(.secondary)
-                                .lineSpacing(4)
+                                .font(.themeButtonSmall)
+                                .foregroundStyle(Color.themeTertiary)
+                                .lineSpacing(ThemeLayout.lineSpacingDefault)
                         }
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: ThemeLayout.spacingSmall) {
                             Text(NSLocalizedString("Other Features", comment: "Other features"))
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.themeRowTitle.weight(.semibold))
                             
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: ThemeLayout.spacingCompact) {
                                 Text(NSLocalizedString("• Filter: Filter by photos, videos, Live Photos, etc.", comment: "Filter feature"))
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(.secondary)
+                                    .font(.themeButtonSmall)
+                                    .foregroundStyle(Color.themeTertiary)
                                 Text(NSLocalizedString("• Undo: Cancel the last action", comment: "Undo feature"))
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(.secondary)
+                                    .font(.themeButtonSmall)
+                                    .foregroundStyle(Color.themeTertiary)
                                 Text(NSLocalizedString("• Date Display: Show photo creation date", comment: "Date display feature"))
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(.secondary)
+                                    .font(.themeButtonSmall)
+                                    .foregroundStyle(Color.themeTertiary)
                             }
-                                .lineSpacing(4)
+                                .lineSpacing(ThemeLayout.lineSpacingDefault)
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, ThemeLayout.spacingItem)
                     
-                    Spacer(minLength: 40)
+                    Spacer(minLength: ThemeLayout.minSpacerHeight)
                 }
             }
             .background(Color.appBackground.ignoresSafeArea())
@@ -720,7 +726,6 @@ struct AboutView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 }
 
@@ -732,22 +737,22 @@ struct InstructionRow: View {
     let description: String
     
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: ThemeLayout.spacingMediumLarge) {
             Image(systemName: icon)
-                .font(.system(size: 28))
+                .font(.themeTitle)
                 .foregroundStyle(color)
-                .frame(width: 36)
+                .frame(width: ThemeLayout.buttonSizeSmall)
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: ThemeLayout.spacingTiny) {
                 Text(text)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.themeButtonSmall)
                 Text(description)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
+                    .font(.themeCaptionSecondary)
+                    .foregroundStyle(Color.themeTertiary)
             }
             
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ThemeLayout.spacingXSmall)
     }
 }

@@ -9,6 +9,13 @@ import Foundation
 import SwiftData
 import os
 
+// MARK: - Constants
+
+private enum StoreConstants {
+    /// Maximum number of undo records to keep in history
+    static let maxUndoHistoryCount = 100
+}
+
 @MainActor
 @Observable
 final class SortResultStore {
@@ -26,7 +33,6 @@ final class SortResultStore {
     private(set) var keepCount: Int = 0
     private(set) var deleteCount: Int = 0
     private(set) var favoriteCount: Int = 0
-    private(set) var unsortedCount: Int = 0  // スキップ（未整理）の数
     
     // MARK: - Cache for sortedIDs
     
@@ -37,7 +43,7 @@ final class SortResultStore {
     private var categoryCache: [String: SortCategory] = [:]
     
     var totalSortedCount: Int {
-        keepCount + deleteCount + favoriteCount + unsortedCount
+        keepCount + deleteCount + favoriteCount
     }
     
     // MARK: - Undo
@@ -61,7 +67,30 @@ final class SortResultStore {
     // MARK: - Initialization
     
     init() {
-        // Try to create persistent storage first
+        setupStorage()
+    }
+    
+    // MARK: - Storage Setup
+    
+    /// Main storage setup orchestrator with fallback chain
+    private func setupStorage() {
+        // Try persistent storage first
+        if setupPersistentStorage() {
+            return
+        }
+        
+        // Persistent failed, try in-memory fallback
+        if setupInMemoryFallback() {
+            return
+        }
+        
+        // Even in-memory failed, try emergency storage
+        setupEmergencyStorage()
+    }
+    
+    /// Attempts to setup persistent (on-disk) storage
+    /// - Returns: true if successful
+    private func setupPersistentStorage() -> Bool {
         do {
             let schema = Schema([SortRecord.self, UndoRecord.self])
             let modelConfiguration = ModelConfiguration(
@@ -73,54 +102,67 @@ final class SortResultStore {
                 configurations: [modelConfiguration]
             )
             
-            refreshCounts()
-            refreshUndoState()
+            finalizeSetup()
             logger.info("Persistent storage initialized successfully")
+            return true
         } catch {
-            // Primary storage failed, try in-memory fallback
             logger.error("Failed to create persistent storage: \(error.localizedDescription). Attempting in-memory fallback.")
             initializationError = error
-            
-            do {
-                let schema = Schema([SortRecord.self, UndoRecord.self])
-                let fallbackConfig = ModelConfiguration(
-                    schema: schema,
-                    isStoredInMemoryOnly: true
-                )
-                modelContainer = try ModelContainer(
-                    for: schema,
-                    configurations: [fallbackConfig]
-                )
-                isUsingFallbackStorage = true
-                logger.warning("Using in-memory fallback storage. Data will not persist across app launches.")
-                
-                refreshCounts()
-                refreshUndoState()
-            } catch let fallbackError {
-                // Even in-memory storage failed - this is a critical error
-                logger.critical("Critical: Failed to create even in-memory storage: \(fallbackError.localizedDescription)")
-                isCriticalError = true
-                
-                // Final attempt with minimal configuration (no crash on failure)
-                let schema = Schema([SortRecord.self, UndoRecord.self])
-                let minimalConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                
-                // Try without crashing - if this fails, storage is disabled but app continues
-                modelContainer = try? ModelContainer(for: schema, configurations: [minimalConfig])
-                
-                if modelContainer == nil {
-                    // Absolute final attempt with default configuration
-                    modelContainer = try? ModelContainer(for: schema)
-                }
-                
-                if modelContainer != nil {
-                isUsingFallbackStorage = true
-                    logger.warning("Using emergency storage configuration.")
-                } else {
-                    logger.critical("Fatal: All storage initialization attempts failed. Storage functionality is disabled.")
-                }
-            }
+            return false
         }
+    }
+    
+    /// Attempts to setup in-memory fallback storage
+    /// - Returns: true if successful
+    private func setupInMemoryFallback() -> Bool {
+        do {
+            let schema = Schema([SortRecord.self, UndoRecord.self])
+            let fallbackConfig = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: true
+            )
+            modelContainer = try ModelContainer(
+                for: schema,
+                configurations: [fallbackConfig]
+            )
+            isUsingFallbackStorage = true
+            
+            finalizeSetup()
+            logger.warning("Using in-memory fallback storage. Data will not persist across app launches.")
+            return true
+        } catch {
+            logger.critical("Critical: Failed to create even in-memory storage: \(error.localizedDescription)")
+            isCriticalError = true
+            return false
+        }
+    }
+    
+    /// Last-resort emergency storage setup (non-throwing)
+    private func setupEmergencyStorage() {
+        let schema = Schema([SortRecord.self, UndoRecord.self])
+        let minimalConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        
+        // Try without crashing - if this fails, storage is disabled but app continues
+        modelContainer = try? ModelContainer(for: schema, configurations: [minimalConfig])
+        
+        if modelContainer == nil {
+            // Absolute final attempt with default configuration
+            modelContainer = try? ModelContainer(for: schema)
+        }
+        
+        if modelContainer != nil {
+            isUsingFallbackStorage = true
+            logger.warning("Using emergency storage configuration.")
+        } else {
+            logger.critical("Fatal: All storage initialization attempts failed. Storage functionality is disabled.")
+        }
+    }
+    
+    /// Common setup finalization after container is created
+    private func finalizeSetup() {
+        refreshCounts()
+        refreshUndoState()
+        cleanupUnsortedData()
     }
     
     // MARK: - Query
@@ -268,15 +310,13 @@ final class SortResultStore {
         
         // Add undo record (skip for delete actions as they cannot be undone)
         if recordUndo {
-        let undoRecord = UndoRecord(
-            assetID: assetID,
-            previousCategory: actualPreviousCategory,
-            newCategory: category
-        )
-        modelContext.insert(undoRecord)
-        
-        // Trim undo history (keep last 100)
-        trimUndoHistory()
+            let undoRecord = UndoRecord(
+                assetID: assetID,
+                previousCategory: actualPreviousCategory,
+                newCategory: category
+            )
+            modelContext.insert(undoRecord)
+            trimUndoHistory()
         }
         
         // Update caches
@@ -442,12 +482,12 @@ final class SortResultStore {
         )
         
         guard let allRecords = try? modelContext.fetch(descriptor),
-              allRecords.count > 100 else {
+              allRecords.count > StoreConstants.maxUndoHistoryCount else {
             return
         }
         
-        // Delete old records beyond 100
-        for record in allRecords.dropFirst(100) {
+        // Delete old records beyond limit
+        for record in allRecords.dropFirst(StoreConstants.maxUndoHistoryCount) {
             modelContext.delete(record)
         }
         // Note: saveAndRefresh() is called by the caller, so we don't save here
@@ -505,7 +545,6 @@ final class SortResultStore {
             keepCount = 0
             deleteCount = 0
             favoriteCount = 0
-            unsortedCount = 0
             return
         }
         
@@ -519,7 +558,6 @@ final class SortResultStore {
             var keep = 0
             var delete = 0
             var favorite = 0
-            var unsorted = 0
             
             for record in allRecords {
                 switch record.categoryRaw {
@@ -530,7 +568,8 @@ final class SortResultStore {
                 case "favorite":
                     favorite += 1
                 case "unsorted":
-                    unsorted += 1
+                    // Skip unsorted records (they will be cleaned up)
+                    break
                 default:
                     break
                 }
@@ -539,9 +578,8 @@ final class SortResultStore {
             keepCount = keep
             deleteCount = delete
             favoriteCount = favorite
-            unsortedCount = unsorted
             
-            logger.debug("Counts refreshed: keep=\(self.keepCount), delete=\(self.deleteCount), favorite=\(self.favoriteCount), unsorted=\(self.unsortedCount)")
+            logger.debug("Counts refreshed: keep=\(self.keepCount), delete=\(self.deleteCount), favorite=\(self.favoriteCount)")
         } catch {
             logger.error("Failed to refresh counts: \(error.localizedDescription)")
             // Fallback to individual fetchCount if single fetch fails
@@ -556,10 +594,6 @@ final class SortResultStore {
             favoriteCount = (try? modelContext.fetchCount(
                 FetchDescriptor<SortRecord>(predicate: #Predicate { $0.categoryRaw == "favorite" })
             )) ?? 0
-            
-            unsortedCount = (try? modelContext.fetchCount(
-                FetchDescriptor<SortRecord>(predicate: #Predicate { $0.categoryRaw == "unsorted" })
-            )) ?? 0
         }
     }
     
@@ -570,6 +604,30 @@ final class SortResultStore {
         }
         let count = (try? modelContext.fetchCount(FetchDescriptor<UndoRecord>())) ?? 0
         canUndo = count > 0
+    }
+    
+    /// Cleans up existing .unsorted data by removing all records with .unsorted category.
+    ///
+    /// This method is called on app startup to remove any existing .unsorted records
+    /// that were created before the Skip feature was removed.
+    private func cleanupUnsortedData() {
+        guard let modelContext else { return }
+        
+        let descriptor = FetchDescriptor<SortRecord>(
+            predicate: #Predicate { $0.categoryRaw == "unsorted" }
+        )
+        
+        do {
+            let unsortedRecords = try modelContext.fetch(descriptor)
+            let assetIDs = unsortedRecords.map { $0.assetID }
+            
+            if !assetIDs.isEmpty {
+                remove(assetIDs: assetIDs)
+                logger.info("Cleaned up \(assetIDs.count) unsorted records")
+            }
+        } catch {
+            logger.error("Failed to cleanup unsorted data: \(error.localizedDescription)")
+        }
     }
 }
 

@@ -54,6 +54,8 @@ final class PhotoLibraryClient {
     private static nonisolated let thumbnailLoadTimeout: TimeInterval = 10
     /// Timeout for Live Photo loading (may require iCloud download)
     private static nonisolated let livePhotoLoadTimeout: TimeInterval = 30
+    /// Timeout for video player item loading (may require iCloud download)
+    private static nonisolated let videoLoadTimeout: TimeInterval = 30
     
     // MARK: - Initialization
     
@@ -329,9 +331,32 @@ final class PhotoLibraryClient {
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .automatic
 
+        final class VideoLoadState: @unchecked Sendable {
+            var hasResumed = false
+            var lastItem: AVPlayerItem?
+            let lock = NSLock()
+        }
+        let state = VideoLoadState()
+
         return await withCheckedContinuation { continuation in
-            imageManager.requestPlayerItem(forVideo: asset, options: options) { item, _ in
+            let requestID = imageManager.requestPlayerItem(forVideo: asset, options: options) { item, _ in
+                state.lock.lock()
+                defer { state.lock.unlock() }
+                guard !state.hasResumed else { return }
+                state.hasResumed = true
+                state.lastItem = item
                 continuation.resume(returning: item)
+            }
+
+            DispatchQueue.global().asyncAfter(deadline: .now() + Self.videoLoadTimeout) { [weak self] in
+                state.lock.lock()
+                defer { state.lock.unlock() }
+                if !state.hasResumed {
+                    state.hasResumed = true
+                    self?.imageManager.cancelImageRequest(requestID)
+                    self?.logger.warning("Video load timeout after \(Self.videoLoadTimeout)s for asset \(asset.localIdentifier)")
+                    continuation.resume(returning: state.lastItem)
+                }
             }
         }
     }
@@ -436,11 +461,6 @@ final class PhotoLibraryClient {
         logger.info("Set favorite=\(isFavorite) for \(assets.count) assets")
     }
     
-    /// Remove assets from cache by IDs (used when assets are deleted externally)
-    func removeFromCache(ids: Set<String>) {
-        allAssets.removeAll { ids.contains($0.id) }
-    }
-    
     // MARK: - Caching
     
     /// Updates the image cache window for efficient photo loading.
@@ -499,12 +519,129 @@ final class PhotoLibraryClient {
     
     // MARK: - Helpers
     
-    func unsortedAssets(excluding sortedIDs: Set<String>) -> [PhotoAsset] {
-        allAssets.filter { !sortedIDs.contains($0.id) }
-    }
-    
     func assets(for ids: [String]) -> [PhotoAsset] {
         let idSet = Set(ids)
         return allAssets.filter { idSet.contains($0.id) }
+    }
+    
+    // MARK: - Albums
+    
+    /// Fetches all user-created albums from the photo library.
+    ///
+    /// This method returns only regular albums created by the user, excluding
+    /// system albums, synced albums, and shared albums.
+    ///
+    /// - Returns: An array of PHAssetCollection objects representing user albums
+    /// - Throws: An error if the operation fails (e.g., permission denied)
+    nonisolated func fetchUserAlbums() async throws -> [PHAssetCollection] {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        let result = PHAssetCollection.fetchAssetCollections(
+            with: .album,
+            subtype: .albumRegular,
+            options: fetchOptions
+        )
+        
+        var albums: [PHAssetCollection] = []
+        result.enumerateObjects { collection, _, _ in
+            albums.append(collection)
+        }
+        
+        logger.info("Fetched \(albums.count) user albums")
+        return albums
+    }
+    
+    /// Creates a new album with the specified name.
+    ///
+    /// - Parameter name: The name for the new album
+    /// - Returns: The created PHAssetCollection, or nil if creation failed
+    /// - Throws: An error if the operation fails (e.g., permission denied)
+    nonisolated func createAlbum(name: String) async throws -> PHAssetCollection? {
+        // Check authorization
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        guard status == .authorized || status == .limited else {
+            throw PhotoLibraryError.insufficientPermissions
+        }
+        
+        var placeholderIdentifier: String?
+        
+        try await PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: name)
+            placeholderIdentifier = request.placeholderForCreatedAssetCollection.localIdentifier
+        }
+        
+        // Fetch the actual collection
+        var createdCollection: PHAssetCollection?
+        if let identifier = placeholderIdentifier {
+            let fetchResult = PHAssetCollection.fetchAssetCollections(
+                withLocalIdentifiers: [identifier],
+                options: nil
+            )
+            createdCollection = fetchResult.firstObject
+        }
+        
+        logger.info("Created album: \(name)")
+        return createdCollection
+    }
+    
+    /// Adds assets to an album, skipping duplicates.
+    ///
+    /// This method checks if assets are already in the album before adding them,
+    /// preventing duplicate entries.
+    ///
+    /// - Parameters:
+    ///   - assets: An array of PHAsset objects to add
+    ///   - album: The PHAssetCollection to add assets to
+    /// - Returns: The number of assets actually added (excluding duplicates)
+    /// - Throws: An error if the operation fails (e.g., permission denied)
+    nonisolated func addAssets(_ assets: [PHAsset], to album: PHAssetCollection) async throws -> Int {
+        // Check authorization
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        guard status == .authorized || status == .limited else {
+            throw PhotoLibraryError.insufficientPermissions
+        }
+        
+        guard !assets.isEmpty else { return 0 }
+        
+        // Check for duplicates
+        let existingAssets = PHAsset.fetchAssets(in: album, options: nil)
+        var existingIDs = Set<String>()
+        existingAssets.enumerateObjects { asset, _, _ in
+            existingIDs.insert(asset.localIdentifier)
+        }
+        
+        // Filter out duplicates
+        let assetsToAdd = assets.filter { !existingIDs.contains($0.localIdentifier) }
+        
+        guard !assetsToAdd.isEmpty else {
+            logger.info("All assets already in album")
+            return 0
+        }
+        
+        try await PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCollectionChangeRequest(for: album)
+            request?.addAssets(assetsToAdd as NSFastEnumeration)
+        }
+        
+        logger.info("Added \(assetsToAdd.count) assets to album (skipped \(assets.count - assetsToAdd.count) duplicates)")
+        return assetsToAdd.count
+    }
+    
+}
+
+// MARK: - Photo Library Errors
+
+enum PhotoLibraryError: LocalizedError {
+    case insufficientPermissions
+    case albumCreationFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .insufficientPermissions:
+            return NSLocalizedString("Insufficient photo library permissions", comment: "Permission error")
+        case .albumCreationFailed:
+            return NSLocalizedString("Failed to create album", comment: "Album creation error")
+        }
     }
 }

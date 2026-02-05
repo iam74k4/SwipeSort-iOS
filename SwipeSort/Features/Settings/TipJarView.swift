@@ -19,7 +19,7 @@ struct TipJarView: View {
                 Color.appBackground.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 32) {
+                    VStack(spacing: ThemeLayout.spacingSection) {
                         // Header
                         headerView
                         
@@ -35,8 +35,8 @@ struct TipJarView: View {
                         // Footer message
                         footerView
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 32)
+                .padding(.horizontal, ThemeLayout.spacingItem)
+                .padding(.vertical, ThemeLayout.spacingSection)
                 }
             }
             .navigationTitle(NSLocalizedString("Support Developer", comment: "Support developer"))
@@ -62,13 +62,12 @@ struct TipJarView: View {
                 Text(NSLocalizedString("Thank You Message", comment: "Thank you message"))
             }
         }
-        .preferredColorScheme(.dark)
     }
     
     // MARK: - Header
     
     private var headerView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ThemeLayout.spacingLarge) {
             // Heart icon with gradient
             ZStack {
                 Circle()
@@ -80,10 +79,10 @@ struct TipJarView: View {
                             endRadius: 80
                         )
                     )
-                    .frame(width: 160, height: 160)
+                    .frame(width: ThemeLayout.iconContainerXLarge, height: ThemeLayout.iconContainerXLarge)
                 
                 Image(systemName: "heart.fill")
-                    .font(.system(size: 64))
+                    .font(.themeIconXLarge)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.pink, .orange],
@@ -93,17 +92,17 @@ struct TipJarView: View {
                     )
             }
             
-            VStack(spacing: 8) {
+            VStack(spacing: ThemeLayout.paddingSmall) {
                 Text(NSLocalizedString("Did You Like SwipeSort?", comment: "Did you like SwipeSort"))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.themeDisplayValue.weight(.bold))
+                    .foregroundStyle(Color.themePrimary)
                     .multilineTextAlignment(.center)
                 
                 Text(NSLocalizedString("Tip Message", comment: "Tip message"))
-                    .font(.system(size: 15))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.themeBody)
+                    .foregroundStyle(Color.themeSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
+                    .lineSpacing(ThemeLayout.lineSpacingDefault)
             }
         }
     }
@@ -111,48 +110,48 @@ struct TipJarView: View {
     // MARK: - Loading View
     
     private var loadingView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingItem) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                .scaleEffect(1.2)
+                .progressViewStyle(CircularProgressViewStyle(tint: Color.themePrimary))
+                .scaleEffect(ThemeLayout.scaleLoading)
             
             Text(NSLocalizedString("Loading...", comment: "Loading"))
-                .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.themeButtonSmall)
+                .foregroundStyle(Color.themeTertiary)
         }
-        .frame(height: 200)
+        .frame(height: ThemeLayout.loadingPlaceholderHeight)
     }
     
     // MARK: - Empty Products View
     
     private var emptyProductsView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ThemeLayout.spacingItem) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 40))
+                .font(.themeIconLarge)
                 .foregroundStyle(.yellow)
             
             Text(NSLocalizedString("Failed to Load Products", comment: "Failed to load products"))
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
+                .font(.themeRowTitle)
+                .foregroundStyle(Color.themePrimary)
             
             Button {
                 Task { await tipStore.loadProducts() }
             } label: {
                 Text(NSLocalizedString("Retry", comment: "Retry button"))
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .glassCard(cornerRadius: 12)
+                    .font(.themeBody.weight(.semibold))
+                    .foregroundStyle(Color.themePrimary)
+                    .padding(.horizontal, ThemeLayout.paddingLarge)
+                    .padding(.vertical, ThemeLayout.spacingItem)
+                    .glassCard(cornerRadius: ThemeLayout.cornerRadiusChip)
             }
         }
-        .frame(height: 200)
+        .frame(height: ThemeLayout.loadingPlaceholderHeight)
     }
     
     // MARK: - Tip Options
     
     private var tipOptionsView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             ForEach(tipStore.products, id: \.id) { product in
                 TipButton(
                     product: product,
@@ -168,14 +167,14 @@ struct TipJarView: View {
     // MARK: - Footer
     
     private var footerView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ThemeLayout.paddingSmall) {
             Text(NSLocalizedString("Tips are Optional", comment: "Tips are optional"))
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.4))
+                .font(.themeCaption)
+                .foregroundStyle(Color.themeTertiary)
             
             Text(NSLocalizedString("All Features Available Without Tips", comment: "All features available without tips"))
-                .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.3))
+                .font(.themeCaptionSecondary)
+                .foregroundStyle(Color.themeTertiary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -192,31 +191,31 @@ struct TipButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: ThemeLayout.spacingItem) {
                 // Emoji
                 Text(tipProduct?.emoji ?? "💝")
-                    .font(.system(size: 32))
-                    .frame(width: 48)
+                    .font(.themeIconLarge)
+                    .frame(width: ThemeLayout.emojiContainerSize)
                 
                 // Name and description
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ThemeLayout.spacingCompact) {
                     Text(tipProduct?.displayName ?? product.displayName)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.themeRowTitle.weight(.semibold))
+                        .foregroundStyle(Color.themePrimary)
                     
                     Text(NSLocalizedString("Show Appreciation to Developer", comment: "Show appreciation to developer"))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .font(.themeCaptionSecondary)
+                        .foregroundStyle(Color.themeSecondary)
                 }
                 
                 Spacer()
                 
                 // Price
                 Text(product.displayPrice)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.themeRowTitle.weight(.bold))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, ThemeLayout.spacingItem)
+                    .padding(.vertical, ThemeLayout.spacingSmall)
                     .background {
                         Capsule()
                             .fill(
@@ -228,10 +227,10 @@ struct TipButton: View {
                             )
                     }
             }
-            .padding(16)
+            .padding(ThemeLayout.spacingItem)
             .background {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.white.opacity(0.08))
+                RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
+                    .fill(Color.primary.opacity(ThemeLayout.opacityLight))
             }
         }
         .buttonStyle(.plain)

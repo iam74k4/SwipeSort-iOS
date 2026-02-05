@@ -35,7 +35,6 @@ struct RootView: View {
         .onAppear {
             appState.checkAuthorizationStatus()
         }
-        .preferredColorScheme(.dark)
     }
     
     // MARK: - Request Access View
@@ -44,7 +43,7 @@ struct RootView: View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            VStack(spacing: ThemeLayout.spacingSection) {
                 Spacer()
                 
                 ZStack {
@@ -57,23 +56,23 @@ struct RootView: View {
                                 endRadius: 80
                             )
                         )
-                        .frame(width: 160, height: 160)
+                        .frame(width: ThemeLayout.iconContainerXLarge, height: ThemeLayout.iconContainerXLarge)
                     
                     Image(systemName: "photo.stack")
-                        .font(.system(size: 70, weight: .thin))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .font(.themeDisplayHuge)
+                        .foregroundStyle(.white.opacity(ThemeLayout.opacityXHeavy))
                 }
                 
-                VStack(spacing: 12) {
+                VStack(spacing: ThemeLayout.spacingMediumLarge) {
                     Text(NSLocalizedString("Photo Access Required", comment: "Photo access required"))
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.themeTitle)
+                        .foregroundStyle(Color.themePrimary)
                     
                     Text(NSLocalizedString("Photo Access Description", comment: "Photo access description"))
-                        .font(.system(size: 15))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.themeBody)
+                        .foregroundStyle(Color.themeSecondary)
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
+                        .lineSpacing(ThemeLayout.lineSpacingDefault)
                 }
                 
                 Button {
@@ -82,12 +81,12 @@ struct RootView: View {
                     }
                 } label: {
                     Text(NSLocalizedString("Allow Access", comment: "Allow access button"))
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.themeButton)
+                        .foregroundStyle(Color.themePrimary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, ThemeLayout.spacingItem)
                         .background {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
                                 .fill(
                                     LinearGradient(
                                         colors: [.purple, .blue],
@@ -97,7 +96,7 @@ struct RootView: View {
                                 )
                         }
                 }
-                .padding(.horizontal, 40)
+                .padding(.horizontal, ThemeLayout.spacingXLarge)
                 
                 Spacer()
             }
@@ -121,7 +120,9 @@ struct RootView: View {
                 }
                 .tag(AppState.Tab.settings)
         }
-        .tint(.white)
+        .tint(Color.themePrimary)
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(Color.appBackground, for: .tabBar)
         .onAppear {
             showStorageAlertIfNeeded()
         }
@@ -161,7 +162,7 @@ struct RootView: View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            VStack(spacing: ThemeLayout.spacingSection) {
                 Spacer()
                 
                 ZStack {
@@ -174,23 +175,23 @@ struct RootView: View {
                                 endRadius: 80
                             )
                         )
-                        .frame(width: 160, height: 160)
+                        .frame(width: ThemeLayout.iconContainerXLarge, height: ThemeLayout.iconContainerXLarge)
                     
                     Image(systemName: "photo.badge.exclamationmark")
-                        .font(.system(size: 60, weight: .thin))
-                        .foregroundStyle(.red.opacity(0.8))
+                        .font(.themeDisplayXXLarge)
+                        .foregroundStyle(.red.opacity(ThemeLayout.opacityXHeavy))
                 }
                 
-                VStack(spacing: 12) {
+                VStack(spacing: ThemeLayout.spacingMediumLarge) {
                     Text(NSLocalizedString("Access Denied", comment: "Access denied"))
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.themeTitle)
+                        .foregroundStyle(Color.themePrimary)
                     
                     Text(NSLocalizedString("Access Denied Description", comment: "Access denied description"))
-                        .font(.system(size: 15))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.themeBody)
+                        .foregroundStyle(Color.themeSecondary)
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
+                        .lineSpacing(ThemeLayout.lineSpacingDefault)
                 }
                 
                 Button {
@@ -199,13 +200,13 @@ struct RootView: View {
                     }
                 } label: {
                     Text(NSLocalizedString("Open Settings", comment: "Open settings button"))
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.themeButton)
+                        .foregroundStyle(Color.themePrimary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .glassCard(cornerRadius: 14)
+                        .padding(.vertical, ThemeLayout.spacingItem)
+                        .glassCard(cornerRadius: ThemeLayout.cornerRadiusButton)
                 }
-                .padding(.horizontal, 40)
+                .padding(.horizontal, ThemeLayout.spacingXLarge)
                 
                 Spacer()
             }

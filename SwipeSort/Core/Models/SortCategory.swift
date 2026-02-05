@@ -5,7 +5,7 @@
 //  Sorting categories enum
 //
 
-import SwiftUI
+import Foundation
 
 /// Represents the sorting category for a media item
 enum SortCategory: String, Codable, CaseIterable, Sendable {
@@ -25,19 +25,10 @@ enum SortCategory: String, Codable, CaseIterable, Sendable {
     
     var iconName: String {
         switch self {
-        case .unsorted: return "arrow.up.circle.fill"  // Skip uses arrow.up
+        case .unsorted: return "arrow.up.circle.fill"  // unsorted (legacy Skip icon)
         case .keep: return "checkmark.circle.fill"
         case .delete: return "trash.circle.fill"
         case .favorite: return "heart.circle.fill"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .unsorted: return .gray
-        case .keep: return .keepColor
-        case .delete: return .deleteColor
-        case .favorite: return .favoriteColor
         }
     }
 }
@@ -46,14 +37,12 @@ enum SortCategory: String, Codable, CaseIterable, Sendable {
 enum SwipeDirection: String, Codable, Sendable {
     case left   // Delete
     case right  // Keep
-    case up     // Skip (decide later)
     case none
     
     var category: SortCategory {
         switch self {
         case .left: return .delete
         case .right: return .keep
-        case .up: return .unsorted  // Skip keeps it unsorted
         case .none: return .unsorted
         }
     }
