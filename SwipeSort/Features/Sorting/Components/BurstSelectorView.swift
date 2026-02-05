@@ -33,23 +33,23 @@ struct BurstSelectorView: View {
                 VStack(spacing: 0) {
                     // Header
                     headerView
-                        .padding(.top, geometry.safeAreaInsets.top + 16)
+                        .padding(.top, geometry.safeAreaInsets.top + ThemeLayout.spacingItem)
                     
                     // Main preview
                     mainPreview
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
+                        .padding(.horizontal, ThemeLayout.spacingLarge)
+                        .padding(.top, ThemeLayout.spacingItem)
                     
                     // Thumbnail strip
                     thumbnailStrip
-                        .padding(.top, 20)
+                        .padding(.top, ThemeLayout.spacingLarge)
                     
                     Spacer()
                     
                     // Action buttons
                     actionButtons
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 24)
+                        .padding(.horizontal, ThemeLayout.spacingLarge)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + ThemeLayout.paddingLarge)
                 }
             }
             .ignoresSafeArea()
@@ -66,14 +66,14 @@ struct BurstSelectorView: View {
     // MARK: - Header
     
     private var headerView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ThemeLayout.paddingSmall) {
             Text(NSLocalizedString("Burst Photos", comment: "Burst photos"))
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(.white)
+                .font(.themeTitle.weight(.bold))
+                .foregroundStyle(Color.themePrimary)
             
             Text(String(format: NSLocalizedString("Select 1 from %d Photos", comment: "Select 1 from N photos"), burstAssets.count))
-                .font(.system(size: 15))
-                .foregroundStyle(.white.opacity(0.6))
+                .font(.themeBody)
+                .foregroundStyle(Color.themeSecondary)
         }
     }
     
@@ -82,36 +82,36 @@ struct BurstSelectorView: View {
     private var mainPreview: some View {
         GeometryReader { geometry in
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.white.opacity(0.05))
+                RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
+                    .fill(Color.primary.opacity(ThemeLayout.opacityXLight))
                 
                 if isLoadingMain {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.themePrimary))
                 } else if let image = mainImage {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous))
                 }
                 
                 // Selection indicator
                 VStack {
                     HStack {
                         Text("\(selectedIndex + 1) / \(burstAssets.count)")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .font(.themeCaption.weight(.semibold))
                             .monospacedDigit()
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, ThemeLayout.spacingItem)
+                            .padding(.vertical, ThemeLayout.spacingSmall)
                             .background {
-                                Capsule().fill(Color.black.opacity(0.6))
+                                Capsule().fill(Color.black.opacity(ThemeLayout.opacityHeavy))
                             }
                         Spacer()
                     }
                     Spacer()
                 }
-                .padding(12)
+                .padding(ThemeLayout.spacingItem)
             }
         }
         .aspectRatio(4/3, contentMode: .fit)
@@ -122,16 +122,16 @@ struct BurstSelectorView: View {
     private var thumbnailStrip: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: ThemeLayout.paddingSmall) {
                     ForEach(Array(burstAssets.enumerated()), id: \.element.id) { index, asset in
                         thumbnailItem(index: index, asset: asset)
                             .id(index)
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, ThemeLayout.spacingLarge)
             }
             .onChange(of: selectedIndex) { _, newIndex in
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.easeInOut(duration: TimingConstants.durationNormal)) {
                     proxy.scrollTo(newIndex, anchor: .center)
                 }
             }
@@ -141,7 +141,7 @@ struct BurstSelectorView: View {
     
     private func thumbnailItem(index: Int, asset: PhotoAsset) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(.easeInOut(duration: TimingConstants.durationFast)) {
                 selectedIndex = index
             }
         } label: {
@@ -151,17 +151,17 @@ struct BurstSelectorView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 60, height: 60)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous))
                 } else {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.1))
+                    RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
+                        .fill(Color.appBackgroundSecondary)
                         .frame(width: 60, height: 60)
                 }
                 
                 // Selection border
                 if index == selectedIndex {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(Color.cyan, lineWidth: 3)
+                    RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
+                        .stroke(Color.iconMedia, lineWidth: 3)
                         .frame(width: 60, height: 60)
                     
                     // Checkmark
@@ -169,8 +169,8 @@ struct BurstSelectorView: View {
                         HStack {
                             Spacer()
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 16))
-                                .foregroundStyle(.white, .cyan)
+                                .font(.themeRowTitle)
+                                .foregroundStyle(.white, Color.iconMedia)
                                 .offset(x: 4, y: -4)
                         }
                         Spacer()
@@ -184,7 +184,7 @@ struct BurstSelectorView: View {
     // MARK: - Action Buttons
     
     private var actionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ThemeLayout.spacingMediumLarge) {
             // Primary action - select this photo
             Button {
                 let selected = burstAssets[selectedIndex]
@@ -193,17 +193,17 @@ struct BurstSelectorView: View {
                     .map { $0.element }
                 onSelect(selected, others)
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ThemeLayout.paddingSmall) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.themeRowTitle.weight(.semibold))
                     Text(NSLocalizedString("Keep This (Delete Others)", comment: "Keep this and delete others"))
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.themeRowTitle.weight(.semibold))
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .padding(.vertical, ThemeLayout.spacingItem)
                 .background {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [.cyan, .blue],
@@ -215,32 +215,18 @@ struct BurstSelectorView: View {
             }
             
             // Secondary actions
-            HStack(spacing: 12) {
+            HStack(spacing: ThemeLayout.spacingMediumLarge) {
                 Button {
                     onKeepAll()
                 } label: {
                     Text(NSLocalizedString("Keep All", comment: "Keep all"))
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white)
+                        .font(.themeButtonSmall)
+                        .foregroundStyle(Color.themePrimary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+                        .padding(.vertical, ThemeLayout.spacingItem - 2)
                         .background {
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color.white.opacity(0.1))
-                        }
-                }
-                
-                Button {
-                    onCancel()
-                } label: {
-                    Text(NSLocalizedString("Skip", comment: "Skip label"))
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background {
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color.white.opacity(0.05))
+                            RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusChip, style: .continuous)
+                                .fill(Color.appBackgroundSecondary)
                         }
                 }
             }

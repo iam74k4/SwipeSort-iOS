@@ -9,37 +9,67 @@ import SwiftUI
 import AVFoundation
 @preconcurrency import Photos
 
+extension Notification.Name {
+    static let videoSeekRequested = Notification.Name("videoSeekRequested")
+}
+
+/// Constants for video playback
+private enum VideoConstants {
+    static let preferredTimescale: CMTimeScale = 600
+    static let timeUpdateInterval: Double = 0.1
+}
+
 struct VideoPlayerView: UIViewRepresentable {
     let asset: PHAsset
     @Binding var isPlaying: Bool
-    
-    // assetIDを追跡して、同じアセットの場合は再作成を防ぐ
-    private var assetID: String {
-        asset.localIdentifier
-    }
+    @Binding var isPaused: Bool
+    @Binding var isSeeking: Bool
+    @Binding var currentTime: Double
+    @Binding var duration: Double
 
     func makeUIView(context: Context) -> PlayerContainerView {
         let view = PlayerContainerView()
         view.playerLayer.videoGravity = .resizeAspect
-        view.loadAsset(asset, shouldPlay: isPlaying)
+        view.onTimeUpdate = { time, totalDuration in
+            DispatchQueue.main.async {
+                // Skip time updates while seeking (user drag takes priority)
+                if !isSeeking {
+                    currentTime = time
+                }
+                duration = totalDuration
+            }
+        }
+        view.loadAsset(asset, shouldPlay: isPlaying && !isPaused)
         return view
     }
 
     func updateUIView(_ uiView: PlayerContainerView, context: Context) {
         let assetID = asset.localIdentifier
         
-        // 異なるアセットの場合は、新しいプレイヤーアイテムを作成
+        // Create new player item for different asset
         if uiView.currentAssetID != assetID {
-            uiView.loadAsset(asset, shouldPlay: isPlaying)
+            uiView.onTimeUpdate = { time, totalDuration in
+                DispatchQueue.main.async {
+                    if !isSeeking {
+                        currentTime = time
+                    }
+                    duration = totalDuration
+                }
+            }
+            uiView.loadAsset(asset, shouldPlay: isPlaying && !isPaused)
         } else {
-            // 同じアセットの場合は、再生状態のみ更新
+            // Same asset - update playback state only
             if isPlaying {
-                // プレイヤーが準備できている場合は再生
-                if uiView.player != nil {
-                    uiView.player?.play()
+                if isPaused || isSeeking {
+                    // Paused or seeking
+                    uiView.player?.pause()
                 } else {
-                    // プレイヤーがまだ読み込み中の場合は、読み込み完了後に再生するように設定
-                    uiView.shouldPlayWhenReady = true
+                    // Playing
+                    if uiView.player != nil {
+                        uiView.player?.play()
+                    } else {
+                        uiView.shouldPlayWhenReady = true
+                    }
                 }
             } else {
                 uiView.player?.pause()
@@ -62,36 +92,68 @@ final class PlayerContainerView: UIView {
 
     var player: AVPlayer? {
         get { playerLayer.player }
-        set { playerLayer.player = newValue }
+        set {
+            // Remove old observer
+            removeTimeObserver()
+            playerLayer.player = newValue
+            // Add observer to new player
+            if newValue != nil {
+                addTimeObserver()
+            }
+        }
     }
     
     var currentAssetID: String?
     var shouldPlayWhenReady: Bool = false
+    var onTimeUpdate: ((Double, Double) -> Void)?
+    
     private let imageManager = PHCachingImageManager()
     private var loadingTask: Task<Void, Never>?
+    /// Note: nonisolated(unsafe) to allow access in deinit
+    nonisolated(unsafe) private var timeObserverToken: Any?
+    nonisolated(unsafe) private var seekObserver: NSObjectProtocol?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupSeekObserver()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupSeekObserver()
+    }
+    
+    private func setupSeekObserver() {
+        seekObserver = NotificationCenter.default.addObserver(
+            forName: .videoSeekRequested,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            if let time = notification.userInfo?["time"] as? Double {
+                self?.seek(to: time)
+            }
+        }
+    }
 
     func loadAsset(_ asset: PHAsset, shouldPlay: Bool) {
         let assetID = asset.localIdentifier
         
-        // 既存の読み込みタスクをキャンセル
+        // Cancel existing loading task
         loadingTask?.cancel()
         
-        // 既存のプレイヤーをクリーンアップ
+        // Cleanup existing player
         if let existingPlayer = player {
             existingPlayer.pause()
             existingPlayer.replaceCurrentItem(with: nil)
         }
         
-        // アセットIDを更新（新しいアセットまたは2回目の再生）
-        // 読み込み完了後に更新するのではなく、読み込み開始時に更新して
-        // 読み込み完了時のチェックで使用する
+        // Update asset ID at load start for completion check
         let previousAssetID = currentAssetID
         currentAssetID = assetID
         shouldPlayWhenReady = shouldPlay
         
-        // 新しいAVPlayerItemを作成（毎回新しいインスタンスを作成）
-        // AVPlayerItemは一度AVPlayerに関連付けられると別のAVPlayerに再利用できないため、
-        // 2回目の再生時にも新しいAVPlayerItemを作成する必要がある
+        // Create new AVPlayerItem (must create fresh instance each time)
+        // AVPlayerItem cannot be reused once associated with an AVPlayer
         loadingTask = Task { @MainActor in
             let options = PHVideoRequestOptions()
             options.isNetworkAccessAllowed = true
@@ -104,23 +166,23 @@ final class PlayerContainerView: UIView {
                         return
                     }
                     
-                    // アセットが変更されていないことを確認（読み込み中に変更された場合を検出）
+                    // Verify asset hasn't changed during load
                     guard self.currentAssetID == assetID else {
                         continuation.resume()
                         return
                     }
                     
-                    // 新しいプレイヤーを作成
+                    // Create new player
                     if let item = item {
                         let newPlayer = AVPlayer(playerItem: item)
                         self.player = newPlayer
                         
-                        // 読み込み完了時に再生が必要な場合は再生を開始
+                        // Start playback if needed
                         if self.shouldPlayWhenReady {
                             newPlayer.play()
                         }
                     } else {
-                        // 読み込み失敗時は、アセットIDを元に戻す（読み込み前の状態に戻す）
+                        // Revert asset ID on load failure
                         if self.currentAssetID == assetID {
                             self.currentAssetID = previousAssetID
                         }
@@ -133,16 +195,62 @@ final class PlayerContainerView: UIView {
         }
     }
     
+    func seek(to time: Double) {
+        let cmTime = CMTime(seconds: time, preferredTimescale: VideoConstants.preferredTimescale)
+        player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
+    }
+    
+    private func addTimeObserver() {
+        guard let player = player else { return }
+        
+        let interval = CMTime(seconds: VideoConstants.timeUpdateInterval, preferredTimescale: VideoConstants.preferredTimescale)
+        timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self = self,
+                  let currentItem = self.player?.currentItem,
+                  currentItem.status == .readyToPlay else { return }
+            
+            let currentTime = time.seconds
+            let duration = currentItem.duration.seconds
+            
+            // Only call callback for valid values
+            if currentTime.isFinite && duration.isFinite && duration > 0 {
+                self.onTimeUpdate?(currentTime, duration)
+            }
+        }
+    }
+    
+    private func removeTimeObserver() {
+        if let token = timeObserverToken {
+            player?.removeTimeObserver(token)
+            timeObserverToken = nil
+        }
+    }
+    
     deinit {
-        // 読み込みタスクをキャンセル
+        // Cancel loading task (thread-safe)
         loadingTask?.cancel()
         
-        // クリーンアップ（deinitは非同期コンテキストで呼ばれる可能性があるため、Taskを使用）
-        // playerはMainActor上にあるため、MainActor.assumeIsolatedでアクセスしてからコピー
-        let playerToCleanup = MainActor.assumeIsolated { player }
-        Task { @MainActor in
-            playerToCleanup?.pause()
-            playerToCleanup?.replaceCurrentItem(with: nil)
+        // Remove seek observer (thread-safe)
+        if let observer = seekObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        
+        // Capture references for cleanup on main thread
+        // deinit can be called from any thread, so we dispatch to main
+        let token = timeObserverToken
+        let player = playerLayer.player
+        
+        if token != nil || player != nil {
+            DispatchQueue.main.async {
+                // Remove time observer
+                if let token = token {
+                    player?.removeTimeObserver(token)
+                }
+                
+                // Cleanup player
+                player?.pause()
+                player?.replaceCurrentItem(with: nil)
+            }
         }
     }
 }

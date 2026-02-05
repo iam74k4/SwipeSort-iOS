@@ -6,8 +6,7 @@
 //
 
 import SwiftUI
-import PhotosUI
-import AVFoundation
+@preconcurrency import Photos
 
 /// Filter type for sorting view
 enum MediaFilter: String, CaseIterable {
@@ -38,6 +37,30 @@ enum MediaFilter: String, CaseIterable {
     }
 }
 
+/// Sort order for assets
+enum SortOrder: String, CaseIterable {
+    case newestFirst = "newest"
+    case oldestFirst = "oldest"
+    
+    var icon: String {
+        switch self {
+        case .newestFirst: return "arrow.down"
+        case .oldestFirst: return "arrow.up"
+        }
+    }
+    
+    var localizedName: String {
+        switch self {
+        case .newestFirst: return NSLocalizedString("Newest First", comment: "Sort by newest first")
+        case .oldestFirst: return NSLocalizedString("Oldest First", comment: "Sort by oldest first")
+        }
+    }
+    
+    mutating func toggle() {
+        self = self == .newestFirst ? .oldestFirst : .newestFirst
+    }
+}
+
 @Observable
 final class SortingState {
     // MARK: - Assets
@@ -55,7 +78,15 @@ final class SortingState {
     // MARK: - Filter
     
     var currentFilter: MediaFilter = .all
-    var selectedCategoryFilter: SortCategory? = nil  // カテゴリフィルター（統計ピルで選択）
+    var selectedCategoryFilter: SortCategory? = nil  // Category filter (selected via stat pill)
+    var sortOrder: SortOrder = .newestFirst
+    var selectedDate: Date? = nil  // Single date filter
+    var dateRangeStart: Date? = nil  // Date range filter start
+    var dateRangeEnd: Date? = nil  // Date range filter end
+    
+    var hasDateFilter: Bool {
+        selectedDate != nil || (dateRangeStart != nil && dateRangeEnd != nil)
+    }
     
     // MARK: - Image Loading
     
@@ -72,6 +103,10 @@ final class SortingState {
     // MARK: - Video
 
     var isPlayingVideo: Bool = false
+    var isVideoPaused: Bool = false
+    var videoCurrentTime: Double = 0
+    var videoDuration: Double = 0
+    var isSeeking: Bool = false
     
     // MARK: - Burst Photos
     
@@ -82,7 +117,6 @@ final class SortingState {
     // MARK: - Delete Queue (batch delete to reduce iOS confirmation dialogs)
     
     var deleteQueue: [PhotoAsset] = []
-    static let batchDeleteThreshold = 5
     
     // MARK: - Swipe State
     
@@ -93,7 +127,7 @@ final class SortingState {
     
     // MARK: - Undo State
     
-    var isUndoing: Bool = false  // Undo処理中フラグ（連打防止）
+    var isUndoing: Bool = false  // Flag to prevent rapid undo taps
     
     // MARK: - Double Tap (Favorite)
     
@@ -129,10 +163,19 @@ final class SortingState {
             currentAsset = unsortedAssets.first
         }
         
-        // Reset Live Photo state when changing asset
+        // Reset media state when changing asset
         currentLivePhoto = nil
         isPlayingLivePhoto = false
+        resetVideoState()
+    }
+    
+    /// Resets all video-related state to initial values.
+    func resetVideoState() {
         isPlayingVideo = false
+        isVideoPaused = false
+        videoCurrentTime = 0
+        videoDuration = 0
+        isSeeking = false
     }
     
     /// Resets all swipe and animation state to initial values.
@@ -147,8 +190,16 @@ final class SortingState {
         imageOpacity = 1.0
         isPlayingLivePhoto = false
         isLongPressing = false
-        isPlayingVideo = false
         showHeartAnimation = false
+        
+        // Reset video state
+        resetVideoState()
+        
+        // Reset image loading state
+        currentImage = nil
+        nextImage = nil
+        isLoadingImage = false
+        currentBurstCount = nil
     }
     
     /// Resets the burst photo selector state.
@@ -189,67 +240,29 @@ final class SortingState {
         case .livePhotos:
             return assets.filter { $0.isLivePhoto }
         case .screenshots:
-            return assets.filter { asset in
-                guard asset.isImage else { return false }
-                
-                let width = asset.asset.pixelWidth
-                let height = asset.asset.pixelHeight
-                guard width > 0, height > 0 else { return false }
-                
-                // Calculate aspect ratio
-                let aspectRatio = Double(height) / Double(width)
-                
-                // iOS screenshots typically have portrait aspect ratios around 2.16 (19.5:9) or 2.17 (16:9)
-                // Common ratios: ~2.16 (iPhone X and newer), ~1.78 (iPhone 6/7/8), ~2.17 (some models)
-                // Allow some tolerance for different models and orientations
-                let isPortraitScreenshot = aspectRatio >= ScreenshotConstants.minPortraitAspectRatio && aspectRatio <= ScreenshotConstants.maxPortraitAspectRatio
-                let isLandscapeScreenshot = aspectRatio >= ScreenshotConstants.minLandscapeAspectRatio && aspectRatio <= ScreenshotConstants.maxLandscapeAspectRatio
-                
-                // Also check for common screenshot pixel dimensions (for exact matches)
-                // This helps catch edge cases where aspect ratio alone might not be enough
-                let commonDimensions: Set<Int> = [
-                    width * 10000 + height,  // Encode as single number for efficient comparison
-                    1170 * 10000 + 2532,     // iPhone 12/13/14
-                    1284 * 10000 + 2778,     // iPhone 12/13/14 Pro Max
-                    1179 * 10000 + 2556,     // iPhone 14 Pro
-                    1290 * 10000 + 2796,     // iPhone 14 Pro Max
-                    1125 * 10000 + 2436,     // iPhone X/XS/11 Pro
-                    1242 * 10000 + 2688,     // iPhone XS Max/11 Pro Max
-                    828 * 10000 + 1792,      // iPhone XR/11
-                    750 * 10000 + 1334,      // iPhone 6/7/8
-                    1080 * 10000 + 1920,     // iPhone 6+/7+/8+
-                    // Landscape variants
-                    2532 * 10000 + 1170,
-                    2778 * 10000 + 1284,
-                    2556 * 10000 + 1179,
-                    2796 * 10000 + 1290,
-                    2436 * 10000 + 1125,
-                    2688 * 10000 + 1242,
-                    1792 * 10000 + 828,
-                    1334 * 10000 + 750,
-                    1920 * 10000 + 1080
-                ]
-                
-                return (isPortraitScreenshot || isLandscapeScreenshot) || commonDimensions.contains(width * 10000 + height)
-            }
+            // Use system screenshot subtype detection (available since iOS 9+)
+            // This is more efficient and accurate than manual aspect ratio checks
+            return assets.filter { $0.asset.mediaSubtypes.contains(.photoScreenshot) }
         }
     }
     
-    /// Apply both media filter and category filter (without category filter)
+    /// Apply media filter without category filter
     func applyFilters() {
-        let filtered = applyMediaFilter(to: allUnsortedAssets)
+        var filtered = applyMediaFilter(to: allUnsortedAssets)
+        filtered = applyDateFilter(to: filtered)
+        filtered = applySortOrder(to: filtered)
         
         unsortedAssets = filtered
         currentIndex = 0
         updateCurrentAsset()
-        // isCompleteは実際にすべてのアセットが整理された場合のみtrue（フィルター結果ではない）
+        // isComplete reflects actual sorting completion, not filtered results
         isComplete = allUnsortedAssets.isEmpty
     }
     
     /// Applies a category filter to show only assets in the specified category.
     ///
     /// This method filters assets to show only those that have been sorted into
-    /// the specified category (Keep, Delete, Favorite, or Skip). Passing `nil`
+    /// the specified category (Keep, Delete, or Favorite). Passing `nil`
     /// removes the category filter.
     ///
     /// - Parameters:
@@ -264,22 +277,105 @@ final class SortingState {
     /// Apply filters including category filter
     @MainActor
     func applyFiltersWithCategory(sortStore: SortResultStore) {
-        // カテゴリフィルターが設定されている場合は全アセットから、そうでない場合は未整理アセットのみからフィルタリング
+        // Filter from all assets when category filter is set, otherwise from unsorted only
         let sourceAssets = selectedCategoryFilter != nil ? allAssets : allUnsortedAssets
         var filtered = applyMediaFilter(to: sourceAssets)
         
         // Apply category filter
         if let category = selectedCategoryFilter {
-            filtered = filtered.filter { asset in
-                sortStore.category(for: asset.id) == category
+            if category == .delete {
+                // For delete filter, show both deleted and queued-for-delete assets
+                let deleteQueueIDs = Set(deleteQueue.map { $0.id })
+                filtered = filtered.filter { asset in
+                    sortStore.category(for: asset.id) == .delete || deleteQueueIDs.contains(asset.id)
+                }
+            } else {
+                filtered = filtered.filter { asset in
+                    sortStore.category(for: asset.id) == category
+                }
             }
         }
+        
+        // Apply date filter and sort order
+        filtered = applyDateFilter(to: filtered)
+        filtered = applySortOrder(to: filtered)
         
         unsortedAssets = filtered
         currentIndex = 0
         updateCurrentAsset()
-        // isCompleteは実際にすべてのアセットが整理された場合のみtrue（フィルター結果ではない）
+        // isComplete reflects actual sorting completion, not filtered results
         isComplete = allUnsortedAssets.isEmpty
+    }
+    
+    /// Apply date filter to assets
+    private func applyDateFilter(to assets: [PhotoAsset]) -> [PhotoAsset] {
+        let calendar = Calendar.current
+        
+        // Single date filter
+        if let selectedDate = selectedDate {
+            return assets.filter { asset in
+                guard let assetDate = asset.creationDate else { return false }
+                return calendar.isDate(assetDate, inSameDayAs: selectedDate)
+            }
+        }
+        
+        // Date range filter
+        if let startDate = dateRangeStart, let endDate = dateRangeEnd {
+            let startOfDay = calendar.startOfDay(for: startDate)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: endDate)) ?? endDate
+            
+            return assets.filter { asset in
+                guard let assetDate = asset.creationDate else { return false }
+                return assetDate >= startOfDay && assetDate < endOfDay
+            }
+        }
+        
+        return assets
+    }
+    
+    /// Apply sort order to assets
+    private func applySortOrder(to assets: [PhotoAsset]) -> [PhotoAsset] {
+        assets.sorted { a, b in
+            let dateA = a.creationDate ?? .distantPast
+            let dateB = b.creationDate ?? .distantPast
+            return sortOrder == .newestFirst ? dateA > dateB : dateA < dateB
+        }
+    }
+    
+    /// Toggle sort order and reapply filters
+    @MainActor
+    func toggleSortOrder(sortStore: SortResultStore) {
+        sortOrder.toggle()
+        applyFiltersWithCategory(sortStore: sortStore)
+    }
+    
+    /// Set date filter and reapply filters
+    @MainActor
+    func setDateFilter(_ date: Date?, sortStore: SortResultStore) {
+        selectedDate = date
+        // Clear range filter when setting single date
+        dateRangeStart = nil
+        dateRangeEnd = nil
+        applyFiltersWithCategory(sortStore: sortStore)
+    }
+    
+    /// Set date range filter and reapply filters
+    @MainActor
+    func setDateRangeFilter(start: Date?, end: Date?, sortStore: SortResultStore) {
+        dateRangeStart = start
+        dateRangeEnd = end
+        // Clear single date filter when setting range
+        selectedDate = nil
+        applyFiltersWithCategory(sortStore: sortStore)
+    }
+    
+    /// Clear all date filters
+    @MainActor
+    func clearDateFilter(sortStore: SortResultStore) {
+        selectedDate = nil
+        dateRangeStart = nil
+        dateRangeEnd = nil
+        applyFiltersWithCategory(sortStore: sortStore)
     }
     
     /// Removes an asset from both the filtered and all unsorted asset lists.
@@ -294,26 +390,18 @@ final class SortingState {
         // Remove from unsortedAssets using firstIndex for O(n) instead of removeAll's O(n²)
         if let index = unsortedAssets.firstIndex(where: { $0.id == assetID }) {
             unsortedAssets.remove(at: index)
+            // Adjust currentIndex: clamp to valid range or 0 if empty
+            if unsortedAssets.isEmpty {
+                currentIndex = 0
+            } else if currentIndex >= unsortedAssets.count {
+                currentIndex = unsortedAssets.count - 1
+            }
         }
         // Remove from allUnsortedAssets
         if let index = allUnsortedAssets.firstIndex(where: { $0.id == assetID }) {
             allUnsortedAssets.remove(at: index)
         }
-        // allAssetsからは削除しない（カテゴリフィルターで表示するため）
-    }
-    
-    /// Moves an asset to the end of the unsorted assets list.
-    ///
-    /// This method is used when the user skips an asset (swipes up). The asset
-    /// is moved to the end so it can be reviewed later.
-    ///
-    /// - Parameter asset: The asset to move to the end
-    func moveToEnd(_ asset: PhotoAsset) {
-        unsortedAssets.removeAll { $0.id == asset.id }
-        unsortedAssets.append(asset)
-        // Also move in all assets
-        allUnsortedAssets.removeAll { $0.id == asset.id }
-        allUnsortedAssets.append(asset)
+        // Keep in allAssets for category filter display
     }
     
     /// Restores an asset to the unsorted lists.
