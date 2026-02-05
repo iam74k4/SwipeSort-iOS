@@ -47,11 +47,44 @@ final class TipStore {
     var purchaseError: String?
     var showThankYou = false
     
+    // MARK: - Private
+    
+    /// Note: nonisolated(unsafe) to allow access in deinit
+    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
+    nonisolated(unsafe) private var transactionListenerTask: Task<Void, Never>?
+    
     // MARK: - Initialization
     
     init() {
-        Task {
+        loadTask = Task {
             await loadProducts()
+        }
+        
+        // Listen for transaction updates (Ask to Buy, interrupted purchases, etc.)
+        transactionListenerTask = Task {
+            await listenForTransactions()
+        }
+    }
+    
+    deinit {
+        loadTask?.cancel()
+        transactionListenerTask?.cancel()
+    }
+    
+    // MARK: - Transaction Listener
+    
+    /// Listen for transaction updates from App Store
+    /// Handles Ask to Buy approvals, interrupted purchases, and other async transactions
+    private func listenForTransactions() async {
+        for await result in Transaction.updates {
+            switch result {
+            case .verified(let transaction):
+                await transaction.finish()
+                showThankYou = true
+                logger.info("Transaction update verified: \(transaction.productID)")
+            case .unverified(let transaction, let error):
+                logger.error("Transaction update unverified: \(transaction.productID), error: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -79,6 +112,9 @@ final class TipStore {
     // MARK: - Purchase
     
     func purchase(_ product: Product) async {
+        // Prevent double purchases
+        guard !isLoading else { return }
+        
         isLoading = true
         purchaseError = nil
         

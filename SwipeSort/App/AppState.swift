@@ -19,10 +19,6 @@ final class AppState {
         authorizationStatus == .authorized || authorizationStatus == .limited
     }
     
-    var isDenied: Bool {
-        authorizationStatus == .denied || authorizationStatus == .restricted
-    }
-    
     // MARK: - Navigation
     
     var selectedTab: Tab = .sorting
@@ -46,10 +42,23 @@ final class AppState {
         }
     }
     
+    // MARK: - Private
+    
+    /// Observer for notification changes
+    /// Note: nonisolated(unsafe) to allow access in deinit
+    nonisolated(unsafe) private var notificationObserver: NSObjectProtocol?
+    
     // MARK: - Initialization
     
     init() {
         checkAuthorizationStatus()
+        observeAuthorizationChanges()
+    }
+    
+    deinit {
+        if let observer = notificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     // MARK: - Authorization Methods
@@ -58,9 +67,23 @@ final class AppState {
         authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
     }
     
-    @MainActor
     func requestAuthorization() async {
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         self.authorizationStatus = status
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Observe app becoming active to detect authorization changes made in Settings app
+    private func observeAuthorizationChanges() {
+        notificationObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkAuthorizationStatus()
+            }
+        }
     }
 }
