@@ -27,7 +27,6 @@
 "All photos have been sorted." = "All photos have been sorted.";
 "Delete %d Items" = "Delete %d Items";
 "Cancel with X" = "Cancel with ×";
-"Skip" = "Skip";
 "Save" = "Save";
 "Double Tap = Favorite" = "Double Tap = Favorite";
 "Tap to Start" = "Tap to Start";
@@ -41,32 +40,38 @@
 "Operations" = "Operations";
 "Swipe Right" = "Swipe Right";
 "Swipe Left" = "Swipe Left";
-"Swipe Up" = "Swipe Up";
 "Double Tap" = "Double Tap";
 "Long Press" = "Long Press";
 "Keep" = "Keep";
+"KEEP" = "KEEP";
+"DELETE" = "DELETE";
 "Add to Delete Queue" = "Add to Delete Queue";
-"Skip" = "Skip";
 "Favorite" = "Favorite";
 "Play (Video/Live Photo)" = "Play (Video/Live Photo)";
 "Statistics" = "Statistics";
 "Deleted" = "Deleted";
+"Kept" = "Kept";
 "Favorites" = "Favorites";
 "Total" = "Total";
 "items" = "items";
 "Other Features" = "Other Features";
 "Filter" = "Filter";
-"Undo" = "Undo";
+// "Undo" is defined in Common section
 "Date Display" = "Date Display";
 "About" = "About This App";
+"Shows app information and usage guide" = "Shows app information and usage guide";
 "Data Management" = "Data Management";
 "Reset All Data" = "Reset All Data";
 "Support" = "Support";
 "Send Feedback" = "Send Feedback";
+"Opens email to send feedback" = "Opens email to send feedback";
 "Rate on App Store" = "Rate on App Store";
+"Opens App Store to leave a review" = "Opens App Store to leave a review";
 "Privacy Policy" = "Privacy Policy";
+"Opens privacy policy in browser" = "Opens privacy policy in browser";
 "Developer Support" = "Support Developer";
 "Tip Jar" = "Tip Jar";
+"Opens tip jar to support the developer" = "Opens tip jar to support the developer";
 
 // MARK: - Tip Jar
 "Support Developer" = "Support Developer";
@@ -92,20 +97,31 @@
 "All" = "All";
 "Photos" = "Photos";
 "Videos" = "Videos";
+"Live Photo" = "Live Photo";
 "Live Photos" = "Live Photos";
+"RAW Photo" = "RAW Photo";
 "Screenshots" = "Screenshots";
+"Burst with %d photos" = "Burst with %d photos";
+
+// MARK: - Relative Date
+"YearsAgo" = "%d years ago";
+"MonthsAgo" = "%d months ago";
+"DaysAgo" = "%d days ago";
+"HoursAgo" = "%d hours ago";
+"MinutesAgo" = "%d minutes ago";
+"JustNow" = "Just now";
 
 // MARK: - Sort Category
 "Unsorted" = "Unsorted";
-"Keep" = "Keep";
-"Deleted" = "Deleted";
-"Favorites" = "Favorites";
+// "Keep", "Deleted", "Favorites" are defined in Settings Feature section
 
 // MARK: - Additional Strings
 "Sort" = "Sort";
 "Haptic Feedback" = "Haptic Feedback";
 "Vibrate on Swipe" = "Vibrate on Swipe";
+"Toggle to enable or disable vibration feedback" = "Toggle to enable or disable vibration feedback";
 "Delete All Sorting Results" = "Delete All Sorting Results";
+"Delete all sorting results and start fresh" = "Delete all sorting results and start fresh";
 "Support with Tip" = "Support with Tip";
 "Email Not Configured" = "Email address not configured.";
 "App Store ID Not Configured" = "App Store ID not configured (please set `SwipeSortAppStoreID` in Info.plist).";
@@ -134,6 +150,7 @@
 
 "Discord Support" = "Discord Support";
 "Discord Not Configured" = "Discord URL not configured.";
+"Opens Discord for community support" = "Opens Discord for community support";
 
 "No Matching Photos" = "No Matching Photos";
 "No Matching Photos Description" = "No photos match the current filter.
@@ -142,7 +159,7 @@ Change the filter or clear all filters.";
 
 // MARK: - Accessibility
 "Photo Card" = "Photo Card";
-"Photo Card Hint" = "Swipe left or right to sort, swipe up to skip, double tap to add to favorites";
+"Photo Card Hint" = "Swipe left or right to sort, double tap to add to favorites";
 "Add to Favorites" = "Add to Favorites";
 "Add to Favorites Hint" = "Double tap to add to favorites";
 "Filter Photos" = "Filter Photos";
@@ -153,8 +170,6 @@ Change the filter or clear all filters.";
 "Delete Count Hint" = "Number of photos in delete queue. Tap to filter";
 "Favorite Count" = "Favorites %d items";
 "Favorite Count Hint" = "Number of photos added to favorites. Tap to filter";
-"Skip Count" = "Skip %d items";
-"Skip Count Hint" = "Number of photos skipped. Tap to filter";
 "Undo Last Action" = "Undo Last Action";
 "Undo Last Action Hint" = "Undo the last sorting action";
 "Delete Queued Photos" = "Delete Queued Photos";
@@ -163,4 +178,40 @@ Change the filter or clear all filters.";
 "Clear Delete Queue Hint" = "Remove all photos from the delete queue";
 "Play Live Photo" = "Play Live Photo";
 "Play Video" = "Play Video";
+"Tap to Play" = "Tap to play";
 "Long Press to Play" = "Long press to play";
+"Photo taken %@" = "Photo taken %@";
+"Video duration %@" = "Video duration %@";
+"Progress %d of %d" = "Progress %d of %d";
+
+// MARK: - Burst Photos
+"Burst Photos" = "Burst Photos";
+"Select 1 from %d Photos" = "Select 1 from %d photos";
+"Keep This (Delete Others)" = "Keep This (Delete Others)";
+"Keep All" = "Keep All";
+
+// MARK: - Album Feature
+"Select Album" = "Select Album";
+"New Album" = "New Album";
+"Create Album" = "Create Album";
+"Create" = "Create";
+"Album Name" = "Album Name";
+"Enter album name" = "Enter album name";
+"Album Error" = "Album Error";
+"No photos in this category" = "No photos in this category";
+"Force press to add photos to album" = "Force press to add photos to album";
+"Insufficient photo library permissions" = "Insufficient photo library permissions";
+"Failed to create album" = "Failed to create album";
+"Failed to add assets to album" = "Failed to add assets to album";
+
+// MARK: - Sort Order
+"Newest First" = "Newest First";
+"Oldest First" = "Oldest First";
+"Toggle Sort Order" = "Toggle sort order";
+
+// MARK: - Date Filter
+"Filter by Date Range" = "Filter by Date Range";
+"Start Date" = "Start Date";
+"End Date" = "End Date";
+"Date Range" = "Date Range";
+"Apply" = "Apply";
