@@ -11,12 +11,9 @@ struct SwipeOverlay: View {
     let direction: SwipeDirection
     let progress: Double
     
+    /// Slightly softer glow for modern look
     private var glowOpacity: Double {
-        // Up swipe (skip) needs stronger glow for visibility
-        if direction == .up {
-            return min(progress * 0.8, 0.6)
-        }
-        return min(progress * 0.6, 0.4)
+        min(progress * 0.5, 0.35)
     }
     
     private var iconOpacity: Double {
@@ -33,8 +30,8 @@ struct SwipeOverlay: View {
                 directionIcon(in: geometry)
             }
         }
-        .animation(.easeOut(duration: 0.12), value: direction)
-        .animation(.easeOut(duration: 0.12), value: progress)
+        .animation(.easeOut(duration: TimingConstants.durationInstant), value: direction)
+        .animation(.easeOut(duration: TimingConstants.durationInstant), value: progress)
     }
     
     // MARK: - Edge Glow
@@ -58,6 +55,7 @@ struct SwipeOverlay: View {
                         )
                     )
                     .frame(width: geometry.size.width * 0.4)
+                    .blur(radius: 1)
             }
             
         case .left:
@@ -75,24 +73,7 @@ struct SwipeOverlay: View {
                         )
                     )
                     .frame(width: geometry.size.width * 0.4)
-                Spacer()
-            }
-            
-        case .up:
-            VStack {
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .skipColor.opacity(glowOpacity * 1.5), location: 0),
-                                .init(color: .skipColor.opacity(glowOpacity * 0.8), location: 0.3),
-                                .init(color: .clear, location: 1)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(height: geometry.size.height * 0.4)
+                    .blur(radius: 1)
                 Spacer()
             }
             
@@ -120,13 +101,6 @@ struct SwipeOverlay: View {
                 position: CGPoint(x: 50, y: geometry.size.height / 2)
             )
             
-        case .up:
-            iconBubble(
-                icon: "arrow.up.circle.fill",
-                color: .skipColor,
-                position: CGPoint(x: geometry.size.width / 2, y: 60)
-            )
-            
         case .none:
             EmptyView()
         }
@@ -134,9 +108,9 @@ struct SwipeOverlay: View {
     
     private func iconBubble(icon: String, color: Color, position: CGPoint) -> some View {
         ZStack {
-            // Glow (stronger for up swipe)
-            let glowSize: CGFloat = direction == .up ? 100 : 80
-            let glowIntensity: Double = direction == .up ? 0.6 : 0.4
+            // Glow (slightly softer for modern look)
+            let glowSize: CGFloat = 80
+            let glowIntensity: Double = 0.32
             Circle()
                 .fill(
                     RadialGradient(
@@ -148,10 +122,10 @@ struct SwipeOverlay: View {
                 )
                 .frame(width: glowSize, height: glowSize)
             
-            // Icon (larger for up swipe)
-            let iconSize: CGFloat = direction == .up ? 28 : 24
+            // Icon
+            let iconSize: CGFloat = 24
             Image(systemName: icon)
-                .font(.system(size: iconSize, weight: .bold))
+                .font(.system(size: iconSize, weight: .semibold))
                 .foregroundStyle(color)
                 .scaleEffect(0.8 + min(progress, 0.3))
         }
@@ -176,10 +150,3 @@ struct SwipeOverlay: View {
     .ignoresSafeArea()
 }
 
-#Preview("Skip") {
-    ZStack {
-        Color.appBackground
-        SwipeOverlay(direction: .up, progress: 0.8)
-    }
-    .ignoresSafeArea()
-}

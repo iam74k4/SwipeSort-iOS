@@ -18,20 +18,32 @@ struct MediaBadge: View {
     let type: MediaBadgeType
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ThemeLayout.spacingCompact) {
             Image(systemName: iconName)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.themeBadge)
             if let text = text {
                 Text(text)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.themeBadge)
             }
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ThemeLayout.paddingSmall)
+        .padding(.vertical, ThemeLayout.paddingSmall / 2)
         .background {
             Capsule()
-                .fill(Color.black.opacity(0.5))
+                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+        }
+        .accessibilityLabel(accessibilityText)
+    }
+    
+    private var accessibilityText: String {
+        switch type {
+        case .live:
+            return NSLocalizedString("Live Photo", comment: "Live Photo badge")
+        case .raw:
+            return NSLocalizedString("RAW Photo", comment: "RAW Photo badge")
+        case .burst(let count):
+            return String(format: NSLocalizedString("Burst with %d photos", comment: "Burst badge"), count)
         }
     }
     

@@ -15,7 +15,7 @@ struct HeartAnimationView: View {
     var body: some View {
         ZStack {
             Image(systemName: "heart.fill")
-                .font(.system(size: 80))
+                .font(.themeIconHuge)
                 .foregroundStyle(.pink)
                 .symbolEffect(.bounce, value: animationTrigger)
                 .scaleEffect(isAnimating ? 1.0 : 0.0)
