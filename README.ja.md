@@ -32,12 +32,12 @@ SwipeSortは、直感的なスワイプ操作で写真や動画を「Keep」「�
 ### 整理機能
 - **右スワイプ**: Keep（残す）
 - **左スワイプ**: 削除キューに追加（「X件削除」ボタンでまとめて削除）
-- **上スワイプ**: スキップ（後で決める）
 - **ダブルタップ**: お気に入り（iOSの「お気に入り」アルバムにも追加 ❤️）
 - **長押し**: 動画・Live Photoの再生（押している間のみ）
 - **Undo**: 直前の操作を元に戻す（削除キューからも取り消し可能）
 - **フィルター**: 写真・動画・Live Photo・スクショで絞り込み
-- **カテゴリフィルター**: トップバーの統計ピル（Keep/削除/お気に入り/スキップ）をタップして、そのカテゴリのみを表示
+- **カテゴリフィルター**: トップバーの統計ピル（Keep/削除/お気に入り）をタップして、そのカテゴリのみを表示
+- **アルバム作成**: Keep またはお気に入りの統計ピルを Force Touch で押してアルバムに写真を追加
 
 ### メディア表示
 - 画像全体表示（Aspect Fit）- トリミングなし
@@ -48,11 +48,12 @@ SwipeSortは、直感的なスワイプ操作で写真や動画を「Keep」「�
 ### その他
 - 整理結果の永続化（SwiftData）
 - 進捗表示（X / Y枚）
-- 統計表示（Keep/削除/お気に入り/スキップの件数をリアルタイム表示）
+- 統計表示（Keep/削除/お気に入りの件数をリアルタイム表示）
 - 大量写真対応（PHCachingImageManagerによる先読みキャッシュ）
 - 2タブ構成：整理 / 設定
 - Tip Jar: オプションのアプリ内課金で開発者を支援（StoreKit 2）
 - 設定画面：統計、操作ガイド、触覚フィードバックの切り替え、サポートリンク
+- アルバム作成：ドラッグ＆ドロップで整理した写真を iOS アルバムに追加
 
 ## 要件
 
@@ -75,14 +76,80 @@ cd SwipeSort-iOS
 
 4. 実機またはシミュレーターでビルド・実行
 
+## ブランチ方針・運用
+
+- **develop**: 開発用のデフォルトブランチ。日々のコミット・PR はこちらで行います。
+- **main**: リリース専用。リリース時のみ更新（develop をマージしたうえでバージョンタグを push）。機能開発の直接 push は行いません。
+
+**推奨運用:** 普段は `develop` で開発 → リリース時は `develop` を `main` にマージし、`main` から `v*` タグを push → Release / TestFlight が自動実行。手順の詳細は [.github/README.md](.github/README.md) を参照。
+
+## バージョン管理
+
+このプロジェクトでは Git タグに基づいた**自動バージョン管理**を採用しています。ビルド時に自動でバージョンが設定されるため、手動でバージョン番号を更新する必要はありません。
+
+### 仕組み
+
+- **main ブランチ**: 最新の Git タグからバージョンを取得（例: `v1.0.0` → `1.0.0`）
+- **develop ブランチ**: 次のパッチバージョンを使用（例: `v1.0.0` → `1.0.1`）
+- **ビルド番号**: 最新タグからのコミット数から自動計算
+
+### バージョンタグの作成
+
+新しいバージョンタグを作成するには：
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+タグ形式はセマンティックバージョニングに従ってください: `vX.Y.Z`（例: `v1.0.0`, `v1.1.0`, `v2.0.0`）
+
+### 自動バージョン設定
+
+- **ローカルビルド**: バージョンスクリプトがビルド時に `project.pbxproj` を自動更新（変更は Git にコミットされません）
+- **CI/CD**: GitHub Actions ワークフローでバージョンスクリプトが自動使用されます
+- **手動操作不要**: プロジェクトをビルドするだけで、バージョンが自動設定されます
+
+### トラブルシューティング
+
+- **タグが見つからない場合**: スクリプトはデフォルト値を使用します（main: `0.0.1`、develop: `0.0.2`）
+- **Git リポジトリでない場合**: スクリプトはデフォルト値を使用してビルドを続行します
+- **ビルド番号の増加**: コミットごとにビルド番号が自動的に増加します
+
+### 注意
+
+ビルド後に `project.pbxproj` ファイルが変更済みと表示される場合がありますが、**これらの変更をコミットする必要はありません**。バージョンはビルド時にのみ更新されます。
+
+## 設定
+
+サポート用のメール・外部リンクは `SwipeSort/Info.plist` から読みます。ビルドに合わせて次のキーを編集してください。
+
+- **SwipeSortSupportEmail**: フィードバック用メールアドレス（mailto:）。未設定または空の場合、設定画面で「お問い合わせ用メールアドレスが未設定です。」と表示されます。
+- **SwipeSortDiscordURL**: Discord 招待URL。
+- **SwipeSortAppStoreID**: App Store ID（レビューリンク用）。
+- **SwipeSortPrivacyPolicyURL**: プライバシーポリシーURL。
+
+リポジトリにはプレースホルダのままにし、実値はビルド時に注入（xcconfig や CI など）することもできます。
+
 ## プロジェクト構成
 
 ```
 SwipeSort-iOS/
+├── .github/
+│   ├── README.md                   # ワークフロードキュメント
+│   └── workflows/
+│       ├── ci.yml                  # ビルド・テスト
+│       ├── release.yml             # GitHub Release
+│       └── testflight.yml          # TestFlight アップロード
+├── scripts/
+│   └── version.sh                  # 自動バージョン管理
+├── LICENSE                         # MIT ライセンス
+├── README.md
+├── README.ja.md
 ├── SwipeSort/
 │   ├── App/
 │   │   ├── SwipeSortApp.swift      # アプリエントリーポイント
-│   │   ├── RootView.swift          # 認証・ナビゲーション
+│   │   ├── RootView.swift          # 認証状態に応じた表示とタブナビゲーション
 │   │   └── AppState.swift          # グローバル状態 (@Observable)
 │   ├── Core/
 │   │   ├── Models/
@@ -99,11 +166,15 @@ SwipeSort-iOS/
 │   │   ├── Sorting/
 │   │   │   ├── SortingFeature.swift      # 整理画面
 │   │   │   ├── SortingState.swift        # 整理状態
+│   │   │   ├── AlbumView.swift           # アルバムに写真を追加する画面
 │   │   │   └── Components/
 │   │   │       ├── SwipeOverlay.swift
+│   │   │       ├── SortingOverlays.swift
+│   │   │       ├── SortingPills.swift
 │   │   │       ├── LivePhotoView.swift
 │   │   │       ├── VideoPlayerView.swift
 │   │   │       ├── BurstSelectorView.swift
+│   │   │       ├── ForcePressGesture.swift  # アルバム作成用 Force Touch
 │   │   │       ├── HeartAnimation.swift
 │   │   │       └── MediaBadge.swift
 │   │   └── Settings/
@@ -114,7 +185,13 @@ SwipeSort-iOS/
 │   │   │   └── AppTheme.swift      # カラー、グラデーション、触覚
 │   │   └── Extensions/
 │   │       └── DateExtensions.swift
+│   ├── Resources/
+│   │   ├── en.lproj/
+│   │   │   └── Localizable.strings # 英語ローカライズ
+│   │   └── ja.lproj/
+│   │       └── Localizable.strings # 日本語ローカライズ
 │   ├── Assets.xcassets/
+│   ├── Configuration.storekit      # StoreKit 設定
 │   └── Info.plist
 └── SwipeSort.xcodeproj/
 ```
@@ -129,7 +206,7 @@ SwipeSort-iOS/
 ## 使い方
 
 1. アプリを起動し、写真アクセスを許可
-2. 表示される写真を左右にスワイプして整理、上スワイプでスキップ、ダブルタップでお気に入り
+2. 表示される写真を左右にスワイプして整理、ダブルタップでお気に入り
 3. 長押しで動画・Live Photoをプレビュー
 4. フィルターボタンで写真・動画・Live Photoなどで絞り込み
 5. 左スワイプで削除キューに追加し、「X件削除」ボタンでまとめて削除

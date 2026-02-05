@@ -36,16 +36,27 @@ jobs:
       - name: Get version and build number
         id: version
         run: |
+          # バージョン取得ロジック
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # workflow_dispatchで手動指定された場合
             MARKETING_VERSION="${{ github.event.inputs.version }}"
+            # ビルド番号はversion.shスクリプトから取得
+            chmod +x scripts/version.sh
+            source scripts/version.sh
+            CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
           else
+            # タグからバージョンを取得
             MARKETING_VERSION=${GITHUB_REF#refs/tags/v}
+            # タグの場合は、タグからのコミット数をビルド番号として使用
+            # タグがHEADにある場合、コミット数は0になる（これが正しい動作）
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            CURRENT_PROJECT_VERSION=$(git rev-list --count "$TAG_NAME"..HEAD 2>/dev/null || echo "0")
+            # ビルド番号が数値でない場合や負の値の場合は0に設定
+            if ! [[ "$CURRENT_PROJECT_VERSION" =~ ^[0-9]+$ ]] || [ "$CURRENT_PROJECT_VERSION" -lt 0 ] 2>/dev/null; then
+              CURRENT_PROJECT_VERSION="0"
+            fi
           fi
-          # スクリプトを使用してビルド番号を取得
-          chmod +x scripts/version.sh
-          source scripts/version.sh
-          # タグから取得したバージョンを使用（スクリプトの結果を上書き）
-          export MARKETING_VERSION="$MARKETING_VERSION"
+          
           echo "marketing_version=$MARKETING_VERSION" >> $GITHUB_OUTPUT
           echo "current_project_version=$CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $MARKETING_VERSION (build: $CURRENT_PROJECT_VERSION)"

@@ -97,7 +97,16 @@ get_commit_count() {
     
     if [ -n "$tag" ]; then
         # タグからのコミット数
-        git rev-list --count "$tag"..HEAD 2>/dev/null || echo "$DEFAULT_CURRENT_PROJECT_VERSION"
+        # タグがHEADにある場合、0を返す
+        # タグがHEADより前にある場合、そのコミット数を返す
+        # タグがHEADより後にある場合（通常は発生しないが）、0を返す
+        local count=$(git rev-list --count "$tag"..HEAD 2>/dev/null)
+        if [ -n "$count" ] && [ "$count" -ge 0 ] 2>/dev/null; then
+            echo "$count"
+        else
+            # エラーまたは負の値の場合は0を返す
+            echo "0"
+        fi
     else
         # 全コミット数
         git rev-list --count HEAD 2>/dev/null || echo "$DEFAULT_CURRENT_PROJECT_VERSION"

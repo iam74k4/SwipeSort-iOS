@@ -30,6 +30,10 @@
 		AA00002B /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* TipJarView.swift */; };
 		AA00002D /* TipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* TipStore.swift */; };
 		AA00002F /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AA000032 /* Configuration.storekit */; };
+		AA000033 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000034 /* AlbumView.swift */; };
+		AA000035 /* ForcePressGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000036 /* ForcePressGesture.swift */; };
+		AA000037 /* SortingPills.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000038 /* SortingPills.swift */; };
+		AA000039 /* SortingOverlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00003A /* SortingOverlays.swift */; };
 		AA693FA6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA693FA7 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
@@ -59,6 +63,10 @@
 		AA000030 /* SwipeSort.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwipeSort.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA000032 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		AA000034 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
+		AA000036 /* ForcePressGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForcePressGesture.swift; sourceTree = "<group>"; };
+		AA000038 /* SortingPills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingPills.swift; sourceTree = "<group>"; };
+		AA00003A /* SortingOverlays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingOverlays.swift; sourceTree = "<group>"; };
 		AA693FA7 /* Localizable.strings */ = {isa = PBXVariantGroup; children = (AAAE2777 /* ja */, AA081223 /* en */); name = Localizable.strings; sourceTree = "<group>"; };
 		AAAE2777 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA081223 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -183,6 +191,7 @@
 			children = (
 				AA00001A /* SortingFeature.swift */,
 				AA00001B /* SortingState.swift */,
+				AA000034 /* AlbumView.swift */,
 				AA00005F /* Components */,
 			);
 			path = Sorting;
@@ -222,6 +231,9 @@
 				AA0000B1 /* VideoPlayerView.swift */,
 				AA000028 /* BurstSelectorView.swift */,
 				AA00002A /* HeartAnimation.swift */,
+				AA000036 /* ForcePressGesture.swift */,
+				AA000038 /* SortingPills.swift */,
+				AA00003A /* SortingOverlays.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -323,6 +335,10 @@
 				AA000029 /* HeartAnimation.swift in Sources */,
 				AA00002B /* TipJarView.swift in Sources */,
 				AA00002D /* TipStore.swift in Sources */,
+				AA000033 /* AlbumView.swift in Sources */,
+				AA000035 /* ForcePressGesture.swift in Sources */,
+				AA000037 /* SortingPills.swift in Sources */,
+				AA000039 /* SortingOverlays.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

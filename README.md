@@ -32,12 +32,12 @@ SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete", an
 ### Sorting
 - **Swipe Right**: Keep
 - **Swipe Left**: Add to delete queue (batch delete with "X items delete" button)
-- **Swipe Up**: Skip (decide later)
 - **Double Tap**: Add to favorites (syncs with iOS Favorites album ❤️)
 - **Long Press**: Play video or Live Photo (while pressing)
 - **Undo**: Revert the last action (can also remove from delete queue)
 - **Filter**: Filter by photos, videos, Live Photos, screenshots
-- **Category Filter**: Tap the stat pills (Keep/Delete/Favorite/Skip) in the top bar to show only that category
+- **Category Filter**: Tap the stat pills (Keep/Delete/Favorite) in the top bar to show only that category
+- **Album Creation**: Force press on Keep or Favorite stat pills to add photos to albums
 
 ### Media Display
 - Full image display (Aspect Fit) - no cropping
@@ -48,11 +48,12 @@ SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete", an
 ### Other Features
 - Persistent sorting results (SwiftData)
 - Progress display (X / Y items)
-- Statistics display (real-time count of Keep/Delete/Favorite/Skip)
+- Statistics display (real-time count of Keep/Delete/Favorite)
 - Large library support (PHCachingImageManager for prefetching)
 - 2-tab interface: Sort / Settings
 - Tip Jar: Support the developer with optional in-app purchases (StoreKit 2)
 - Settings screen with statistics, gesture guide, haptic feedback toggle, and support links
+- Album creation: Add sorted photos to iOS albums via drag and drop
 
 ## Requirements
 
@@ -74,6 +75,24 @@ cd SwipeSort-iOS
 3. Configure your development team in Signing & Capabilities
 
 4. Build and run on a device or simulator
+
+## Configuration
+
+Support and external links are read from `SwipeSort/Info.plist`. Edit these keys to customize for your build:
+
+- **SwipeSortSupportEmail**: Feedback mail address (mailto:). If missing or empty, the app shows "Email Not Configured" in Settings.
+- **SwipeSortDiscordURL**: Discord invite URL.
+- **SwipeSortAppStoreID**: App Store ID (used for the review link).
+- **SwipeSortPrivacyPolicyURL**: Privacy policy URL.
+
+You can leave placeholder values in the repo and inject real values at build time (e.g. via xcconfig or CI) if you prefer not to commit them.
+
+## Branch Policy & Workflow
+
+- **develop**: Default development branch. Use for daily commits and pull requests.
+- **main**: Release-only branch. Update only when releasing (merge from develop, then push a version tag). Do not push feature work directly to main.
+
+**Recommended workflow:** Develop on `develop` → when releasing: merge `develop` into `main`, push a `v*` tag from `main` → CI runs on both branches; Release and TestFlight run on tag push. See [.github/README.md](.github/README.md) for the step-by-step flow.
 
 ## Version Management
 
@@ -116,10 +135,21 @@ The `project.pbxproj` file may show as modified after building, but **you don't 
 
 ```
 SwipeSort-iOS/
+├── .github/
+│   ├── README.md                   # Workflow documentation
+│   └── workflows/
+│       ├── ci.yml                  # Build & test
+│       ├── release.yml             # GitHub Release
+│       └── testflight.yml          # TestFlight upload
+├── scripts/
+│   └── version.sh                  # Auto version management
+├── LICENSE                         # MIT License
+├── README.md
+├── README.ja.md
 ├── SwipeSort/
 │   ├── App/
 │   │   ├── SwipeSortApp.swift      # App entry point
-│   │   ├── RootView.swift          # Auth & navigation
+│   │   ├── RootView.swift          # Photo access state and tab navigation
 │   │   └── AppState.swift          # Global state (@Observable)
 │   ├── Core/
 │   │   ├── Models/
@@ -136,11 +166,15 @@ SwipeSort-iOS/
 │   │   ├── Sorting/
 │   │   │   ├── SortingFeature.swift      # Sorting screen
 │   │   │   ├── SortingState.swift        # Sorting state
+│   │   │   ├── AlbumView.swift           # Album view for adding photos to albums
 │   │   │   └── Components/
 │   │   │       ├── SwipeOverlay.swift
+│   │   │       ├── SortingOverlays.swift
+│   │   │       ├── SortingPills.swift
 │   │   │       ├── LivePhotoView.swift
 │   │   │       ├── VideoPlayerView.swift
 │   │   │       ├── BurstSelectorView.swift
+│   │   │       ├── ForcePressGesture.swift  # Force Touch for album creation
 │   │   │       ├── HeartAnimation.swift
 │   │   │       └── MediaBadge.swift
 │   │   └── Settings/
@@ -151,7 +185,13 @@ SwipeSort-iOS/
 │   │   │   └── AppTheme.swift      # Colors, gradients, haptics
 │   │   └── Extensions/
 │   │       └── DateExtensions.swift
+│   ├── Resources/
+│   │   ├── en.lproj/
+│   │   │   └── Localizable.strings # English localization
+│   │   └── ja.lproj/
+│   │       └── Localizable.strings # Japanese localization
 │   ├── Assets.xcassets/
+│   ├── Configuration.storekit      # StoreKit configuration
 │   └── Info.plist
 └── SwipeSort.xcodeproj/
 ```
@@ -166,7 +206,7 @@ SwipeSort-iOS/
 ## Usage
 
 1. Launch the app and grant photo library access
-2. Swipe photos left/right to sort, swipe up to skip, double tap for favorites
+2. Swipe photos left/right to sort, double tap for favorites
 3. Long press to preview videos and Live Photos
 4. Use filter button to filter by photos, videos, Live Photos, etc.
 5. Swipe left to add to delete queue, tap "X items delete" button to batch delete

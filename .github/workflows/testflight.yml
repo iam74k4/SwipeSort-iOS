@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       version:
@@ -55,25 +53,36 @@ jobs:
       - name: Extract version
         id: version
         run: |
+          # version.shスクリプトを一度だけ実行してビルド番号を取得
+          chmod +x scripts/version.sh
+          source scripts/version.sh
+          
+          # バージョン取得ロジック
           if [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+            # workflow_dispatchで手動指定された場合
+            MARKETING_VERSION="${{ github.event.inputs.version }}"
+            # ビルド番号はversion.shスクリプトから取得（既に実行済み）
+            CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            # Only proceed if tag is on main branch
+            # タグからバージョンを取得（main 上のタグのみ許可）
             if [[ "${{ steps.check_tag.outputs.tag_on_main }}" != "true" ]]; then
-              echo "❌ Tag is not on main branch. Skipping TestFlight upload."
+              echo "❌ Tag is not on main branch. Push tag from main for TestFlight."
               exit 1
             fi
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
-            # For main branch push, check if it's a tag creation
-            # This is a fallback - normally tags trigger the workflow
-            VERSION="1.0.0"
+            MARKETING_VERSION=${GITHUB_REF#refs/tags/v}
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            CURRENT_PROJECT_VERSION=$(git rev-list --count "$TAG_NAME"..HEAD 2>/dev/null || echo "0")
+            if ! [[ "$CURRENT_PROJECT_VERSION" =~ ^[0-9]+$ ]] || [ "$CURRENT_PROJECT_VERSION" -lt 0 ] 2>/dev/null; then
+              CURRENT_PROJECT_VERSION="0"
+            fi
           else
-            echo "❌ This workflow only runs on main branch or tags on main branch"
+            echo "❌ This workflow runs only on tag push (v*) or workflow_dispatch."
             exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Using version: $VERSION"
+          
+          echo "version=$MARKETING_VERSION" >> $GITHUB_OUTPUT
+          echo "current_project_version=$CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $MARKETING_VERSION (build: $CURRENT_PROJECT_VERSION)"
         shell: bash
       
       - name: Setup Xcode
@@ -155,7 +164,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             -configuration Release \
             MARKETING_VERSION=${{ steps.version.outputs.version }} \
-            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CURRENT_PROJECT_VERSION=${{ steps.version.outputs.current_project_version }} \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             CODE_SIGN_STYLE=Automatic \
             ENABLE_PREVIEWS=NO \

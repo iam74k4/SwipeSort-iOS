@@ -125,7 +125,6 @@ jobs:
       
       - name: Run tests
         id: test
-        continue-on-error: true
         run: |
           xcodebuild test \
             -project $PROJECT \
@@ -141,7 +140,7 @@ jobs:
             COMPILER_INDEX_STORE_ENABLE=NO \
             -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
             -resultBundlePath test-results.xcresult \
-            -enableCodeCoverage YES || true
+            -enableCodeCoverage YES
       
       - name: Upload test results
         if: always()
@@ -152,8 +151,8 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
       
-      - name: Check test results
+      - name: Fail job on test failure
         if: steps.test.outcome == 'failure'
         run: |
-          echo "Tests failed. Check the test results artifact for details."
+          echo "::error::Tests failed. Check the test-results artifact for details."
           exit 1

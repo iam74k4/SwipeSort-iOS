@@ -83,6 +83,9 @@ fastlane/test_output
 # After new calculation because injectionforxcode hierarchies to /tmp
 iOSInjectionProject/
 
+# IDE / Editor
+.vscode/
+
 # macOS
 .DS_Store
 .AppleDouble
