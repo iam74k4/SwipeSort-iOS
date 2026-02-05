@@ -81,7 +81,7 @@ cd SwipeSort-iOS
 - **develop**: 開発用のデフォルトブランチ。日々のコミット・PR はこちらで行います。
 - **main**: リリース専用。リリース時のみ更新（develop をマージしたうえでバージョンタグを push）。機能開発の直接 push は行いません。
 
-**推奨運用:** 普段は `develop` で開発 → リリース時は `develop` を `main` にマージし、`main` から `v*` タグを push → Release / TestFlight が自動実行。手順の詳細は [.github/README.md](.github/README.md) を参照。
+**推奨運用:** 普段は `develop` で開発 → リリース時は `develop` を `main` にマージし、`main` から `v*` タグを push → Release / TestFlight が自動実行。手順の詳細は [.github/WORKFLOWS.md](.github/WORKFLOWS.md) を参照。
 
 ## バージョン管理
 
@@ -91,7 +91,8 @@ cd SwipeSort-iOS
 
 - **main ブランチ**: 最新の Git タグからバージョンを取得（例: `v1.0.0` → `1.0.0`）
 - **develop ブランチ**: 次のパッチバージョンを使用（例: `v1.0.0` → `1.0.1`）
-- **ビルド番号**: 最新タグからのコミット数から自動計算
+- **ビルド番号（ローカル/CI）**: 最新タグからのコミット数から自動計算
+- **ビルド番号（TestFlight）**: `github.run_number` を使用して自動インクリメント（重複エラー防止）
 
 ### バージョンタグの作成
 
@@ -136,7 +137,7 @@ git push origin v1.0.0
 ```
 SwipeSort-iOS/
 ├── .github/
-│   ├── README.md                   # ワークフロードキュメント
+│   ├── WORKFLOWS.md                # ワークフロードキュメント
 │   └── workflows/
 │       ├── ci.yml                  # ビルド・テスト
 │       ├── release.yml             # GitHub Release

@@ -92,7 +92,7 @@ You can leave placeholder values in the repo and inject real values at build tim
 - **develop**: Default development branch. Use for daily commits and pull requests.
 - **main**: Release-only branch. Update only when releasing (merge from develop, then push a version tag). Do not push feature work directly to main.
 
-**Recommended workflow:** Develop on `develop` → when releasing: merge `develop` into `main`, push a `v*` tag from `main` → CI runs on both branches; Release and TestFlight run on tag push. See [.github/README.md](.github/README.md) for the step-by-step flow.
+**Recommended workflow:** Develop on `develop` → when releasing: merge `develop` into `main`, push a `v*` tag from `main` → CI runs on both branches; Release and TestFlight run on tag push. See [.github/WORKFLOWS.md](.github/WORKFLOWS.md) for the step-by-step flow.
 
 ## Version Management
 
@@ -102,7 +102,8 @@ This project uses **automatic version management** based on Git tags. The versio
 
 - **Main branch**: Uses the version from the latest Git tag (e.g., `v1.0.0` → `1.0.0`)
 - **Develop branch**: Uses the next patch version (e.g., `v1.0.0` → `1.0.1`)
-- **Build number**: Automatically calculated from the number of commits since the latest tag
+- **Build number (Local/CI)**: Calculated from the number of commits since the latest tag
+- **Build number (TestFlight)**: Uses `github.run_number` for automatic increment (prevents duplicate version errors)
 
 ### Creating Version Tags
 
@@ -136,7 +137,7 @@ The `project.pbxproj` file may show as modified after building, but **you don't 
 ```
 SwipeSort-iOS/
 ├── .github/
-│   ├── README.md                   # Workflow documentation
+│   ├── WORKFLOWS.md                # Workflow documentation
 │   └── workflows/
 │       ├── ci.yml                  # Build & test
 │       ├── release.yml             # GitHub Release

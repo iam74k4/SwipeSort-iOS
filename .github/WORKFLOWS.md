@@ -77,4 +77,10 @@ TestFlight は「main にタグを打ったとき」または「手動 workflow_
 
 ## バージョン・ビルド番号
 
-`scripts/version.sh` で取得した `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` を各ワークフローで利用しています。
+| ワークフロー | MARKETING_VERSION | CURRENT_PROJECT_VERSION |
+|-------------|-------------------|-------------------------|
+| **CI** | `scripts/version.sh` から取得 | `scripts/version.sh` から取得 |
+| **TestFlight** | タグ名 or 手動入力 | `github.run_number`（自動インクリメント） |
+| **Release** | タグ名 | コミット数 |
+
+TestFlight のビルド番号は `github.run_number` を使用するため、自動で増加し重複エラーが発生しません。
