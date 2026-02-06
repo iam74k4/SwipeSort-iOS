@@ -1,6 +1,6 @@
 # GitHub Actions ワークフロー
 
-このディレクトリには SwipeSort iOS の CI/CD ワークフローが含まれます。
+このディレクトリには Sift iOS の CI/CD ワークフローが含まれます。
 
 ## 適切な運用（推奨フロー）
 
@@ -66,8 +66,8 @@ TestFlight は「main にタグを打ったとき」または「手動 workflow_
 
 各ワークフローで以下を共通利用しています（必要に応じて `env` で上書き可能）。
 
-- `SCHEME`: SwipeSort
-- `PROJECT`: SwipeSort.xcodeproj
+- `SCHEME`: Sift
+- `PROJECT`: Sift.xcodeproj
 - `XCODE_VERSION`: 使用する Xcode バージョン（例: 26.2）
 
 ## 必要な Secrets（TestFlight / Release）

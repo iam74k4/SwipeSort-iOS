@@ -1,4 +1,4 @@
-# SwipeSort-iOS
+# Sift-iOS
 
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-iOS%2018.0+-orange?style=flat-square)
@@ -11,7 +11,7 @@
 
 ## 概要
 
-SwipeSortは、直感的なスワイプ操作で写真や動画を「Keep」「削除」「お気に入り」に素早く整理できるアプリです。Swift 6とSwiftUIを採用し、モダンで美しいUIを提供します。
+Siftは、直感的なスワイプ操作で写真や動画を「Keep」「削除」「お気に入り」に素早く整理できるアプリです。Swift 6とSwiftUIを採用し、モダンで美しいUIを提供します。
 
 ## 技術スタック
 
@@ -66,11 +66,11 @@ SwipeSortは、直感的なスワイプ操作で写真や動画を「Keep」「�
 1. リポジトリをクローン
 
 ```bash
-git clone https://github.com/iam74k4/SwipeSort-iOS.git
-cd SwipeSort-iOS
+git clone https://github.com/iam74k4/Sift-iOS.git
+cd Sift-iOS
 ```
 
-2. Xcodeで `SwipeSort.xcodeproj` を開く
+2. Xcodeで `Sift.xcodeproj` を開く
 
 3. Signing & Capabilitiesで開発チームを設定
 
@@ -123,19 +123,19 @@ git push origin v1.0.0
 
 ## 設定
 
-サポート用のメール・外部リンクは `SwipeSort/Info.plist` から読みます。ビルドに合わせて次のキーを編集してください。
+サポート用のメール・外部リンクは `Sift/Info.plist` から読みます。ビルドに合わせて次のキーを編集してください。
 
-- **SwipeSortSupportEmail**: フィードバック用メールアドレス（mailto:）。未設定または空の場合、設定画面で「お問い合わせ用メールアドレスが未設定です。」と表示されます。
-- **SwipeSortDiscordURL**: Discord 招待URL。
-- **SwipeSortAppStoreID**: App Store ID（レビューリンク用）。
-- **SwipeSortPrivacyPolicyURL**: プライバシーポリシーURL。
+- **SiftSupportEmail**: フィードバック用メールアドレス（mailto:）。未設定または空の場合、設定画面で「お問い合わせ用メールアドレスが未設定です。」と表示されます。
+- **SiftDiscordURL**: Discord 招待URL。
+- **SiftAppStoreID**: App Store ID（レビューリンク用）。
+- **SiftPrivacyPolicyURL**: プライバシーポリシーURL。
 
 リポジトリにはプレースホルダのままにし、実値はビルド時に注入（xcconfig や CI など）することもできます。
 
 ## プロジェクト構成
 
 ```
-SwipeSort-iOS/
+Sift-iOS/
 ├── .github/
 │   ├── WORKFLOWS.md                # ワークフロードキュメント
 │   └── workflows/
@@ -147,9 +147,9 @@ SwipeSort-iOS/
 ├── LICENSE                         # MIT ライセンス
 ├── README.md
 ├── README.ja.md
-├── SwipeSort/
+├── Sift/
 │   ├── App/
-│   │   ├── SwipeSortApp.swift      # アプリエントリーポイント
+│   │   ├── SiftApp.swift      # アプリエントリーポイント
 │   │   ├── RootView.swift          # 認証状態に応じた表示とタブナビゲーション
 │   │   └── AppState.swift          # グローバル状態 (@Observable)
 │   ├── Core/
@@ -194,7 +194,7 @@ SwipeSort-iOS/
 │   ├── Assets.xcassets/
 │   ├── Configuration.storekit      # StoreKit 設定
 │   └── Info.plist
-└── SwipeSort.xcodeproj/
+└── Sift.xcodeproj/
 ```
 
 ## アーキテクチャ

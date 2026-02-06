@@ -15,9 +15,9 @@ permissions:
   contents: write
 
 env:
-  SCHEME: SwipeSort
-  PROJECT: SwipeSort.xcodeproj
-  ARCHIVE_PATH: build/SwipeSort.xcarchive
+  SCHEME: Sift
+  PROJECT: Sift.xcodeproj
+  ARCHIVE_PATH: build/Sift.xcarchive
   EXPORT_PATH: build/export
   XCODE_VERSION: '26.2'
 
@@ -156,7 +156,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: SwipeSort-${{ steps.version.outputs.marketing_version }}
+          name: Sift-${{ steps.version.outputs.marketing_version }}
           path: |
             ${{ env.ARCHIVE_PATH }}
             ${{ env.EXPORT_PATH }}/*.ipa

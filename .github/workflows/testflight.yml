@@ -12,9 +12,9 @@ on:
         type: string
 
 env:
-  SCHEME: SwipeSort
-  PROJECT: SwipeSort.xcodeproj
-  ARCHIVE_PATH: build/SwipeSort.xcarchive
+  SCHEME: Sift
+  PROJECT: Sift.xcodeproj
+  ARCHIVE_PATH: build/Sift.xcarchive
   EXPORT_PATH: build/export
   XCODE_VERSION: '26.2'
 
@@ -227,7 +227,7 @@ jobs:
                   echo "This is a known CI issue - checking if we can proceed anyway..."
                   
                   # Check if any .app bundle was created (indicating successful build)
-                  APP_BUNDLE=$(find ~/Library/Developer/Xcode/DerivedData -name "SwipeSort.app" -type d -newer build.log 2>/dev/null | head -1)
+                  APP_BUNDLE=$(find ~/Library/Developer/Xcode/DerivedData -name "Sift.app" -type d -newer build.log 2>/dev/null | head -1)
                   if [ -n "$APP_BUNDLE" ] && [ -d "$APP_BUNDLE" ]; then
                     echo "✅ Found app bundle: $APP_BUNDLE"
                     echo "Build succeeded despite actool error - this is expected for device builds"
@@ -266,7 +266,7 @@ jobs:
             
             if grep -q "No profiles for" build.log; then
               echo "⚠️  PROVISIONING PROFILE ERROR DETECTED:"
-              echo "No provisioning profiles found for 'com.swipesort.app'"
+              echo "No provisioning profiles found for 'com.sift.app'"
               echo ""
               echo "This usually happens when:"
               echo "1. Certificate limit is reached (see above)"

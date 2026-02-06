@@ -11,8 +11,8 @@ on:
       - develop
 
 env:
-  SCHEME: SwipeSort
-  PROJECT: SwipeSort.xcodeproj
+  SCHEME: Sift
+  PROJECT: Sift.xcodeproj
   XCODE_VERSION: '26.2'
 
 jobs:

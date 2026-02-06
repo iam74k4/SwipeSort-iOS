@@ -1,0 +1,217 @@
+/* 
+  Localizable.strings (Japanese)
+  Sift
+  
+  Japanese localization strings
+*/
+
+// MARK: - Common
+"OK" = "OK";
+"Cancel" = "キャンセル";
+"Delete" = "削除";
+"Close" = "閉じる";
+"Retry" = "再試行";
+"Loading..." = "読み込み中...";
+"Undo" = "戻す";
+
+// MARK: - Sorting Feature
+"Delete Failed" = "削除に失敗しました";
+"Delete %d Items?" = "%d件を削除しますか？";
+"Deleted photos will be moved to Recently Deleted." = "削除された写真は「最近削除した項目」に移動します。";
+"Delete Failed Message" = "写真の削除に失敗しました。\n\n考えられる原因：\n• 写真へのアクセス権限が不足している\n• 写真が既に削除されている\n• 端末のストレージが不足している\n\n解決方法：\n設定アプリで写真へのアクセス権限を確認するか、写真アプリで直接削除してください。";
+"Delete Failed Multiple" = "%d件の写真の削除に失敗しました。\n\n考えられる原因：\n• 写真へのアクセス権限が不足している\n• 一部の写真が既に削除されている\n• 端末のストレージが不足している\n\n解決方法：\n設定アプリで写真へのアクセス権限を確認するか、写真アプリで直接削除してください。";
+"Loading Photos..." = "写真を読み込み中...";
+"No Photos" = "写真がありません";
+"Please add photos to your photo library." = "フォトライブラリに写真を追加してください";
+"All Done!" = "整理完了!";
+"All photos have been sorted." = "すべての写真を整理しました";
+"Delete %d Items" = "%d件を削除";
+"Cancel with X" = "×で取り消し";
+"Save" = "保存";
+"Double Tap = Favorite" = "ダブルタップ = お気に入り";
+"Tap to Start" = "タップして開始";
+
+// MARK: - Settings Feature
+"Settings" = "設定";
+"Reset Data" = "データをリセット";
+"Reset" = "リセット";
+"Reset Data Message" = "すべての整理結果とUndo履歴が削除されます。この操作は取り消せません。";
+"Could Not Open" = "開けませんでした";
+"Operations" = "操作方法";
+"Swipe Right" = "右スワイプ";
+"Swipe Left" = "左スワイプ";
+"Double Tap" = "ダブルタップ";
+"Long Press" = "長押し";
+"Keep" = "Keep";
+"KEEP" = "KEEP";
+"DELETE" = "DELETE";
+"Add to Delete Queue" = "削除キューへ";
+"Favorite" = "お気に入り";
+"Play (Video/Live Photo)" = "再生 (動画/Live Photo)";
+"Statistics" = "統計";
+"Deleted" = "削除済み";
+"Kept" = "Keep済み";
+"Favorites" = "お気に入り";
+"Total" = "合計";
+"items" = "枚";
+"Other Features" = "その他の機能";
+"Filter" = "フィルター";
+// "Undo" は Common セクションで定義済み
+"Date Display" = "日時表示";
+"About" = "このアプリについて";
+"Shows app information and usage guide" = "アプリの情報と使い方を表示";
+"Data Management" = "データ管理";
+"Reset All Data" = "すべてのデータをリセット";
+"Support" = "サポート";
+"Send Feedback" = "フィードバックを送信";
+"Opens email to send feedback" = "メールを開いてフィードバックを送信";
+"Rate on App Store" = "App Storeで評価";
+"Opens App Store to leave a review" = "App Storeを開いてレビューを投稿";
+"Privacy Policy" = "プライバシーポリシー";
+"Opens privacy policy in browser" = "ブラウザでプライバシーポリシーを開く";
+"Developer Support" = "開発者をサポート";
+"Tip Jar" = "チップ";
+"Opens tip jar to support the developer" = "チップで開発者をサポート";
+
+// MARK: - Tip Jar
+"Support Developer" = "開発者をサポート";
+"Thank You!" = "ありがとうございます！ 🎉";
+"Purchase Failed" = "購入に失敗しました";
+"Did You Like Sift?" = "Siftを気に入っていただけましたか？";
+"Tip Message" = "チップで開発者を応援できます。\nいただいたサポートは今後の開発に活用されます。";
+"Failed to Load Products" = "商品を読み込めませんでした";
+
+// MARK: - Root View
+"Photo Access Required" = "写真へのアクセスが必要です";
+"Photo Access Description" = "Siftは写真と動画を整理するために、\nフォトライブラリへのアクセスが必要です。";
+"Allow Access" = "アクセスを許可";
+"Access Denied" = "アクセスが拒否されています";
+"Access Denied Description" = "設定アプリからSiftへの\n写真アクセスを許可してください。";
+"Open Settings" = "設定を開く";
+"Storage Alert Title" = "保存に関するお知らせ";
+"Storage Critical Error" = "保存領域の初期化に失敗しました\n\n整理結果は保存されず、アプリを終了すると失われる可能性があります。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
+"Storage Fallback Error" = "保存領域の初期化に失敗しました\n\n一時的な保存（メモリ上）で動作しています。アプリを終了すると整理結果が失われます。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
+"Storage Error" = "保存領域の初期化で問題が発生しました\n\n一部の整理結果が保存されない可能性があります。\n\n解決方法：\n1. 端末の空き容量を確保してください\n2. アプリを再起動してください\n3. 問題が続く場合は、端末を再起動してください";
+
+// MARK: - Media Filter
+"All" = "すべて";
+"Photos" = "写真";
+"Videos" = "動画";
+"Live Photo" = "Live Photo";
+"Live Photos" = "Live Photo";
+"RAW Photo" = "RAW写真";
+"Screenshots" = "スクショ";
+"Burst with %d photos" = "%d枚のバースト写真";
+
+// MARK: - Relative Date
+"YearsAgo" = "%d年前";
+"MonthsAgo" = "%dヶ月前";
+"DaysAgo" = "%d日前";
+"HoursAgo" = "%d時間前";
+"MinutesAgo" = "%d分前";
+"JustNow" = "たった今";
+
+// MARK: - Sort Category
+"Unsorted" = "未整理";
+// "Keep", "Deleted", "Favorites" は Settings Feature セクションで定義済み
+
+// MARK: - Additional Strings
+"Sort" = "整理";
+"Haptic Feedback" = "触覚フィードバック";
+"Vibrate on Swipe" = "スワイプ時に振動";
+"Toggle to enable or disable vibration feedback" = "振動フィードバックの有効/無効を切り替え";
+"Delete All Sorting Results" = "すべての整理結果を削除";
+"Delete all sorting results and start fresh" = "すべての整理結果を削除して最初からやり直す";
+"Support with Tip" = "チップで応援する";
+"Email Not Configured" = "お問い合わせ用メールアドレスが未設定です。";
+"App Store ID Not Configured" = "App Store IDが未設定です（Info.plistの`SiftAppStoreID`を設定してください）。";
+"Privacy Policy URL Not Configured" = "プライバシーポリシーURLが未設定です（Info.plistの`SiftPrivacyPolicyURL`を設定してください）。";
+"Version %@" = "バージョン %@";
+"About Description" = "直感的なスワイプ操作で写真を簡単に整理できるアプリです。大量の写真も素早くKeep・削除・お気に入りに分類できます。";
+"About Delete" = "削除について";
+"About Delete Description" = "左スワイプで写真は削除キューに追加されます。「X件削除」ボタンをタップすると、まとめて削除できます。削除された写真はiOSの「最近削除した項目」に移動し、30日以内であれば復元できます。";
+"• Filter: Filter by photos, videos, Live Photos, etc." = "• フィルター: 写真・動画・Live Photoなどで絞り込み";
+"• Undo: Cancel the last action" = "• 戻す: 直前の操作を取り消し";
+"• Date Display: Show photo creation date" = "• 撮影日時: 写真の撮影日を表示";
+"Thank You Message" = "あなたのサポートに心から感謝します！\n開発のモチベーションになります。";
+"Purchase Verification Failed" = "購入の検証に失敗しました";
+"Purchase Pending" = "購入が保留中です";
+"Purchase Failed: %@" = "購入に失敗しました: %@";
+"Tip Small" = "☕ コーヒー1杯";
+"Tip Medium" = "🍰 ケーキセット";
+"Tip Large" = "🍽️ ディナー";
+"Tips are Optional" = "チップは任意です";
+"All Features Available Without Tips" = "チップなしでもすべての機能を\nご利用いただけます。";
+"Show Appreciation to Developer" = "開発者に感謝を伝える";
+"Open Photos App" = "写真アプリを開く";
+"Reload" = "再読み込み";
+
+"No Photos Description" = "写真を追加した後、「再読み込み」ボタンをタップしてください。";
+
+"Discord Support" = "Discordサポート";
+"Discord Not Configured" = "DiscordのURLが未設定です。";
+"Opens Discord for community support" = "Discordでコミュニティサポートを受ける";
+
+"No Matching Photos" = "該当する写真がありません";
+"No Matching Photos Description" = "フィルター条件に一致する写真がありません。
+フィルターを変更するか、すべてのフィルターを解除してください。";
+"Clear Filter" = "フィルターを解除";
+
+// MARK: - Accessibility
+"Photo Card" = "写真カード";
+"Photo Card Hint" = "左右にスワイプして整理、ダブルタップでお気に入りに追加";
+"Add to Favorites" = "お気に入りに追加";
+"Add to Favorites Hint" = "ダブルタップでお気に入りに追加します";
+"Filter Photos" = "写真をフィルター";
+"Filter Photos Hint" = "写真、動画、Live Photoなどで絞り込みます";
+"Keep Count" = "Keep %d件";
+"Keep Count Hint" = "Keepに分類された写真の数。タップでフィルター";
+"Delete Count" = "削除 %d件";
+"Delete Count Hint" = "削除キューに追加された写真の数。タップでフィルター";
+"Favorite Count" = "お気に入り %d件";
+"Favorite Count Hint" = "お気に入りに追加された写真の数。タップでフィルター";
+"Undo Last Action" = "直前の操作を取り消し";
+"Undo Last Action Hint" = "最後に行った整理操作を取り消します";
+"Delete Queued Photos" = "削除キューから削除";
+"Delete Queued Photos Hint" = "削除キューに追加された写真を削除します";
+"Clear Delete Queue" = "削除キューをクリア";
+"Clear Delete Queue Hint" = "削除キューからすべての写真を削除します";
+"Play Live Photo" = "Live Photoを再生";
+"Play Video" = "動画を再生";
+"Tap to Play" = "タップで再生";
+"Long Press to Play" = "長押しで再生";
+"Photo taken %@" = "撮影日: %@";
+"Video duration %@" = "再生時間: %@";
+"Progress %d of %d" = "%d / %d";
+
+// MARK: - Burst Photos
+"Burst Photos" = "バースト写真";
+"Select 1 from %d Photos" = "%d枚から1枚を選択";
+"Keep This (Delete Others)" = "これを残す（他を削除）";
+"Keep All" = "すべて残す";
+
+// MARK: - Album Feature
+"Select Album" = "アルバムを選択";
+"New Album" = "新規アルバム";
+"Create Album" = "アルバムを作成";
+"Create" = "作成";
+"Album Name" = "アルバム名";
+"Enter album name" = "アルバム名を入力してください";
+"Album Error" = "アルバムエラー";
+"No photos in this category" = "このカテゴリに写真がありません";
+"Force press to add photos to album" = "強く押し込んでアルバムに写真を追加";
+"Insufficient photo library permissions" = "写真ライブラリへのアクセス権限が不足しています";
+"Failed to create album" = "アルバムの作成に失敗しました";
+"Failed to add assets to album" = "アルバムへの追加に失敗しました";
+
+// MARK: - Sort Order
+"Newest First" = "新しい順";
+"Oldest First" = "古い順";
+"Toggle Sort Order" = "並び順を切り替え";
+
+// MARK: - Date Filter
+"Filter by Date Range" = "期間で絞り込み";
+"Start Date" = "開始日";
+"End Date" = "終了日";
+"Date Range" = "期間";
+"Apply" = "適用";

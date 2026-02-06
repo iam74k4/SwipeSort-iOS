@@ -1,4 +1,4 @@
-# SwipeSort-iOS
+# Sift-iOS
 
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-iOS%2018.0+-orange?style=flat-square)
@@ -11,7 +11,7 @@ A photo and video organizer app with intuitive swipe gestures for iOS.
 
 ## Overview
 
-SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete", and "Favorites" using intuitive swipe gestures. Built with modern Swift 6 and SwiftUI for a beautiful, performant experience.
+Sift allows you to quickly sort photos and videos into "Keep", "Delete", and "Favorites" using intuitive swipe gestures. Built with modern Swift 6 and SwiftUI for a beautiful, performant experience.
 
 ## Tech Stack
 
@@ -66,11 +66,11 @@ SwipeSort allows you to quickly sort photos and videos into "Keep", "Delete", an
 1. Clone the repository
 
 ```bash
-git clone https://github.com/iam74k4/SwipeSort-iOS.git
-cd SwipeSort-iOS
+git clone https://github.com/iam74k4/Sift-iOS.git
+cd Sift-iOS
 ```
 
-2. Open `SwipeSort.xcodeproj` in Xcode
+2. Open `Sift.xcodeproj` in Xcode
 
 3. Configure your development team in Signing & Capabilities
 
@@ -78,12 +78,12 @@ cd SwipeSort-iOS
 
 ## Configuration
 
-Support and external links are read from `SwipeSort/Info.plist`. Edit these keys to customize for your build:
+Support and external links are read from `Sift/Info.plist`. Edit these keys to customize for your build:
 
-- **SwipeSortSupportEmail**: Feedback mail address (mailto:). If missing or empty, the app shows "Email Not Configured" in Settings.
-- **SwipeSortDiscordURL**: Discord invite URL.
-- **SwipeSortAppStoreID**: App Store ID (used for the review link).
-- **SwipeSortPrivacyPolicyURL**: Privacy policy URL.
+- **SiftSupportEmail**: Feedback mail address (mailto:). If missing or empty, the app shows "Email Not Configured" in Settings.
+- **SiftDiscordURL**: Discord invite URL.
+- **SiftAppStoreID**: App Store ID (used for the review link).
+- **SiftPrivacyPolicyURL**: Privacy policy URL.
 
 You can leave placeholder values in the repo and inject real values at build time (e.g. via xcconfig or CI) if you prefer not to commit them.
 
@@ -135,7 +135,7 @@ The `project.pbxproj` file may show as modified after building, but **you don't 
 ## Project Structure
 
 ```
-SwipeSort-iOS/
+Sift-iOS/
 ├── .github/
 │   ├── WORKFLOWS.md                # Workflow documentation
 │   └── workflows/
@@ -147,9 +147,9 @@ SwipeSort-iOS/
 ├── LICENSE                         # MIT License
 ├── README.md
 ├── README.ja.md
-├── SwipeSort/
+├── Sift/
 │   ├── App/
-│   │   ├── SwipeSortApp.swift      # App entry point
+│   │   ├── SiftApp.swift      # App entry point
 │   │   ├── RootView.swift          # Photo access state and tab navigation
 │   │   └── AppState.swift          # Global state (@Observable)
 │   ├── Core/
@@ -194,7 +194,7 @@ SwipeSort-iOS/
 │   ├── Assets.xcassets/
 │   ├── Configuration.storekit      # StoreKit configuration
 │   └── Info.plist
-└── SwipeSort.xcodeproj/
+└── Sift.xcodeproj/
 ```
 
 ## Architecture
