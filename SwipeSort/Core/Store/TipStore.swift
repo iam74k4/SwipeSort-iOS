@@ -49,9 +49,8 @@ final class TipStore {
     
     // MARK: - Private
     
-    /// Note: nonisolated(unsafe) to allow access in deinit
-    nonisolated(unsafe) private var loadTask: Task<Void, Never>?
-    nonisolated(unsafe) private var transactionListenerTask: Task<Void, Never>?
+    private var loadTask: Task<Void, Never>?
+    private var transactionListenerTask: Task<Void, Never>?
     
     // MARK: - Initialization
     
@@ -66,7 +65,8 @@ final class TipStore {
         }
     }
     
-    deinit {
+    /// Cancel ongoing tasks
+    func cleanup() {
         loadTask?.cancel()
         transactionListenerTask?.cancel()
     }

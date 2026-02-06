@@ -45,8 +45,7 @@ final class AppState {
     // MARK: - Private
     
     /// Observer for notification changes
-    /// Note: nonisolated(unsafe) to allow access in deinit
-    nonisolated(unsafe) private var notificationObserver: NSObjectProtocol?
+    private var notificationObserver: (any NSObjectProtocol)?
     
     // MARK: - Initialization
     
@@ -55,9 +54,11 @@ final class AppState {
         observeAuthorizationChanges()
     }
     
-    deinit {
+    /// Remove observer when no longer needed
+    func cleanup() {
         if let observer = notificationObserver {
             NotificationCenter.default.removeObserver(observer)
+            notificationObserver = nil
         }
     }
     

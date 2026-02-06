@@ -96,6 +96,7 @@ final class PlayerContainerView: UIView {
             // Remove old observer
             removeTimeObserver()
             playerLayer.player = newValue
+            playerForCleanup = newValue
             // Add observer to new player
             if newValue != nil {
                 addTimeObserver()
@@ -106,6 +107,9 @@ final class PlayerContainerView: UIView {
     var currentAssetID: String?
     var shouldPlayWhenReady: Bool = false
     var onTimeUpdate: ((Double, Double) -> Void)?
+    
+    /// Reference for cleanup in deinit (nonisolated access)
+    nonisolated(unsafe) private var playerForCleanup: AVPlayer?
     
     private let imageManager = PHCachingImageManager()
     private var loadingTask: Task<Void, Never>?
@@ -130,7 +134,9 @@ final class PlayerContainerView: UIView {
             queue: .main
         ) { [weak self] notification in
             if let time = notification.userInfo?["time"] as? Double {
-                self?.seek(to: time)
+                Task { @MainActor in
+                    self?.seek(to: time)
+                }
             }
         }
     }
@@ -205,16 +211,18 @@ final class PlayerContainerView: UIView {
         
         let interval = CMTime(seconds: VideoConstants.timeUpdateInterval, preferredTimescale: VideoConstants.preferredTimescale)
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self = self,
-                  let currentItem = self.player?.currentItem,
-                  currentItem.status == .readyToPlay else { return }
-            
-            let currentTime = time.seconds
-            let duration = currentItem.duration.seconds
-            
-            // Only call callback for valid values
-            if currentTime.isFinite && duration.isFinite && duration > 0 {
-                self.onTimeUpdate?(currentTime, duration)
+            Task { @MainActor in
+                guard let self = self,
+                      let currentItem = self.player?.currentItem,
+                      currentItem.status == .readyToPlay else { return }
+                
+                let currentTime = time.seconds
+                let duration = currentItem.duration.seconds
+                
+                // Only call callback for valid values
+                if currentTime.isFinite && duration.isFinite && duration > 0 {
+                    self.onTimeUpdate?(currentTime, duration)
+                }
             }
         }
     }
@@ -238,7 +246,7 @@ final class PlayerContainerView: UIView {
         // Capture references for cleanup on main thread
         // deinit can be called from any thread, so we dispatch to main
         let token = timeObserverToken
-        let player = playerLayer.player
+        let player = playerForCleanup
         
         if token != nil || player != nil {
             DispatchQueue.main.async {
