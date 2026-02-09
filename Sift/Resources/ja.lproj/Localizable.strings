@@ -209,9 +209,3 @@
 "Oldest First" = "古い順";
 "Toggle Sort Order" = "並び順を切り替え";
 
-// MARK: - Date Filter
-"Filter by Date Range" = "期間で絞り込み";
-"Start Date" = "開始日";
-"End Date" = "終了日";
-"Date Range" = "期間";
-"Apply" = "適用";

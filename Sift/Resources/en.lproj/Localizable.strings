@@ -209,9 +209,3 @@ Change the filter or clear all filters.";
 "Oldest First" = "Oldest First";
 "Toggle Sort Order" = "Toggle sort order";
 
-// MARK: - Date Filter
-"Filter by Date Range" = "Filter by Date Range";
-"Start Date" = "Start Date";
-"End Date" = "End Date";
-"Date Range" = "Date Range";
-"Apply" = "Apply";

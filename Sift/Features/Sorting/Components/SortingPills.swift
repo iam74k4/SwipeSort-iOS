@@ -73,21 +73,20 @@ struct ProgressPill: View {
 @available(iOS 18.0, *)
 struct DatePill: View {
     let date: Date
-    var isFiltered: Bool = false
     
     var body: some View {
         HStack(spacing: ThemeLayout.spacingXXSmall) {
-            Image(systemName: isFiltered ? "calendar.badge.checkmark" : "calendar")
+            Image(systemName: "calendar")
                 .font(.themeButtonSmall)
             Text(date.relativeString)
                 .font(.themeButtonSmall)
         }
-        .foregroundStyle(isFiltered ? Color.accentColor : Color.themePrimary)
+        .foregroundStyle(Color.themePrimary)
         .padding(.horizontal, ThemeLayout.spacingMedium)
         .padding(.vertical, ThemeLayout.spacingSmall)
         .background {
             RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                .fill(isFiltered ? Color.accentColor.opacity(0.3) : Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
         }
         .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         .accessibilityLabel(String(format: NSLocalizedString("Photo taken %@", comment: "Photo date accessibility"), date.relativeString))

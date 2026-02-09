@@ -80,13 +80,6 @@ final class SortingState {
     var currentFilter: MediaFilter = .all
     var selectedCategoryFilter: SortCategory? = nil  // Category filter (selected via stat pill)
     var sortOrder: SortOrder = .newestFirst
-    var selectedDate: Date? = nil  // Single date filter
-    var dateRangeStart: Date? = nil  // Date range filter start
-    var dateRangeEnd: Date? = nil  // Date range filter end
-    
-    var hasDateFilter: Bool {
-        selectedDate != nil || (dateRangeStart != nil && dateRangeEnd != nil)
-    }
     
     // MARK: - Image Loading
     
@@ -249,7 +242,6 @@ final class SortingState {
     /// Apply media filter without category filter
     func applyFilters() {
         var filtered = applyMediaFilter(to: allUnsortedAssets)
-        filtered = applyDateFilter(to: filtered)
         filtered = applySortOrder(to: filtered)
         
         unsortedAssets = filtered
@@ -296,8 +288,7 @@ final class SortingState {
             }
         }
         
-        // Apply date filter and sort order
-        filtered = applyDateFilter(to: filtered)
+        // Apply sort order
         filtered = applySortOrder(to: filtered)
         
         unsortedAssets = filtered
@@ -305,32 +296,6 @@ final class SortingState {
         updateCurrentAsset()
         // isComplete reflects actual sorting completion, not filtered results
         isComplete = allUnsortedAssets.isEmpty
-    }
-    
-    /// Apply date filter to assets
-    private func applyDateFilter(to assets: [PhotoAsset]) -> [PhotoAsset] {
-        let calendar = Calendar.current
-        
-        // Single date filter
-        if let selectedDate = selectedDate {
-            return assets.filter { asset in
-                guard let assetDate = asset.creationDate else { return false }
-                return calendar.isDate(assetDate, inSameDayAs: selectedDate)
-            }
-        }
-        
-        // Date range filter
-        if let startDate = dateRangeStart, let endDate = dateRangeEnd {
-            let startOfDay = calendar.startOfDay(for: startDate)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: endDate)) ?? endDate
-            
-            return assets.filter { asset in
-                guard let assetDate = asset.creationDate else { return false }
-                return assetDate >= startOfDay && assetDate < endOfDay
-            }
-        }
-        
-        return assets
     }
     
     /// Apply sort order to assets
@@ -346,35 +311,6 @@ final class SortingState {
     @MainActor
     func toggleSortOrder(sortStore: SortResultStore) {
         sortOrder.toggle()
-        applyFiltersWithCategory(sortStore: sortStore)
-    }
-    
-    /// Set date filter and reapply filters
-    @MainActor
-    func setDateFilter(_ date: Date?, sortStore: SortResultStore) {
-        selectedDate = date
-        // Clear range filter when setting single date
-        dateRangeStart = nil
-        dateRangeEnd = nil
-        applyFiltersWithCategory(sortStore: sortStore)
-    }
-    
-    /// Set date range filter and reapply filters
-    @MainActor
-    func setDateRangeFilter(start: Date?, end: Date?, sortStore: SortResultStore) {
-        dateRangeStart = start
-        dateRangeEnd = end
-        // Clear single date filter when setting range
-        selectedDate = nil
-        applyFiltersWithCategory(sortStore: sortStore)
-    }
-    
-    /// Clear all date filters
-    @MainActor
-    func clearDateFilter(sortStore: SortResultStore) {
-        selectedDate = nil
-        dateRangeStart = nil
-        dateRangeEnd = nil
         applyFiltersWithCategory(sortStore: sortStore)
     }
     

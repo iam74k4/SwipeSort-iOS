@@ -27,9 +27,6 @@ struct SortingFeature: View {
     @State private var albumViewCategory: SortCategory? = nil
     @State private var hasLoadedAssets = false
     @State private var showNoMatchToast = false
-    @State private var showDateRangePicker = false
-    @State private var dateRangeStart: Date = Date()
-    @State private var dateRangeEnd: Date = Date()
     
     // Task management
     @State private var imageLoadTask: Task<Void, Never>?
@@ -112,15 +109,6 @@ struct SortingFeature: View {
             Button(NSLocalizedString("Cancel", comment: "Cancel button"), role: .cancel) {}
         } message: {
             Text(NSLocalizedString("Deleted photos will be moved to Recently Deleted.", comment: "Delete confirmation message"))
-        }
-        .sheet(isPresented: $showDateRangePicker) {
-            DateRangePickerView(
-                startDate: $dateRangeStart,
-                endDate: $dateRangeEnd,
-                onApply: {
-                    applyDateRangeFilterWithAutoReset(start: dateRangeStart, end: dateRangeEnd)
-                }
-            )
         }
     }
     
@@ -609,33 +597,7 @@ struct SortingFeature: View {
                     sortOrderButton
                     
                     if let date = asset.creationDate {
-                        HStack(spacing: ThemeLayout.spacingXXSmall) {
-                            Button {
-                                dateRangeStart = date
-                                dateRangeEnd = date
-                                showDateRangePicker = true
-                            } label: {
-                                DatePill(date: date, isFiltered: state.hasDateFilter)
-                            }
-                            .buttonStyle(.plain)
-                            
-                            // Clear filter button (only when filtered)
-                            if state.hasDateFilter {
-                                Button {
-                                    withAnimation(.overlayFade) {
-                                        state.clearDateFilter(sortStore: sortStore)
-                                    }
-                                    scheduleImageLoad()
-                                    HapticFeedback.selection()
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.themeButton)
-                                        .foregroundStyle(Color.themeSecondary)
-                                        .frame(width: ThemeLayout.buttonSizeMedium, height: ThemeLayout.buttonSizeMedium)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
+                        DatePill(date: date)
                     }
                     if asset.isVideo && !state.isPlayingVideo {
                         VideoPill(duration: asset.formattedDuration)
@@ -920,25 +882,6 @@ struct SortingFeature: View {
             showNoMatchToastBriefly()
             HapticFeedback.notification(.warning)
         } else if previousFilter != filter {
-            HapticFeedback.selection()
-        }
-    }
-    
-    /// Apply date range filter with auto-reset if no matches
-    private func applyDateRangeFilterWithAutoReset(start: Date, end: Date) {
-        withAnimation(.overlayFade) {
-            state.setDateRangeFilter(start: start, end: end, sortStore: sortStore)
-        }
-        
-        // Auto-reset filter if no matches after applying
-        if state.unsortedAssets.isEmpty {
-            withAnimation(.overlayFade) {
-                state.clearDateFilter(sortStore: sortStore)
-            }
-            showNoMatchToastBriefly()
-            HapticFeedback.notification(.warning)
-        } else {
-            scheduleImageLoad()
             HapticFeedback.selection()
         }
     }
@@ -1635,54 +1578,5 @@ struct SortingFeature: View {
                 .padding(.top, ThemeLayout.spacingItem)
             }
         }
-    }
-}
-
-// MARK: - Date Range Picker View
-
-@available(iOS 18.0, *)
-struct DateRangePickerView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var startDate: Date
-    @Binding var endDate: Date
-    let onApply: () -> Void
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    DatePicker(
-                        NSLocalizedString("Start Date", comment: "Start date"),
-                        selection: $startDate,
-                        displayedComponents: .date
-                    )
-                    
-                    DatePicker(
-                        NSLocalizedString("End Date", comment: "End date"),
-                        selection: $endDate,
-                        in: startDate...,
-                        displayedComponents: .date
-                    )
-                } header: {
-                    Text(NSLocalizedString("Date Range", comment: "Date range section"))
-                }
-            }
-            .navigationTitle(NSLocalizedString("Filter by Date Range", comment: "Filter by date range title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Apply", comment: "Apply button")) {
-                        dismiss()
-                        onApply()
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium])
     }
 }
