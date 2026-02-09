@@ -26,12 +26,12 @@ struct MediaBadge: View {
                     .font(.themeBadge)
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(Color.themePrimary)
         .padding(.horizontal, ThemeLayout.paddingSmall)
         .padding(.vertical, ThemeLayout.paddingSmall / 2)
         .background {
             Capsule()
-                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(Color.cardBackground)
         }
         .accessibilityLabel(accessibilityText)
     }

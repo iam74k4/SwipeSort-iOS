@@ -408,7 +408,7 @@ struct SettingsFeature: View {
                                 .frame(width: ThemeLayout.buttonSizeSmall, height: ThemeLayout.buttonSizeSmall)
                             Image(systemName: "heart.fill")
                                 .font(.themeButtonSmall)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.themePrimary)
                         }
                         
                         VStack(alignment: .leading, spacing: ThemeLayout.spacingTiny) {
@@ -623,7 +623,7 @@ struct AboutView: View {
                         
                         Image(systemName: "hand.draw.fill")
                             .font(.themeTitleLarge)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.themePrimary)
                     }
                     .shadow(color: .purple.opacity(0.5), radius: ThemeLayout.shadowRadiusLarge, x: 0, y: ThemeLayout.shadowYLarge)
                         

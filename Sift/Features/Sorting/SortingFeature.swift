@@ -67,7 +67,7 @@ struct SortingFeature: View {
                         .padding(.vertical, ThemeLayout.spacingMediumLarge)
                         .background {
                             Capsule()
-                                .fill(.ultraThinMaterial)
+                                .fill(.themeBarMaterial)
                         }
                         .padding(.bottom, geometry.safeAreaInsets.bottom + ThemeLayout.toastBottomPadding)
                     }
@@ -299,8 +299,8 @@ struct SortingFeature: View {
             actionStamp(cardWidth: cardWidth, cardHeight: cardHeight)
         }
         .frame(width: cardWidth, height: cardHeight)
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacityCard), radius: ThemeLayout.shadowRadiusCard, x: 0, y: ThemeLayout.shadowYCard)
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySubtle), radius: ThemeLayout.shadowRadiusTiny, x: 0, y: ThemeLayout.shadowYTiny)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusCard, x: 0, y: ThemeLayout.shadowYCard)
+        .shadow(color: Color.cardShadow.opacity(0.5), radius: ThemeLayout.shadowRadiusTiny, x: 0, y: ThemeLayout.shadowYTiny)
         .opacity(state.imageOpacity)
         .animation(.easeOut(duration: TimingConstants.durationNormal), value: state.imageOpacity)
         .onTapGesture {
@@ -407,7 +407,7 @@ struct SortingFeature: View {
             ZStack {
                 Color.appBackground
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.themePrimary))
                     .scaleEffect(ThemeLayout.scaleLoading)
             }
         } else if state.isPlayingLivePhoto, let livePhoto = state.currentLivePhoto {
@@ -572,9 +572,9 @@ struct SortingFeature: View {
             .frame(maxWidth: state.currentFilter == .all ? nil : 100)
             .background {
                 RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                    .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                    .fill(Color.cardBackground)
             }
-            .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+            .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         }
         .id(state.currentFilter) // Recreate view on filter change to stabilize layout
         .accessibilityLabel(NSLocalizedString("Filter Photos", comment: "Filter Photos"))
@@ -676,9 +676,9 @@ struct SortingFeature: View {
         }
         .padding(.horizontal, ThemeLayout.spacingSmall)
         .padding(.vertical, ThemeLayout.spacingSmall)
-        .background(Color.black.opacity(ThemeLayout.opacityHeavy))
+        .background(Color.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous))
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
     }
     
     /// Format seconds to mm:ss or h:mm:ss
@@ -710,9 +710,9 @@ struct SortingFeature: View {
                 .font(.themeButton)
                 .foregroundStyle(Color.themePrimary)
                 .frame(width: ThemeLayout.buttonSizeMedium, height: ThemeLayout.buttonSizeMedium)
-                .background(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .background(Color.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusCard, style: .continuous))
-                .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+                .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(state.sortOrder.localizedName)
@@ -731,9 +731,9 @@ struct SortingFeature: View {
                 .font(.themeButton)
                 .foregroundStyle(Color.themePrimary)
                 .frame(width: ThemeLayout.buttonSizeMedium, height: ThemeLayout.buttonSizeMedium)
-                .background(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .background(Color.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusCard, style: .continuous))
-                .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+                .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         }
         .disabled(state.isUndoing || !sortStore.canUndo)
         .opacity((state.isUndoing || !sortStore.canUndo) ? 0.5 : 1.0)
@@ -782,9 +782,9 @@ struct SortingFeature: View {
             .accessibilityHint(NSLocalizedString("Clear Delete Queue Hint", comment: "Clear Delete Queue Hint"))
         }
         .frame(height: ThemeLayout.buttonSizeMedium)
-        .background(Color.black.opacity(ThemeLayout.opacityHeavy))
+        .background(Color.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusCard, style: .continuous))
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
     }
     
     private func clearDeleteQueue() {
@@ -1379,7 +1379,7 @@ struct SortingFeature: View {
                 
                 Image(systemName: isFilterActive ? "line.3.horizontal.decrease.circle" : "photo.on.rectangle.angled")
                     .font(.themeDisplayXXLarge)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(Color.themePrimary.opacity(0.8))
             }
             
             VStack(spacing: ThemeLayout.spacingMediumLarge) {
@@ -1567,9 +1567,9 @@ struct SortingFeature: View {
                         }
                     }
                     .frame(height: ThemeLayout.spacingXXLarge)
-                    .background(Color.black.opacity(ThemeLayout.opacityHeavy))
+                    .background(Color.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusCard, style: .continuous))
-                    .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+                    .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
                     
                     Text(NSLocalizedString("Cancel with X", comment: "Cancel with X message"))
                         .font(.themeCaptionSecondary)

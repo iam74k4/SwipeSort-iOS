@@ -60,7 +60,7 @@ struct RootView: View {
                     
                     Image(systemName: "photo.stack")
                         .font(.themeDisplayHuge)
-                        .foregroundStyle(.white.opacity(ThemeLayout.opacityXHeavy))
+                        .foregroundStyle(Color.themePrimary.opacity(ThemeLayout.opacityXHeavy))
                 }
                 
                 VStack(spacing: ThemeLayout.spacingMediumLarge) {

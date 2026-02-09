@@ -213,7 +213,7 @@ struct TipButton: View {
                 // Price
                 Text(product.displayPrice)
                     .font(.themeRowTitle.weight(.bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.themePrimary)
                     .padding(.horizontal, ThemeLayout.spacingItem)
                     .padding(.vertical, ThemeLayout.spacingSmall)
                     .background {

@@ -26,14 +26,14 @@ struct StatPill: View {
                 .lineLimit(1)
         }
         .fixedSize()
-        .foregroundStyle(isSelected ? .white : color)
+        .foregroundStyle(isSelected ? Color(white: 1) : color)  // White-on-color for contrast
         .padding(.horizontal, ThemeLayout.spacingMedium)
         .padding(.vertical, ThemeLayout.spacingSmall)
         .background {
             RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                .fill(isSelected ? color : Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(isSelected ? color : Color.cardBackground)
         }
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
     }
 }
 
@@ -62,9 +62,9 @@ struct ProgressPill: View {
         .padding(.vertical, ThemeLayout.spacingSmall)
         .background {
             RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(Color.cardBackground)
         }
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
     }
 }
 
@@ -86,9 +86,9 @@ struct DatePill: View {
         .padding(.vertical, ThemeLayout.spacingSmall)
         .background {
             RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(Color.cardBackground)
         }
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         .accessibilityLabel(String(format: NSLocalizedString("Photo taken %@", comment: "Photo date accessibility"), date.relativeString))
     }
 }
@@ -110,9 +110,9 @@ struct VideoPill: View {
         .padding(.vertical, ThemeLayout.spacingSmall)
         .background {
             RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                .fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                .fill(Color.cardBackground)
         }
-        .shadow(color: .black.opacity(ThemeLayout.shadowOpacitySmall), radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+        .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         .accessibilityLabel(String(format: NSLocalizedString("Video duration %@", comment: "Video duration accessibility"), duration))
     }
 }

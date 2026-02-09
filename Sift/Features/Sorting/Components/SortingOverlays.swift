@@ -19,7 +19,7 @@ struct StampView: View {
             .font(.themeStamp)
             .foregroundStyle(color)
             .shadow(color: color.opacity(ThemeLayout.opacityXHeavy), radius: 12, x: 0, y: 0)  // Stronger glow for better visibility
-            .shadow(color: .black.opacity(ThemeLayout.opacityHeavy), radius: 6, x: 0, y: 3)  // Stronger outline
+            .shadow(color: Color.cardShadow, radius: 6, x: 0, y: 3)  // Stronger outline
             .rotationEffect(.degrees(rotation))
     }
 }
@@ -32,7 +32,7 @@ struct SwipeHintOverlay: View {
     var body: some View {
         ZStack {
             // Semi-transparent background
-            Color.black.opacity(ThemeLayout.opacityXHeavy)
+            Color.black.opacity(ThemeLayout.opacityXHeavy)  // Dimming overlay — intentionally black
                 .ignoresSafeArea()
             
             VStack(spacing: ThemeLayout.spacingSection) {

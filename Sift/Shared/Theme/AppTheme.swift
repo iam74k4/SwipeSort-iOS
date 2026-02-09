@@ -96,20 +96,15 @@ enum ThemeLayout {
 // MARK: - Colors
 
 extension Color {
-    // Category colors
-    static let keepColor = Color(red: 0.2, green: 0.8, blue: 0.4)
-    static let deleteColor = Color(red: 1.0, green: 0.3, blue: 0.3)
-    static let favoriteColor = Color(red: 1.0, green: 0.75, blue: 0.0)
+    // Category colors — Xcode strips "Color" suffix in generated symbols,
+    // so we bridge to keep existing API (Color.keepColor, etc.)
+    static let keepColor = Color("KeepColor")
+    static let deleteColor = Color("DeleteColor")
+    static let favoriteColor = Color("FavoriteColor")
     
-    // Background
-    static let appBackground = Color(red: 0.06, green: 0.06, blue: 0.08)
-    /// Slightly lighter background for secondary surfaces (e.g. bars, overlays)
-    static let appBackgroundSecondary = Color(red: 0.09, green: 0.09, blue: 0.11)
-    
-    // Semantic (for text and surfaces)
-    static let themePrimary = Color.white
-    static let themeSecondary = Color.white.opacity(0.7)
-    static let themeTertiary = Color.white.opacity(0.5)
+    // Background, Semantic, and Card colors are auto-generated from xcassets
+    // as Color.appBackground, .appBackgroundSecondary, .themePrimary,
+    // .themeSecondary, .themeTertiary, .cardBackground, .cardShadow
     
     // Icon colors (for settings and UI elements)
     static let iconHaptic = Color.purple

@@ -44,7 +44,7 @@ struct AlbumView: View {
                 
                 if isLoadingAlbums {
                     ProgressView()
-                        .tint(.white)
+                        .tint(Color.themePrimary)
                 } else if photos.isEmpty {
                     emptyStateView
                 } else {
@@ -339,7 +339,7 @@ struct PhotoThumbnail: View {
                     .fill(Color.appBackgroundSecondary)
                     .overlay {
                         ProgressView()
-                            .tint(.white)
+                            .tint(Color.themePrimary)
                     }
             }
         }
@@ -348,11 +348,11 @@ struct PhotoThumbnail: View {
         .clipped()
         .overlay {
             if isAdded {
-                Color.black.opacity(ThemeLayout.opacityHeavy)
+                Color.cardBackground
                     .overlay {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.themeTitle)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.themePrimary)
                     }
             }
         }

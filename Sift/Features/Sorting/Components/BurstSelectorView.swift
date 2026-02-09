@@ -101,11 +101,11 @@ struct BurstSelectorView: View {
                         Text("\(selectedIndex + 1) / \(burstAssets.count)")
                             .font(.themeCaption.weight(.semibold))
                             .monospacedDigit()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.themePrimary)
                             .padding(.horizontal, ThemeLayout.spacingItem)
                             .padding(.vertical, ThemeLayout.spacingSmall)
                             .background {
-                                Capsule().fill(Color.black.opacity(ThemeLayout.opacityHeavy))
+                                Capsule().fill(Color.cardBackground)
                             }
                         Spacer()
                     }
@@ -170,7 +170,7 @@ struct BurstSelectorView: View {
                             Spacer()
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.themeRowTitle)
-                                .foregroundStyle(.white, Color.iconMedia)
+                                .foregroundStyle(Color.themePrimary, Color.iconMedia)
                                 .offset(x: 4, y: -4)
                         }
                         Spacer()
@@ -199,7 +199,7 @@ struct BurstSelectorView: View {
                     Text(NSLocalizedString("Keep This (Delete Others)", comment: "Keep this and delete others"))
                         .font(.themeRowTitle.weight(.semibold))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.themePrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, ThemeLayout.spacingItem)
                 .background {
