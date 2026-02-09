@@ -1015,9 +1015,7 @@ struct SortingFeature: View {
             try? await Task.sleep(for: .milliseconds(TimingConstants.sleepLong))
             
             // Hide heart animation before card animation starts
-            await MainActor.run {
-                state.showHeartAnimation = false
-            }
+            state.showHeartAnimation = false
             
             await preloadNextImage()
             

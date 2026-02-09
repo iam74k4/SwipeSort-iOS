@@ -136,7 +136,7 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>development</string>
+              <string>app-store</string>
               <key>compileBitcode</key>
               <false/>
           </dict>

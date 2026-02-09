@@ -12,10 +12,13 @@ import UniformTypeIdentifiers
 
 /// Wrapper around PHAsset providing convenient access to asset properties.
 ///
-/// This struct provides a type-safe, Sendable wrapper around PHAsset with
-/// convenient computed properties for common asset characteristics like media type,
+/// This struct provides a type-safe wrapper around PHAsset with convenient
+/// computed properties for common asset characteristics like media type,
 /// RAW format detection, and burst photo identification.
-struct PhotoAsset: Identifiable, Sendable {
+///
+/// Note: @unchecked Sendable because PHAsset is not Sendable.
+/// Access to `asset` must be from the main actor or Photos framework callbacks.
+struct PhotoAsset: Identifiable, @unchecked Sendable {
     /// The unique identifier for this asset (PHAsset's localIdentifier)
     let id: String
     

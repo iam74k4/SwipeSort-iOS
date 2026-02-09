@@ -85,7 +85,8 @@ final class PlayerContainerView: UIView {
 
     var playerLayer: AVPlayerLayer {
         guard let playerLayer = layer as? AVPlayerLayer else {
-            fatalError("Expected AVPlayerLayer, but got \(type(of: layer))")
+            assertionFailure("Expected AVPlayerLayer, got \(type(of: layer))")
+            return AVPlayerLayer()
         }
         return playerLayer
     }

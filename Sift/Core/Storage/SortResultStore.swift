@@ -39,8 +39,8 @@ final class SortResultStore {
     private var _sortedIDsCache: Set<String>?
     
     // MARK: - Cache for category lookups
-    
-    private var categoryCache: [String: SortCategory] = [:]
+    /// nil value means "cached as no record"; missing key means not yet looked up.
+    private var categoryCache: [String: SortCategory?] = [:]
     
     var totalSortedCount: Int {
         keepCount + deleteCount + favoriteCount
@@ -281,6 +281,10 @@ final class SortResultStore {
     ///   - recordUndo: If `true`, creates an undo record. Set to `false` when
     ///     performing undo operations to avoid infinite undo chains
     func addOrUpdate(assetID: String, category: SortCategory, previousCategory: SortCategory? = nil, recordUndo: Bool = true) {
+        guard !assetID.isEmpty else {
+            logger.error("Cannot add/update: assetID is empty")
+            return
+        }
         guard let modelContext else {
             logger.error("Cannot add/update: storage is unavailable")
             return
@@ -293,7 +297,14 @@ final class SortResultStore {
         
         // Get the actual previous category from the database if not provided
         var actualPreviousCategory = previousCategory
-        if let existing = try? modelContext.fetch(descriptor).first {
+        let existing: SortRecord?
+        do {
+            existing = try modelContext.fetch(descriptor).first
+        } catch {
+            logger.error("Failed to fetch record for \(assetID): \(error.localizedDescription)")
+            existing = nil
+        }
+        if let existing {
             // If previousCategory is not provided, get it from the existing record
             if actualPreviousCategory == nil {
                 actualPreviousCategory = SortCategory(rawValue: existing.categoryRaw)
@@ -387,7 +398,14 @@ final class SortResultStore {
         )
         descriptor.fetchLimit = 1
         
-        guard let lastAction = try? modelContext.fetch(descriptor).first else {
+        let lastAction: UndoRecord?
+        do {
+            lastAction = try modelContext.fetch(descriptor).first
+        } catch {
+            logger.error("Failed to fetch undo record: \(error.localizedDescription)")
+            lastAction = nil
+        }
+        guard let lastAction else {
             return nil
         }
         
@@ -399,7 +417,13 @@ final class SortResultStore {
         let sortDescriptor = FetchDescriptor<SortRecord>(
             predicate: #Predicate { $0.assetID == assetID }
         )
-        let existingRecord = try? modelContext.fetch(sortDescriptor).first
+        let existingRecord: SortRecord?
+        do {
+            existingRecord = try modelContext.fetch(sortDescriptor).first
+        } catch {
+            logger.error("Failed to fetch sort record for undo: \(error.localizedDescription)")
+            existingRecord = nil
+        }
         let actualCurrentCategory = existingRecord?.category ?? currentCategory
         
         // Remove the undo record first (before modifying sort records to avoid conflicts)

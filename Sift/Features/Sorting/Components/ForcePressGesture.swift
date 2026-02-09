@@ -86,14 +86,11 @@ private class ForcePressView: UIView {
             // Trigger only once per touch sequence
             if !hasTriggered {
                 hasTriggered = true
-                // Provide haptic feedback on main thread
+                // Provide haptic feedback and call callback on main thread
                 DispatchQueue.main.async {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.prepare()
                     generator.impactOccurred()
-                }
-                // Call the callback on main thread
-                DispatchQueue.main.async {
                     self.onForcePress?()
                 }
             }

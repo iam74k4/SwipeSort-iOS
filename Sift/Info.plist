@@ -9,19 +9,19 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.photography</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Siftは写真と動画を整理するために、フォトライブラリへのアクセスが必要です。</string>
+	<string>Sift needs access to your photo library to organize photos and videos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Siftは写真を整理するために、フォトライブラリへの書き込みアクセスが必要です。</string>
+	<string>Sift needs write access to your photo library to organize photos.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>SiftSupportEmail</key>
 	<string>iam74k4@gmail.com</string>
 	<key>SiftDiscordURL</key>
-	<string>https://discord.gg/your-server</string>
+	<string></string>
 	<key>SiftAppStoreID</key>
-	<string>000000000</string>
+	<string></string>
 	<key>SiftPrivacyPolicyURL</key>
-	<string>https://apple.com/legal/privacy</string>
+	<string></string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -1,0 +1,3 @@
+/* Photo Library Permission */
+NSPhotoLibraryUsageDescription = "Siftは写真と動画を整理するために、フォトライブラリへのアクセスが必要です。";
+NSPhotoLibraryAddUsageDescription = "Siftは写真を整理するために、フォトライブラリへの書き込みアクセスが必要です。";

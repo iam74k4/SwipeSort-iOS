@@ -187,6 +187,7 @@ struct BurstSelectorView: View {
         VStack(spacing: ThemeLayout.spacingMediumLarge) {
             // Primary action - select this photo
             Button {
+                guard selectedIndex < burstAssets.count else { return }
                 let selected = burstAssets[selectedIndex]
                 let others = burstAssets.enumerated()
                     .filter { $0.offset != selectedIndex }
