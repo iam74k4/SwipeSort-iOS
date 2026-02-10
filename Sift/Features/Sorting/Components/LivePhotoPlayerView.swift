@@ -1,5 +1,5 @@
 //
-//  LivePhotoView.swift
+//  LivePhotoPlayerView.swift
 //  Sift
 //
 //  Live Photo display component

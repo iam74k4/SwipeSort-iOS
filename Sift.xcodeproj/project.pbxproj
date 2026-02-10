@@ -23,15 +23,15 @@
 		AA000010 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020 /* AppTheme.swift */; };
 		AA000021 /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022 /* DateExtensions.swift */; };
 		AA000023 /* MediaBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000024 /* MediaBadge.swift */; };
-		AA000025 /* LivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* LivePhotoView.swift */; };
+		AA000025 /* LivePhotoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* LivePhotoPlayerView.swift */; };
 		AA0000B0 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000B1 /* VideoPlayerView.swift */; };
 		AA000027 /* BurstSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000028 /* BurstSelectorView.swift */; };
-		AA000029 /* HeartAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* HeartAnimation.swift */; };
+		AA000029 /* HeartAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* HeartAnimationView.swift */; };
 		AA00002B /* TipJarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* TipJarView.swift */; };
 		AA00002D /* TipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* TipStore.swift */; };
 		AA00002F /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AA000032 /* Configuration.storekit */; };
 		AA000033 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000034 /* AlbumView.swift */; };
-		AA000035 /* ForcePressGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000036 /* ForcePressGesture.swift */; };
+		AA000035 /* ForcePressDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000036 /* ForcePressDetector.swift */; };
 		AA000037 /* SortingPills.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000038 /* SortingPills.swift */; };
 		AA000039 /* SortingOverlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00003A /* SortingOverlays.swift */; };
 		AA693FA6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA693FA7 /* Localizable.strings */; };
@@ -54,17 +54,17 @@
 		AA000020 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		AA000022 /* DateExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		AA000024 /* MediaBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBadge.swift; sourceTree = "<group>"; };
-		AA000026 /* LivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoView.swift; sourceTree = "<group>"; };
+		AA000026 /* LivePhotoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoPlayerView.swift; sourceTree = "<group>"; };
 		AA0000B1 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		AA000028 /* BurstSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurstSelectorView.swift; sourceTree = "<group>"; };
-		AA00002A /* HeartAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartAnimation.swift; sourceTree = "<group>"; };
+		AA00002A /* HeartAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartAnimationView.swift; sourceTree = "<group>"; };
 		AA00002C /* TipJarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJarView.swift; sourceTree = "<group>"; };
 		AA00002E /* TipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipStore.swift; sourceTree = "<group>"; };
 		AA000030 /* Sift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA000032 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		AA000034 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
-		AA000036 /* ForcePressGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForcePressGesture.swift; sourceTree = "<group>"; };
+		AA000036 /* ForcePressDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForcePressDetector.swift; sourceTree = "<group>"; };
 		AA000038 /* SortingPills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingPills.swift; sourceTree = "<group>"; };
 		AA00003A /* SortingOverlays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortingOverlays.swift; sourceTree = "<group>"; };
 		AA693FA7 /* Localizable.strings */ = {isa = PBXVariantGroup; children = (AAAE2777 /* ja */, AA081223 /* en */); name = Localizable.strings; sourceTree = "<group>"; };
@@ -137,7 +137,6 @@
 				AA000057 /* Models */,
 				AA000058 /* PhotoLibrary */,
 				AA000059 /* Storage */,
-				AA000060A /* Store */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -182,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				AA000019 /* SortResultStore.swift */,
+				AA00002E /* TipStore.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -227,23 +227,15 @@
 			children = (
 				AA00001C /* SwipeOverlay.swift */,
 				AA000024 /* MediaBadge.swift */,
-				AA000026 /* LivePhotoView.swift */,
+				AA000026 /* LivePhotoPlayerView.swift */,
 				AA0000B1 /* VideoPlayerView.swift */,
 				AA000028 /* BurstSelectorView.swift */,
-				AA00002A /* HeartAnimation.swift */,
-				AA000036 /* ForcePressGesture.swift */,
+				AA00002A /* HeartAnimationView.swift */,
+				AA000036 /* ForcePressDetector.swift */,
 				AA000038 /* SortingPills.swift */,
 				AA00003A /* SortingOverlays.swift */,
 			);
 			path = Components;
-			sourceTree = "<group>";
-		};
-		AA000060A /* Store */ = {
-			isa = PBXGroup;
-			children = (
-				AA00002E /* TipStore.swift */,
-			);
-			path = Store;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -329,14 +321,14 @@
 				AA000010 /* AppTheme.swift in Sources */,
 				AA000021 /* DateExtensions.swift in Sources */,
 				AA000023 /* MediaBadge.swift in Sources */,
-				AA000025 /* LivePhotoView.swift in Sources */,
+				AA000025 /* LivePhotoPlayerView.swift in Sources */,
 				AA0000B0 /* VideoPlayerView.swift in Sources */,
 				AA000027 /* BurstSelectorView.swift in Sources */,
-				AA000029 /* HeartAnimation.swift in Sources */,
+				AA000029 /* HeartAnimationView.swift in Sources */,
 				AA00002B /* TipJarView.swift in Sources */,
 				AA00002D /* TipStore.swift in Sources */,
 				AA000033 /* AlbumView.swift in Sources */,
-				AA000035 /* ForcePressGesture.swift in Sources */,
+				AA000035 /* ForcePressDetector.swift in Sources */,
 				AA000037 /* SortingPills.swift in Sources */,
 				AA000039 /* SortingOverlays.swift in Sources */,
 			);

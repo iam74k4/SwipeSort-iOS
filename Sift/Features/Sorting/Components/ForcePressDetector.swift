@@ -1,5 +1,5 @@
 //
-//  ForcePressGesture.swift
+//  ForcePressDetector.swift
 //  Sift
 //
 //  Force Press gesture detection for album creation

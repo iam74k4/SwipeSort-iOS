@@ -86,6 +86,7 @@ final class SortingState {
     var currentImage: UIImage?
     var nextImage: UIImage?
     var isLoadingImage: Bool = false
+    var lastLoadedAssetID: String?
     
     // MARK: - Live Photo
     

@@ -537,9 +537,7 @@ struct SortingFeature: View {
         Menu {
             ForEach(MediaFilter.allCases, id: \.self) { filter in
                 Button {
-                    withAnimation(.overlayFade) {
-                        applyMediaFilterWithAutoReset(filter)
-                    }
+                    applyMediaFilterWithAutoReset(filter)
                     scheduleImageLoad()
                 } label: {
                     Label {
@@ -556,27 +554,17 @@ struct SortingFeature: View {
                 }
             }
         } label: {
-            HStack(spacing: ThemeLayout.spacingXXSmall) {
-                Image(systemName: state.currentFilter.icon)
-                    .font(.themeButtonSmall)
-                if state.currentFilter != .all {
-                    Text(state.currentFilter.localizedName)
-                        .font(.themeButtonSmall)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+            Image(systemName: state.currentFilter.icon)
+                .font(.themeButtonSmall)
+                .foregroundStyle(state.currentFilter == .all ? Color.themePrimary : Color.themeSecondary)
+                .frame(width: ThemeLayout.buttonSizeMedium, height: ThemeLayout.buttonSizeMedium)
+                .background {
+                    Circle()
+                        .fill(Color.cardBackground)
                 }
-            }
-            .foregroundStyle(state.currentFilter == .all ? Color.themePrimary : Color.themeSecondary)
-            .padding(.horizontal, ThemeLayout.spacingMedium)
-            .padding(.vertical, ThemeLayout.spacingSmall)
-            .frame(maxWidth: state.currentFilter == .all ? nil : 100)
-            .background {
-                RoundedRectangle(cornerRadius: ThemeLayout.cornerRadiusButton, style: .continuous)
-                    .fill(Color.cardBackground)
-            }
-            .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
+                .shadow(color: Color.cardShadow, radius: ThemeLayout.shadowRadiusSmall, x: 0, y: ThemeLayout.shadowYSmall)
         }
-        .id(state.currentFilter) // Recreate view on filter change to stabilize layout
+        .animation(nil, value: state.currentFilter)
         .accessibilityLabel(NSLocalizedString("Filter Photos", comment: "Filter Photos"))
         .accessibilityHint(NSLocalizedString("Filter Photos Hint", comment: "Filter Photos Hint"))
     }
@@ -943,6 +931,7 @@ struct SortingFeature: View {
             // Clear old image before loading next
             state.currentImage = nil
             state.currentLivePhoto = nil
+            state.lastLoadedAssetID = nil
             
             // Load next image (use nextImage if already loaded)
             if let next = state.nextImage {
@@ -1030,6 +1019,7 @@ struct SortingFeature: View {
             // Clear old image before moving to next
             state.currentImage = nil
             state.currentLivePhoto = nil
+            state.lastLoadedAssetID = nil
             
             state.removeAsset(asset)
             advanceAfterSortingAction()
@@ -1157,11 +1147,26 @@ struct SortingFeature: View {
             state.currentImage = nil
             state.currentLivePhoto = nil
             state.currentBurstCount = nil
+            state.lastLoadedAssetID = nil
             return
         }
         
         // Save target asset ID (to prevent race conditions)
         let targetAssetID = asset.id
+        
+        // Skip reload if the same asset is already displayed
+        if state.currentImage != nil && state.lastLoadedAssetID == targetAssetID {
+            return
+        }
+        
+        // Fade out the old image before clearing (prevents layout jump)
+        if state.currentImage != nil {
+            withAnimation(.easeOut(duration: TimingConstants.durationFast)) {
+                state.imageOpacity = 0
+            }
+            try? await Task.sleep(for: .milliseconds(Int(TimingConstants.durationFast * 1000)))
+            guard !Task.isCancelled else { return }
+        }
         
         // Clear old images before loading new ones to free memory
         state.currentImage = nil
@@ -1193,6 +1198,7 @@ struct SortingFeature: View {
         }
         
         state.currentImage = image
+        state.lastLoadedAssetID = targetAssetID
         state.isLoadingImage = false
         
         withAnimation(.easeIn(duration: TimingConstants.durationMedium)) {

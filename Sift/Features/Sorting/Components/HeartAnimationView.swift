@@ -1,5 +1,5 @@
 //
-//  HeartAnimation.swift
+//  HeartAnimationView.swift
 //  Sift
 //
 //  Heart animation view for favorite action
